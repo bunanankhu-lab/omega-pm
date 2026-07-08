@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบเตือนรอบ PM · บริษัทโอเมก้าอีสาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" defer></script>
+<style>
+  :root {
+    --bg: #F2F8FB;            /* ขาว-ฟ้าน้ำแข็ง */
+    --card: #ffffff;
+    --text: #17303B;
+    --muted: #6B8290;
+    --border: #DCEAF1;
+    --primary: #2B7A9E;       /* ฟ้าน้ำแข็งเข้ม */
+    --primary-soft: #E3F2F8;
+    --red: #C0392B;
+    --red-bg: #FBEAE8;
+    --yellow: #B7791F;
+    --yellow-bg: #FBF3E2;
+    --green: #2F7D4F;
+    --green-bg: #E8F5EE;
+    --radius: 16px;
+    --shadow: 0 1px 3px rgba(23,48,59,.06), 0 6px 20px rgba(43,122,158,.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; font-family: "Noto Sans Thai", "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    min-height: 100vh;
+  }
+  .app { max-width: 520px; margin: 0 auto; padding: 16px 14px 110px; }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  header.top h1 { font-size: 1.25rem; margin: 0; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  header.top .home-link { font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); background: var(--card); padding: 6px 12px; border-radius: 999px; }
+
+  /* แถบสรุป 3 ช่อง */
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .sum-box {
+    border: 2px solid transparent; border-radius: 14px; padding: 10px 6px; text-align: center;
+    cursor: pointer; box-shadow: var(--shadow); transition: transform .1s, border-color .15s;
+    background: var(--card); font-family: inherit;
+  }
+  .sum-box:active { transform: scale(.97); }
+  .sum-box .n { font-size: 1.45rem; font-weight: 700; line-height: 1.2; }
+  .sum-box .l { font-size: .72rem; color: var(--muted); }
+  .sum-box.red .n { color: var(--red); }
+  .sum-box.yellow .n { color: var(--yellow); }
+  .sum-box.green .n { color: var(--green); }
+  .sum-box.red.active { border-color: var(--red); background: var(--red-bg); }
+  .sum-box.yellow.active { border-color: var(--yellow); background: var(--yellow-bg); }
+  .sum-box.green.active { border-color: var(--green); background: var(--green-bg); }
+
+  /* แถบสถานะข้อมูลกลาง */
+  .cloud-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-size: .78rem; color: var(--muted); margin: -4px 0 10px; padding: 0 4px;
+  }
+  .cloud-bar .st { min-width: 0; }
+  .cloud-bar .st.ok { color: var(--green); }
+  .cloud-bar .st.err { color: var(--red); }
+  .cloud-bar button {
+    flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--primary);
+    border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: .76rem; font-weight: 600; cursor: pointer;
+  }
+  .cloud-bar button:active { background: var(--primary-soft); }
+
+  .search-wrap { position: relative; margin-bottom: 12px; }
+  .search-wrap input {
+    width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border); border-radius: 999px;
+    font-family: inherit; font-size: .95rem; background: var(--card); color: var(--text); box-shadow: var(--shadow);
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--primary); }
+  .search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+
+  /* การ์ดลูกค้า */
+  .cust-card {
+    display: flex; align-items: center; gap: 10px; background: var(--card);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--shadow);
+    border-left: 5px solid var(--green); cursor: pointer; transition: transform .1s;
+  }
+  .cust-card:active { transform: scale(.985); }
+  .cust-card.red { border-left-color: var(--red); }
+  .cust-card.yellow { border-left-color: var(--yellow); }
+  .cust-card.green { border-left-color: var(--green); }
+  .cust-card .info { flex: 1; min-width: 0; }
+  .cust-card .name { font-weight: 600; font-size: .98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cust-card .phone { font-size: .84rem; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .cust-card .phone:active { opacity: .6; }
+  .cust-card .days { flex-shrink: 0; text-align: right; }
+  .cust-card .days .dn { font-size: 1.15rem; font-weight: 700; line-height: 1.1; }
+  .cust-card .days .dl { font-size: .68rem; color: var(--muted); }
+  .cust-card.red .days .dn { color: var(--red); }
+  .cust-card.yellow .days .dn { color: var(--yellow); }
+  .cust-card.green .days .dn { color: var(--green); }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 16px; font-size: .95rem; }
+  .empty .big { font-size: 2.4rem; margin-bottom: 8px; }
+
+  /* ปุ่มลอย */
+  .fab {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px; z-index: 20;
+    background: var(--primary); color: #fff; border: none; border-radius: 999px;
+    padding: 15px 28px; font-size: 1rem; font-weight: 600; font-family: inherit; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(43,122,158,.45);
+  }
+  .fab:active { transform: translateX(-50%) scale(.96); }
+
+  /* หน้ารายละเอียด */
+  .back-btn {
+    background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+    padding: 8px 16px; font-family: inherit; font-size: .9rem; color: var(--text);
+    cursor: pointer; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .detail-card { background: var(--card); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .detail-card h2 { margin: 0 0 2px; font-size: 1.25rem; }
+  .detail-card .sub { color: var(--muted); font-size: .88rem; }
+  .count-badge {
+    display: inline-block; margin-top: 10px; padding: 7px 16px; border-radius: 999px;
+    font-weight: 700; font-size: .95rem;
+  }
+  .count-badge.red { background: var(--red-bg); color: var(--red); }
+  .count-badge.yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .count-badge.green { background: var(--green-bg); color: var(--green); }
+
+  .progress-wrap { margin-top: 14px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: .78rem; color: var(--muted); margin-bottom: 5px; }
+  .progress-track { background: var(--bg); border: 1px solid var(--border); border-radius: 999px; height: 14px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; background: var(--green); transition: width .4s; min-width: 4px; }
+  .progress-fill.red { background: var(--red); }
+  .progress-fill.yellow { background: var(--yellow); }
+  .progress-fill.green { background: var(--green); }
+
+  .call-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--primary); color: #fff; text-decoration: none; border-radius: 14px;
+    padding: 15px; font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(43,122,158,.35);
+  }
+  .call-btn:active { opacity: .85; }
+  .map-btn { background: #188038; box-shadow: 0 4px 14px rgba(24,128,56,.3); }
+
+  table.info { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  table.info td { padding: 9px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.info tr:last-child td { border-bottom: none; }
+  table.info td.k { color: var(--muted); width: 40%; padding-right: 10px; }
+
+  .note-box { background: var(--primary-soft); border-radius: 12px; padding: 12px 14px; font-size: .9rem; margin-top: 4px; white-space: pre-wrap; }
+
+  .hist-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-item .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); margin-top: 6px; flex-shrink: 0; }
+  .hist-item .d { font-weight: 600; }
+  .hist-item .n { color: var(--muted); white-space: pre-wrap; }
+  .hist-empty { color: var(--muted); font-size: .88rem; padding: 8px 0; }
+  .hist-edit {
+    border: 1px solid var(--border); background: var(--bg); color: var(--primary);
+    border-radius: 8px; padding: 5px 12px; font-family: inherit; font-size: .76rem;
+    font-weight: 600; cursor: pointer; margin-top: 8px;
+  }
+  .hist-edit:active { background: var(--primary-soft); }
+
+  .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .btn {
+    border: none; border-radius: 14px; padding: 14px; font-size: 1rem; font-weight: 600;
+    font-family: inherit; cursor: pointer; width: 100%;
+  }
+  .btn:active { opacity: .85; }
+  .btn.primary { background: var(--green); color: #fff; box-shadow: 0 4px 14px rgba(47,125,79,.3); }
+  .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow); }
+  .btn.danger { background: var(--card); color: var(--red); border: 1px solid var(--red-bg); }
+
+  /* bottom sheet */
+  .sheet-overlay {
+    position: fixed; inset: 0; background: rgba(23,48,59,.45); z-index: 30;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .sheet-overlay.show { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 31;
+    background: var(--card); border-radius: 22px 22px 0 0; padding: 18px 18px 26px;
+    max-width: 520px; margin: 0 auto; max-height: 88vh; overflow-y: auto;
+    transform: translateY(105%); transition: transform .25s cubic-bezier(.22,1,.36,1);
+    box-shadow: 0 -8px 30px rgba(23,48,59,.2);
+  }
+  .sheet.show { transform: translateY(0); }
+  .sheet .grip { width: 44px; height: 5px; background: var(--border); border-radius: 99px; margin: 0 auto 14px; }
+  .sheet h3 { margin: 0 0 14px; font-size: 1.1rem; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 12px 13px; border: 1px solid var(--border); border-radius: 12px;
+    font-family: inherit; font-size: .95rem; background: var(--bg); color: var(--text);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cycle-row { display: flex; gap: 8px; align-items: center; }
+  .cycle-row input { flex: 1; }
+  .cycle-quick {
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    border-radius: 10px; padding: 11px 14px; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
+    white-space: nowrap;
+  }
+  .cycle-quick.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .err { color: var(--red); font-size: .82rem; min-height: 18px; margin-top: 4px; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(16px);
+    background: var(--text); color: #fff; padding: 11px 20px; border-radius: 999px;
+    font-size: .9rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 50;
+    max-width: 90vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ปุ่ม QR บนการ์ดลูกค้า */
+  .qr-btn {
+    flex-shrink: 0; border: 1px solid var(--border); background: var(--bg); color: var(--primary);
+    border-radius: 10px; padding: 9px 11px; font-family: inherit; font-size: .78rem; font-weight: 700;
+    cursor: pointer; line-height: 1;
+  }
+  .qr-btn:active { background: var(--primary-soft); }
+
+  /* sheet แสดง QR */
+  .qr-status { border-radius: 12px; padding: 10px 14px; font-size: .86rem; margin-bottom: 10px; }
+  .qr-status.ok { background: var(--green-bg); color: var(--green); }
+  .qr-status.warn { background: var(--yellow-bg); color: var(--yellow); }
+  #qrHolder { text-align: center; padding: 8px 0 2px; }
+  #qrHolder img {
+    width: 100%; max-width: 250px; image-rendering: pixelated;
+    border: 1px solid var(--border); border-radius: 12px; background: #fff;
+  }
+  .qr-hint { text-align: center; color: var(--muted); font-size: .82rem; margin: 8px 0 14px; }
+
+  /* หน้าบัตรตรวจเช็ค (ลูกค้าเปิดจากการสแกน QR) */
+  .qrv-check {
+    width: 72px; height: 72px; border-radius: 50%; background: var(--green-bg); color: var(--green);
+    font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .qrv-check.warn { background: var(--yellow-bg); color: var(--yellow); }
+  .qrv-footer { text-align: center; color: var(--muted); font-size: .82rem; margin-top: 16px; }
+
+  /* รูปการตรวจเช็ค */
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .photo-grid a { display: block; }
+  .photo-grid img {
+    width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+  }
+  .photo-grid.small { grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+  .photo-grid.small img { border-radius: 8px; }
+  .photo-thumb { position: relative; }
+  .photo-thumb .rm {
+    position: absolute; top: -7px; right: -7px; width: 24px; height: 24px;
+    background: var(--red); color: #fff; border: 2px solid #fff; border-radius: 50%;
+    font-size: 12px; line-height: 1; cursor: pointer; padding: 0;
+  }
+  .photo-add {
+    border: 1.5px dashed var(--primary); background: var(--primary-soft); color: var(--primary);
+    border-radius: 12px; padding: 12px; width: 100%; font-family: inherit;
+    font-size: .95rem; font-weight: 600; cursor: pointer;
+  }
+  .photo-add:active { opacity: .8; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ==================== หน้ารายชื่อ ==================== -->
+  <div id="pageList">
+    <header class="top">
+      <h1>🔧 เตือนรอบ PM</h1>
+      
+    </header>
+
+    <div class="cloud-bar">
+      <span class="st" id="cloudStatus">☁️ กำลังเชื่อมต่อข้อมูลกลาง...</span>
+      <button type="button" id="cloudRefreshBtn">🔄 รีเฟรช</button>
+    </div>
+
+    <div class="summary">
+      <button type="button" class="sum-box red" id="sumRed">
+        <div class="n" id="sumRedN">0</div>
+        <div class="l">เกินกำหนด</div>
+      </button>
+      <button type="button" class="sum-box yellow" id="sumYellow">
+        <div class="n" id="sumYellowN">0</div>
+        <div class="l">ใกล้ครบใน 7 วัน</div>
+      </button>
+      <button type="button" class="sum-box green" id="sumGreen">
+        <div class="n" id="sumGreenN">0</div>
+        <div class="l">ปกติ</div>
+      </button>
+    </div>
+
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input id="searchInput" placeholder="ค้นหาชื่อ เบอร์โทร หรือรุ่นเครื่อง...">
+    </div>
+
+    <div id="custList"></div>
+    <div class="empty" id="listEmpty" hidden>
+      <div class="big">🧊</div>
+      ยังไม่มีลูกค้าในระบบ<br>กดปุ่ม “+ เพิ่มลูกค้า” เพื่อเริ่มต้น
+    </div>
+  </div>
+
+  <!-- ==================== หน้ารายละเอียด ==================== -->
+  <div id="pageDetail" hidden>
+    <button type="button" class="back-btn" id="backBtn">← กลับหน้ารายชื่อ</button>
+
+    <div class="detail-card">
+      <h2 id="dName"></h2>
+      <div class="sub" id="dTypeModel"></div>
+      <span class="count-badge" id="dBadge"></span>
+      <div class="progress-wrap">
+        <div class="progress-label"><span id="dProgText"></span><span id="dProgPct"></span></div>
+        <div class="progress-track"><div class="progress-fill" id="dProgFill"></div></div>
+      </div>
+    </div>
+
+    <a class="call-btn" id="dCallBtn" href="#">📞 โทรหาลูกค้า</a>
+    <a class="call-btn map-btn" id="dMapBtn" href="#" target="_blank" rel="noopener" hidden>🗺 นำทาง (Google Maps)</a>
+
+    <div class="detail-card">
+      <table class="info">
+        <tr><td class="k">ที่อยู่</td><td id="dAddress"></td></tr>
+        <tr><td class="k">ประเภทเครื่อง</td><td id="dType"></td></tr>
+        <tr><td class="k">ยี่ห้อ/รุ่น</td><td id="dModel"></td></tr>
+        <tr><td class="k">วัน PM ล่าสุด</td><td id="dLastPM"></td></tr>
+        <tr><td class="k">วันครบรอบถัดไป</td><td id="dNextDue"></td></tr>
+        <tr><td class="k">รอบ PM</td><td id="dCycle"></td></tr>
+      </table>
+      <div class="note-box" id="dNote" hidden></div>
+    </div>
+
+    <div class="detail-card">
+      <h3 style="margin:0 0 6px;font-size:1rem">📜 ประวัติการทำ PM</h3>
+      <div id="dHistory"></div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn primary" id="pmDoneBtn">✓ ทำ PM วันนี้แล้ว</button>
+      <button type="button" class="btn secondary" id="qrBtn">🔲 QR แจ้งลูกค้า — ตรวจเช็คแล้ว</button>
+      <button type="button" class="btn secondary" id="editBtn">✏️ แก้ไขข้อมูล</button>
+      <button type="button" class="btn danger" id="deleteBtn">🗑 ลบลูกค้า</button>
+    </div>
+  </div>
+
+  <!-- ==================== หน้าบัตรตรวจเช็ค (ลูกค้าเปิดจากการสแกน QR) ==================== -->
+  <div id="pageQrView" hidden>
+    <div class="detail-card" style="text-align:center; padding:26px 18px">
+      <div class="qrv-check" id="qvIcon">✓</div>
+      <h2 id="qvHead" style="margin:0 0 8px; font-size:1.2rem"></h2>
+      <span class="count-badge" id="qvBadge" style="margin-top:0"></span>
+    </div>
+    <div class="detail-card">
+      <table class="info">
+        <tr><td class="k">วันที่ตรวจเช็คล่าสุด</td><td id="qvDate"></td></tr>
+        <tr><td class="k">ช่างผู้ตรวจ</td><td id="qvTech"></td></tr>
+        <tr id="qvWorkRow"><td class="k">งานที่ทำ</td><td id="qvWork"></td></tr>
+        <tr><td class="k">ประเภทเครื่อง</td><td id="qvType"></td></tr>
+        <tr><td class="k">ยี่ห้อ/รุ่น</td><td id="qvModel"></td></tr>
+        <tr><td class="k">กำหนดตรวจครั้งถัดไป</td><td id="qvNext"></td></tr>
+      </table>
+    </div>
+    <div class="detail-card" id="qvPhotoCard" hidden>
+      <h3 style="margin:0 0 4px;font-size:1rem" id="qvPhotoTitle">📷 รูปจุดที่ตรวจเช็ค</h3>
+      <div class="sub" style="font-size:.8rem">แตะที่รูปเพื่อดูขนาดเต็ม</div>
+      <div class="photo-grid" id="qvPhotoGrid"></div>
+    </div>
+    <button type="button" class="btn secondary" id="storeTechBtn" hidden>🧑‍🔧 สำหรับช่าง — บันทึกการตรวจครั้งนี้ + แนบรูป</button>
+    <div class="qrv-footer">🔧 บริการตรวจเช็คโดย บริษัทโอเมก้าอีสาน</div>
+  </div>
+</div>
+
+<button type="button" class="fab" id="fabAdd">＋ เพิ่มลูกค้า</button>
+
+<!-- ==================== ฟอร์มเพิ่ม/แก้ไขลูกค้า ==================== -->
+<div class="sheet-overlay" id="custOverlay"></div>
+<div class="sheet" id="custSheet">
+  <div class="grip"></div>
+  <h3 id="custSheetTitle">เพิ่มลูกค้าใหม่</h3>
+  <form id="custForm">
+    <div class="field" id="pickWrap" hidden>
+      <label for="fPick">📋 เลือกจากรายชื่อลูกค้าในระบบ (เติมข้อมูลให้อัตโนมัติ)</label>
+      <select id="fPick"><option value="">— พิมพ์เองด้านล่าง หรือเลือกจากรายชื่อ —</option></select>
+    </div>
+    <div class="field">
+      <label for="fName">ชื่อลูกค้า / ร้าน *</label>
+      <input id="fName" required placeholder="เช่น ร้านครัวคุณหญิง">
+    </div>
+    <div class="field">
+      <label for="fPhone">เบอร์โทร</label>
+      <input id="fPhone" type="tel" placeholder="เช่น 081-234-5678">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fType">ประเภทเครื่อง</label>
+        <select id="fType">
+          <option value="เครื่องล้างจาน">เครื่องล้างจาน</option>
+          <option value="เครื่องทำน้ำแข็ง">เครื่องทำน้ำแข็ง</option>
+          <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fModel">ยี่ห้อ/รุ่น</label>
+        <input id="fModel" placeholder="เช่น Hobart AM15">
+      </div>
+    </div>
+    <div class="field">
+      <label for="fAddress">ที่อยู่</label>
+      <textarea id="fAddress" rows="2" placeholder="ที่ตั้งร้าน / จุดสังเกต / วางลิงก์ Google Maps ได้เลย"></textarea>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fLastPM">วัน PM ล่าสุด</label>
+        <input id="fLastPM" type="date">
+      </div>
+      <div class="field">
+        <label for="fCycle">รอบ PM (วัน)</label>
+        <div class="cycle-row">
+          <input id="fCycle" type="number" min="1" max="365" value="45">
+          <button type="button" class="cycle-quick" data-cycle="45">45</button>
+          <button type="button" class="cycle-quick" data-cycle="60">60</button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="fNote">หมายเหตุประจำลูกค้า</label>
+      <textarea id="fNote" rows="2" placeholder="เช่น เข้าได้เฉพาะช่วงบ่าย, มีสุนัข"></textarea>
+    </div>
+    <div class="err" id="fErr"></div>
+    <button type="submit" class="btn primary" style="background:var(--primary)">บันทึก</button>
+    <button type="button" class="btn secondary" id="custCancelBtn" style="margin-top:8px">ยกเลิก</button>
+  </form>
+</div>
+
+<!-- ==================== ฟอร์มบันทึก PM ==================== -->
+<div class="sheet-overlay" id="pmOverlay"></div>
+<div class="sheet" id="pmSheet">
+  <div class="grip"></div>
+  <h3 id="pmSheetTitle">บันทึกการทำ PM</h3>
+  <form id="pmForm">
+    <div class="field">
+      <label for="pmDate">วันที่ทำ</label>
+      <input id="pmDate" type="date">
+    </div>
+    <div class="field">
+      <label for="pmTech">ช่างที่ไปทำ PM</label>
+      <input id="pmTech" list="techList" placeholder="เช่น ช่างต้น, ช่างบอย (ใส่หลายคนคั่นด้วยจุลภาค)">
+      <datalist id="techList"></datalist>
+    </div>
+    <div class="field">
+      <label for="pmNote">งานที่ทำ / อะไหล่ที่เปลี่ยน (ไม่บังคับ)</label>
+      <textarea id="pmNote" rows="3" placeholder="เช่น ล้างหัวฉีด เปลี่ยนไส้กรอง เติมน้ำยา"></textarea>
+    </div>
+    <div class="field">
+      <label>📷 รูปจุดที่ตรวจเช็ค (สูงสุด 15 รูป — ลูกค้าจะเห็นเมื่อสแกน QR)</label>
+      <input id="pmPhotos" type="file" accept="image/*" multiple hidden>
+      <button type="button" class="photo-add" id="pmAddPhotoBtn">＋ เพิ่มรูป (0/15)</button>
+      <div class="photo-grid" id="pmPhotoGrid"></div>
+    </div>
+    <button type="submit" class="btn primary" id="pmSubmitBtn">✓ บันทึก แล้วเริ่มนับรอบใหม่</button>
+    <button type="button" class="btn secondary" id="pmCancelBtn" style="margin-top:8px">ยกเลิก</button>
+  </form>
+</div>
+
+<!-- ==================== sheet แสดง QR ==================== -->
+<div class="sheet-overlay" id="qrOverlay"></div>
+<div class="sheet" id="qrSheet">
+  <div class="grip"></div>
+  <h3 id="qrTitle">QR ตรวจเช็ค PM</h3>
+  <div class="qr-status" id="qrStatus"></div>
+  <div id="qrHolder"></div>
+  <div class="qr-hint">พิมพ์หรือบันทึกรูป QR นี้ ไปติดหน้าเครื่องของร้านได้ถาวร<br>👀 ลูกค้าสแกน = เห็นการตรวจล่าสุด+รูป · 🧑‍🔧 ช่างสแกน = กดบันทึก PM + แนบรูปได้เลย<br>(กดค้างที่รูป QR เพื่อบันทึกเป็นรูปภาพ)</div>
+  <button type="button" class="btn primary" id="qrShareBtn" style="background:var(--primary)">📤 แชร์ลิงก์ให้ลูกค้า</button>
+  <button type="button" class="btn secondary" id="qrCloseBtn" style="margin-top:8px">ปิด</button>
+</div>
+
+<!-- ==================== รหัสช่าง (ตอนสแกน QR หน้าเครื่อง) ==================== -->
+<div class="sheet-overlay" id="pinOverlay"></div>
+<div class="sheet" id="pinSheet">
+  <div class="grip"></div>
+  <h3>🧑‍🔧 สำหรับช่างเท่านั้น</h3>
+  <div class="field">
+    <label for="pinInput">รหัสช่าง</label>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="ใส่รหัสช่าง">
+  </div>
+  <div class="err" id="pinErr"></div>
+  <button type="button" class="btn primary" id="pinOkBtn" style="background:var(--primary)">ยืนยัน</button>
+  <button type="button" class="btn secondary" id="pinCancelBtn" style="margin-top:8px">ยกเลิก</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORE_KEY = "omega_pm_customers";
+
+  // ดึงรายชื่อลูกค้าจากระบบกลาง (ทะเบียนเครื่องหน้าเงินเดือน + CRM) มาให้เลือกในฟอร์ม
+  var SUPABASE_URL = "https://vhrexjmzdcvlojzanvum.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_47xRsvJMYfqk1XSlW6qjaQ_8ABKblB5";
+
+  // ลิงก์เว็บจริง — QR ต้องชี้ URL สาธารณะเสมอ เพื่อให้มือถือลูกค้าเปิดได้
+  var PUBLIC_URL = "https://omega-pm.vercel.app/";
+
+  // รหัสช่าง: ใช้ตอนสแกน QR หน้าเครื่องแล้วกด "สำหรับช่าง" (จำในเครื่องหลังใส่ครั้งแรก)
+  var TECH_PIN = "2569";
+
+  // ---------- storage ----------
+  // ข้อมูลหลักอยู่บนเว็บ (ตาราง pm_stores/pm_records ใน Supabase) ทุกเครื่องเห็นชุดเดียวกัน
+  // localStorage เป็นแค่แคชล่าสุดไว้ดูตอนออฟไลน์ + ที่พักข้อมูลเก่ารอย้ายขึ้นเว็บ
+  function loadCache() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      var data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    } catch (e) { return []; }
+  }
+  function saveCache() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(customers)); } catch (e) {}
+  }
+  function storeRowToCust(s, old) {
+    return {
+      id: s.id, name: s.name, phone: s.phone || "", type: s.type || "",
+      model: s.model || "", address: s.address || "", cycle: s.cycle || 45,
+      note: s.note || "", lastPM: s.last_pm || "",
+      history: (old && old.history) || null   // โหลดตอนเปิดหน้ารายละเอียด
+    };
+  }
+  function fetchCustomers() {
+    return fetch(SUPABASE_URL + "/rest/v1/pm_stores?active=eq.true&order=name", { headers: sbHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error("fetch " + r.status); return r.json(); })
+      .then(function (rows) {
+        var oldById = {};
+        customers.forEach(function (c) { oldById[c.id] = c; });
+        customers = rows.map(function (s) { return storeRowToCust(s, oldById[s.id]); });
+        saveCache();
+      });
+  }
+  // ย้ายข้อมูลที่เคยเก็บในเครื่อง (ยุค localStorage) ขึ้นเว็บครั้งเดียวต่อเครื่อง
+  var MIGRATED_KEY = "omega_pm_synced_v2";
+  function migrateLocalToCloud() {
+    var flagged = false;
+    try { flagged = localStorage.getItem(MIGRATED_KEY) === "1"; } catch (e) {}
+    if (flagged) return Promise.resolve();
+    var locals = loadCache();
+    if (!locals.length) {
+      try { localStorage.setItem(MIGRATED_KEY, "1"); } catch (e) {}
+      return Promise.resolve();
+    }
+    var p = Promise.resolve();
+    locals.forEach(function (c) {
+      p = p.then(function () {
+        return syncStore(c).then(function () {
+          var hist = c.history || [];
+          if (!hist.length) return;
+          return fetch(SUPABASE_URL + "/rest/v1/pm_records?store_id=eq." + encodeURIComponent(c.id) + "&select=date", { headers: sbHeaders() })
+            .then(function (r) { if (!r.ok) throw new Error("q"); return r.json(); })
+            .then(function (rows) {
+              var have = {};
+              rows.forEach(function (x) { have[x.date] = true; });
+              var q = Promise.resolve();
+              hist.forEach(function (h) {
+                if (!have[h.date]) q = q.then(function () { return syncRecord(c.id, h); });
+              });
+              return q;
+            });
+        });
+      });
+    });
+    return p.then(function () {
+      try { localStorage.setItem(MIGRATED_KEY, "1"); } catch (e) {}
+      flash("☁️ ย้ายข้อมูลในเครื่องขึ้นเว็บแล้ว " + locals.length + " ร้าน");
+    });
+  }
+
+  // ---------- state ----------
+  var customers = loadCache();  // โชว์แคชไปก่อน แล้วข้อมูลจริงจากเว็บจะมาแทน
+  var cloudLoaded = false;      // โหลดจากเว็บสำเร็จแล้วหรือยัง
+  var statusFilter = "";      // "" | red | yellow | green
+  var currentId = null;       // ลูกค้าที่เปิดหน้ารายละเอียดอยู่
+  var editingId = null;       // ลูกค้าที่กำลังแก้ไขในฟอร์ม (null = เพิ่มใหม่)
+
+  // ---------- elements ----------
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    pageList: $("pageList"), pageDetail: $("pageDetail"),
+    cloudStatus: $("cloudStatus"), cloudRefreshBtn: $("cloudRefreshBtn"),
+    sumRed: $("sumRed"), sumYellow: $("sumYellow"), sumGreen: $("sumGreen"),
+    sumRedN: $("sumRedN"), sumYellowN: $("sumYellowN"), sumGreenN: $("sumGreenN"),
+    searchInput: $("searchInput"), custList: $("custList"), listEmpty: $("listEmpty"),
+    fabAdd: $("fabAdd"), backBtn: $("backBtn"),
+    dName: $("dName"), dTypeModel: $("dTypeModel"), dBadge: $("dBadge"),
+    dProgText: $("dProgText"), dProgPct: $("dProgPct"), dProgFill: $("dProgFill"),
+    dCallBtn: $("dCallBtn"), dMapBtn: $("dMapBtn"), dAddress: $("dAddress"), dType: $("dType"), dModel: $("dModel"),
+    dLastPM: $("dLastPM"), dNextDue: $("dNextDue"), dCycle: $("dCycle"), dNote: $("dNote"),
+    dHistory: $("dHistory"),
+    pmDoneBtn: $("pmDoneBtn"), editBtn: $("editBtn"), deleteBtn: $("deleteBtn"),
+    custOverlay: $("custOverlay"), custSheet: $("custSheet"), custSheetTitle: $("custSheetTitle"),
+    pickWrap: $("pickWrap"), fPick: $("fPick"),
+    custForm: $("custForm"), fName: $("fName"), fPhone: $("fPhone"), fType: $("fType"),
+    fModel: $("fModel"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
+    fNote: $("fNote"), fErr: $("fErr"), custCancelBtn: $("custCancelBtn"),
+    pmOverlay: $("pmOverlay"), pmSheet: $("pmSheet"), pmSheetTitle: $("pmSheetTitle"), pmForm: $("pmForm"),
+    pmDate: $("pmDate"), pmTech: $("pmTech"), techList: $("techList"),
+    pmNote: $("pmNote"), pmCancelBtn: $("pmCancelBtn"),
+    pmPhotos: $("pmPhotos"), pmAddPhotoBtn: $("pmAddPhotoBtn"), pmPhotoGrid: $("pmPhotoGrid"),
+    pmSubmitBtn: $("pmSubmitBtn"),
+    qvPhotoCard: $("qvPhotoCard"), qvPhotoTitle: $("qvPhotoTitle"), qvPhotoGrid: $("qvPhotoGrid"),
+    storeTechBtn: $("storeTechBtn"), pinOverlay: $("pinOverlay"), pinSheet: $("pinSheet"),
+    pinInput: $("pinInput"), pinErr: $("pinErr"), pinOkBtn: $("pinOkBtn"), pinCancelBtn: $("pinCancelBtn"),
+    qrBtn: $("qrBtn"), qrOverlay: $("qrOverlay"), qrSheet: $("qrSheet"), qrTitle: $("qrTitle"),
+    qrStatus: $("qrStatus"), qrHolder: $("qrHolder"), qrShareBtn: $("qrShareBtn"), qrCloseBtn: $("qrCloseBtn"),
+    pageQrView: $("pageQrView"), qvIcon: $("qvIcon"), qvHead: $("qvHead"), qvBadge: $("qvBadge"),
+    qvDate: $("qvDate"), qvTech: $("qvTech"), qvWorkRow: $("qvWorkRow"), qvWork: $("qvWork"),
+    qvType: $("qvType"), qvModel: $("qvModel"), qvNext: $("qvNext"),
+    toast: $("toast")
+  };
+
+  // ---------- helpers ----------
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fmtThai(dateStr) {
+    if (!dateStr) return "-";
+    var d = new Date(dateStr + "T00:00:00");
+    if (isNaN(d)) return "-";
+    return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+  }
+  function addDays(dateStr, n) {
+    var d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  // วันครบรอบ = วัน PM ล่าสุด + รอบ · วันที่เหลือ = วันครบรอบ − วันนี้ (null = ยังไม่เคยทำ PM)
+  function nextDue(c) { return c.lastPM ? addDays(c.lastPM, Number(c.cycle) || 0) : ""; }
+  function daysLeft(c) {
+    if (!c.lastPM) return null;
+    var due = new Date(nextDue(c) + "T00:00:00");
+    var today = new Date(todayStr() + "T00:00:00");
+    return Math.round((due - today) / 86400000);
+  }
+  // ติดลบ/ไม่เคยทำ = เกินกำหนด · 0–7 = ใกล้ครบ · >7 = ปกติ
+  function statusOf(c) {
+    var d = daysLeft(c);
+    if (d === null || d < 0) return "red";
+    if (d <= 7) return "yellow";
+    return "green";
+  }
+  function daysText(c) {
+    var d = daysLeft(c);
+    if (d === null) return "ยังไม่มีบันทึก PM";
+    if (d < 0) return "เกิน " + Math.abs(d) + " วัน";
+    if (d === 0) return "ครบวันนี้";
+    return "อีก " + d + " วัน";
+  }
+  function custById(id) { return customers.find(function (c) { return c.id === id; }) || null; }
+  // ที่อยู่อาจมีลิงก์ Google Maps แปะมาด้วย — ดึงลิงก์ออกมาให้กดนำทางได้
+  function extractUrl(s) {
+    var m = String(s || "").match(/https?:\/\/[^\s]+/);
+    return m ? m[0] : "";
+  }
+  function mapsUrl(address) {
+    var u = extractUrl(address);
+    if (u) return u;
+    var addr = String(address || "").trim();
+    if (!addr) return "";
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr);
+  }
+  function renderAddress(cell, address) {
+    var addr = String(address || "").trim();
+    if (!addr) { cell.textContent = "-"; return; }
+    var u = extractUrl(addr);
+    if (!u) { cell.textContent = addr; return; }
+    // ซ่อนลิงก์ยาวๆ ไว้หลังปุ่มข้อความ อ่านง่ายกว่าโชว์ URL เต็ม
+    var rest = addr.replace(u, "").replace(/\s{2,}/g, " ").trim();
+    cell.innerHTML = (rest ? esc(rest) + "<br>" : "") +
+      '<a href="' + esc(u) + '" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">📍 เปิดใน Google Maps</a>';
+  }
+  function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  var toastTimer = null;
+  function flash(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove("show"); }, 2400);
+  }
+
+  // ---------- หน้ารายชื่อ ----------
+  function renderList() {
+    var counts = { red: 0, yellow: 0, green: 0 };
+    customers.forEach(function (c) { counts[statusOf(c)]++; });
+    el.sumRedN.textContent = counts.red;
+    el.sumYellowN.textContent = counts.yellow;
+    el.sumGreenN.textContent = counts.green;
+    el.sumRed.classList.toggle("active", statusFilter === "red");
+    el.sumYellow.classList.toggle("active", statusFilter === "yellow");
+    el.sumGreen.classList.toggle("active", statusFilter === "green");
+
+    var q = el.searchInput.value.trim().toLowerCase();
+    var list = customers.filter(function (c) {
+      var hitQ = !q || [c.name, c.phone, c.model].some(function (v) {
+        return String(v || "").toLowerCase().indexOf(q) !== -1;
+      });
+      var hitS = !statusFilter || statusOf(c) === statusFilter;
+      return hitQ && hitS;
+    });
+    // ใกล้ครบ/เกินกำหนดมากสุดอยู่บนสุด (ยังไม่เคยทำ PM = ด่วนสุด)
+    var sk = function (x) { var d = daysLeft(x); return d === null ? -99999 : d; };
+    list.sort(function (a, b) { return sk(a) - sk(b); });
+
+    el.listEmpty.hidden = !(customers.length === 0 && cloudLoaded);
+    if (customers.length === 0 && !cloudLoaded) {
+      el.custList.innerHTML = '<div class="empty">⏳ กำลังโหลดข้อมูลจากเว็บ...</div>';
+      return;
+    }
+    el.custList.innerHTML = list.map(function (c) {
+      var st = statusOf(c);
+      var d = daysLeft(c);
+      var dn = d === null ? "–" : d < 0 ? "-" + Math.abs(d) : String(d);
+      var dl = d === null ? "ยังไม่มี PM" : d < 0 ? "เกินกำหนด (วัน)" : d === 0 ? "ครบวันนี้" : "เหลือ (วัน)";
+      return '<div class="cust-card ' + st + '" data-id="' + c.id + '">' +
+        '<div class="info">' +
+          '<div class="name">' + esc(c.name) + "</div>" +
+          (c.phone
+            ? '<a class="phone" href="tel:' + esc(c.phone.replace(/[^0-9+]/g, "")) + '" onclick="event.stopPropagation()">📞 ' + esc(c.phone) + "</a>"
+            : '<span class="phone" style="color:var(--muted)">ไม่มีเบอร์โทร</span>') +
+        "</div>" +
+        '<button type="button" class="qr-btn" data-qr="' + c.id + '">🔲 QR</button>' +
+        '<div class="days"><div class="dn">' + dn + '</div><div class="dl">' + dl + "</div></div>" +
+        "</div>";
+    }).join("");
+    if (customers.length > 0 && list.length === 0) {
+      el.custList.innerHTML = '<div class="empty">ไม่พบลูกค้าที่ตรงเงื่อนไข</div>';
+    }
+  }
+
+  el.custList.addEventListener("click", function (e) {
+    var qrB = e.target.closest ? e.target.closest(".qr-btn") : null;
+    if (qrB) { openQrSheet(qrB.getAttribute("data-qr")); return; }
+    var card = e.target.closest ? e.target.closest(".cust-card") : null;
+    if (card) openDetail(card.getAttribute("data-id"));
+  });
+  el.searchInput.addEventListener("input", renderList);
+  [["sumRed", "red"], ["sumYellow", "yellow"], ["sumGreen", "green"]].forEach(function (pair) {
+    el[pair[0]].addEventListener("click", function () {
+      statusFilter = statusFilter === pair[1] ? "" : pair[1];
+      renderList();
+    });
+  });
+
+  // ---------- หน้ารายละเอียด ----------
+  function openDetail(id) {
+    var c = custById(id);
+    if (!c) return;
+    currentId = id;
+    var st = statusOf(c);
+    var cyc = Number(c.cycle) || 0;
+
+    el.dName.textContent = c.name;
+    el.dTypeModel.textContent = [c.type, c.model].filter(Boolean).join(" · ") || "-";
+    el.dBadge.textContent = st === "red" ? "⚠️ " + daysText(c) : st === "yellow" ? "⏳ " + daysText(c) : "✅ " + daysText(c);
+    el.dBadge.className = "count-badge " + st;
+
+    // progress: ใช้รอบไปแล้วกี่ %
+    var dl0 = daysLeft(c);
+    var used = dl0 === null ? 0 : cyc - dl0;
+    var pct = cyc > 0 ? Math.round(used / cyc * 100) : 0;
+    var pctClamped = Math.max(0, Math.min(100, pct));
+    el.dProgText.textContent = dl0 === null ? "ยังไม่มีบันทึก PM" : "ใช้รอบไปแล้ว " + Math.max(0, used) + "/" + cyc + " วัน";
+    el.dProgPct.textContent = dl0 === null ? "" : pct + "%";
+    el.dProgFill.style.width = pctClamped + "%";
+    el.dProgFill.className = "progress-fill " + st;
+
+    if (c.phone) {
+      el.dCallBtn.hidden = false;
+      el.dCallBtn.href = "tel:" + c.phone.replace(/[^0-9+]/g, "");
+      el.dCallBtn.textContent = "📞 โทร " + c.phone;
+    } else {
+      el.dCallBtn.hidden = true;
+    }
+
+    // ปุ่มนำทาง: ถ้าที่อยู่มีลิงก์ (เช่น Google Maps) ใช้ลิงก์นั้น ไม่มีก็ค้นหาจากข้อความที่อยู่
+    var mu = mapsUrl(c.address);
+    el.dMapBtn.hidden = !mu;
+    if (mu) el.dMapBtn.href = mu;
+
+    renderAddress(el.dAddress, c.address);
+    el.dType.textContent = c.type || "-";
+    el.dModel.textContent = c.model || "-";
+    el.dLastPM.textContent = fmtThai(c.lastPM);
+    el.dNextDue.textContent = fmtThai(nextDue(c));
+    el.dCycle.textContent = cyc + " วัน";
+    el.dNote.hidden = !c.note;
+    el.dNote.textContent = c.note ? "📝 " + c.note : "";
+
+    renderHistory(c);
+    // ประวัติอยู่บนเว็บ — โหลดสดทุกครั้งที่เปิด (เห็นบันทึกจากเครื่องอื่นด้วย)
+    fetchHistory(c).then(function () {
+      if (currentId === id) renderHistory(c);
+    }).catch(function () {
+      if (currentId === id && !c.history) {
+        el.dHistory.innerHTML = '<div class="hist-empty">⚠️ โหลดประวัติไม่สำเร็จ (เช็คสัญญาณเน็ต)</div>';
+      }
+    });
+
+    el.pageList.hidden = true;
+    el.fabAdd.hidden = true;
+    el.pageDetail.hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  function fetchHistory(c) {
+    return fetch(SUPABASE_URL + "/rest/v1/pm_records?store_id=eq." + encodeURIComponent(c.id) +
+        "&order=date.desc,created_at.desc&select=id,date,tech,note,pf,pn", { headers: sbHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error("hist " + r.status); return r.json(); })
+      .then(function (rows) { c.history = rows; });
+  }
+  function renderHistory(c) {
+    if (!c.history) {
+      el.dHistory.innerHTML = '<div class="hist-empty">⏳ กำลังโหลดประวัติ...</div>';
+      return;
+    }
+    var hist = c.history.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    el.dHistory.innerHTML = hist.length === 0
+      ? '<div class="hist-empty">ยังไม่มีประวัติการทำ PM</div>'
+      : hist.map(function (h) {
+          return '<div class="hist-item"><div class="dot"></div><div style="flex:1;min-width:0">' +
+            '<div class="d">' + fmtThai(h.date) + "</div>" +
+            (h.tech ? '<div class="n">🧑‍🔧 ช่าง: ' + esc(h.tech) + "</div>" : "") +
+            (h.note ? '<div class="n">' + esc(h.note) + "</div>" : "") +
+            (h.pf && h.pn ? '<div class="photo-grid small">' + photoLinks(h.pf, h.pn) + "</div>" : "") +
+            (h.id != null ? '<button type="button" class="hist-edit" data-rid="' + h.id + '">✏️ แก้ไขบันทึกนี้</button>' : "") +
+            "</div></div>";
+        }).join("");
+  }
+  el.dHistory.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".hist-edit") : null;
+    if (b) openEditPmSheet(Number(b.getAttribute("data-rid")));
+  });
+
+  function backToList() {
+    currentId = null;
+    el.pageDetail.hidden = true;
+    el.pageList.hidden = false;
+    el.fabAdd.hidden = false;
+    renderList();
+  }
+  el.backBtn.addEventListener("click", backToList);
+
+  // ---------- รายชื่อลูกค้าจากระบบกลาง ----------
+  var pickList = null;
+  function extractPhone(s) {
+    var m = String(s || "").match(/0\d{1,2}[- ]?\d{3,4}[- ]?\d{3,4}/);
+    return m ? m[0] : "";
+  }
+  function parseCycle(s) {
+    s = String(s || "");
+    var m = s.match(/(\d+)\s*เดือน/);
+    if (m) return parseInt(m[1], 10) * 30;
+    m = s.match(/(\d+)\s*วัน/);
+    if (m) return parseInt(m[1], 10);
+    m = s.match(/^\s*(\d+)\s*$/);
+    if (m) return parseInt(m[1], 10);
+    return null;
+  }
+  function loadPickList() {
+    if (pickList) { fillPick(); return; }
+    var headers = { apikey: SUPABASE_KEY };
+    Promise.all([
+      fetch(SUPABASE_URL + "/rest/v1/fo_customers?select=customer,machine_model,location,pm_cycle&order=customer", { headers: headers })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; }),
+      fetch(SUPABASE_URL + "/rest/v1/crm_contacts?select=name,phone,company,address&order=name", { headers: headers })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })
+    ]).then(function (rs) {
+      var items = [];
+      rs[0].forEach(function (fo) {
+        if (!fo.customer) return;
+        var phone = extractPhone(fo.customer);
+        items.push({
+          label: fo.customer,
+          name: fo.customer.replace(phone, "").replace(/\s{2,}/g, " ").trim(),
+          phone: phone,
+          model: fo.machine_model || "",
+          address: fo.location || "",
+          cycle: parseCycle(fo.pm_cycle),
+          src: "ทะเบียนเครื่องในระบบ"
+        });
+      });
+      rs[1].forEach(function (c) {
+        if (!c.name) return;
+        items.push({
+          label: c.name + (c.company ? " (" + c.company + ")" : ""),
+          name: c.name, phone: c.phone || "", model: "",
+          address: c.address || "", cycle: null, src: "ลูกค้าจาก CRM"
+        });
+      });
+      if (items.length === 0) return; // ออฟไลน์/ไม่มีข้อมูล — ซ่อนช่องไว้ กรอกเองได้ปกติ
+      pickList = items;
+      fillPick();
+    });
+  }
+  function fillPick() {
+    var groups = {};
+    pickList.forEach(function (it, i) {
+      if (!groups[it.src]) groups[it.src] = [];
+      groups[it.src].push('<option value="' + i + '">' + it.label.replace(/</g, "&lt;") + "</option>");
+    });
+    var h = '<option value="">— พิมพ์เองด้านล่าง หรือเลือกจากรายชื่อ (' + pickList.length + ' ราย) —</option>';
+    Object.keys(groups).forEach(function (g) {
+      h += '<optgroup label="' + g + '">' + groups[g].join("") + "</optgroup>";
+    });
+    el.fPick.innerHTML = h;
+    el.pickWrap.hidden = false;
+  }
+  el.fPick && el.fPick.addEventListener("change", function () {
+    var it = pickList && pickList[Number(el.fPick.value)];
+    if (!it) return;
+    el.fName.value = it.name;
+    if (it.phone) el.fPhone.value = it.phone;
+    if (it.model) el.fModel.value = it.model;
+    if (it.address) el.fAddress.value = it.address;
+    if (it.cycle) { el.fCycle.value = it.cycle; updateCycleQuick(); }
+  });
+
+  // ---------- ฟอร์มเพิ่ม/แก้ไข ----------
+  function openCustSheet(editId) {
+    editingId = editId || null;
+    var c = editId ? custById(editId) : null;
+    el.custSheetTitle.textContent = c ? "แก้ไขข้อมูลลูกค้า" : "เพิ่มลูกค้าใหม่";
+    el.fName.value = c ? c.name : "";
+    el.fPhone.value = c ? c.phone : "";
+    el.fType.value = c ? c.type : "เครื่องล้างจาน";
+    el.fModel.value = c ? c.model : "";
+    el.fAddress.value = c ? c.address : "";
+    el.fLastPM.value = c ? c.lastPM : todayStr();
+    el.fCycle.value = c ? c.cycle : 45;
+    el.fNote.value = c ? c.note : "";
+    el.fErr.textContent = "";
+    el.fPick.value = "";
+    updateCycleQuick();
+    loadPickList();
+    el.custOverlay.classList.add("show");
+    el.custSheet.classList.add("show");
+  }
+  function closeCustSheet() {
+    el.custOverlay.classList.remove("show");
+    el.custSheet.classList.remove("show");
+  }
+  function updateCycleQuick() {
+    document.querySelectorAll(".cycle-quick").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-cycle") === String(el.fCycle.value));
+    });
+  }
+  document.querySelectorAll(".cycle-quick").forEach(function (b) {
+    b.addEventListener("click", function () {
+      el.fCycle.value = b.getAttribute("data-cycle");
+      updateCycleQuick();
+    });
+  });
+  el.fCycle.addEventListener("input", updateCycleQuick);
+
+  el.fabAdd.addEventListener("click", function () { openCustSheet(null); });
+  el.editBtn.addEventListener("click", function () { if (currentId) openCustSheet(currentId); });
+  el.custCancelBtn.addEventListener("click", closeCustSheet);
+  el.custOverlay.addEventListener("click", closeCustSheet);
+
+  el.custForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = el.fName.value.trim();
+    if (!name) { el.fErr.textContent = "กรุณาระบุชื่อลูกค้า/ร้าน"; return; }
+    var cycle = parseInt(el.fCycle.value, 10);
+    if (!cycle || cycle < 1) { el.fErr.textContent = "รอบ PM ต้องเป็นจำนวนวันอย่างน้อย 1 วัน"; return; }
+    var data = {
+      name: name,
+      phone: el.fPhone.value.trim(),
+      type: el.fType.value,
+      model: el.fModel.value.trim(),
+      address: el.fAddress.value.trim(),
+      lastPM: el.fLastPM.value || todayStr(),
+      cycle: cycle,
+      note: el.fNote.value.trim()
+    };
+    // บันทึกขึ้นเว็บก่อน (ทุกเครื่องจะเห็นเหมือนกัน) สำเร็จแล้วค่อยอัปเดตหน้าจอ
+    var target = editingId ? custById(editingId) : null;
+    var obj = Object.assign({}, target || {}, data);
+    if (!editingId) { obj.id = newId(); obj.history = []; }
+    var sbtn = el.custForm.querySelector('button[type="submit"]');
+    sbtn.disabled = true;
+    el.fErr.textContent = "";
+    syncStore(obj).then(function () {
+      if (target) Object.assign(target, data);
+      else customers.push(obj);
+      saveCache();
+      sbtn.disabled = false;
+      closeCustSheet();
+      flash(editingId ? "✅ แก้ไขข้อมูลแล้ว" : "✅ เพิ่มลูกค้าแล้ว");
+      if (currentId) openDetail(currentId); else renderList();
+    }).catch(function () {
+      sbtn.disabled = false;
+      el.fErr.textContent = "บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง";
+    });
+  });
+
+  // ---------- รูปการตรวจเช็ค ----------
+  // รูปเก็บใน Supabase Storage (bucket สาธารณะ pm-photos) เพราะใหญ่เกินกว่าจะฝังใน QR
+  // ใน history เก็บแค่ pf (โฟลเดอร์) + pn (จำนวนรูป) แล้วประกอบ URL เอาตอนแสดง
+  var MAX_PHOTOS = 15;
+  var pmPhotoFiles = [];   // { blob, url(พรีวิว) }
+
+  function photoUrl(pf, i) {
+    return SUPABASE_URL + "/storage/v1/object/public/pm-photos/" + encodeURIComponent(pf) + "/" + i + ".jpg";
+  }
+  function photoLinks(pf, pn) {
+    var s = "";
+    for (var i = 1; i <= pn; i++) {
+      var u = photoUrl(pf, i);
+      s += '<a href="' + u + '" target="_blank" rel="noopener"><img loading="lazy" src="' + u + '" alt="รูปตรวจเช็ค"></a>';
+    }
+    return s;
+  }
+  // ย่อรูปจากกล้องมือถือ (หลาย MB) ให้เหลือ ~ไม่กี่ร้อย KB ก่อนอัปโหลด
+  function compressImage(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var MAX = 1280, w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          var k = Math.min(MAX / w, MAX / h);
+          w = Math.round(w * k); h = Math.round(h * k);
+        }
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        cv.toBlob(function (b) { b ? resolve(b) : reject(new Error("compress fail")); }, "image/jpeg", 0.72);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("read fail")); };
+      img.src = url;
+    });
+  }
+  function renderPmPhotos() {
+    el.pmAddPhotoBtn.textContent = "＋ เพิ่มรูป (" + pmPhotoFiles.length + "/" + MAX_PHOTOS + ")";
+    el.pmAddPhotoBtn.hidden = pmPhotoFiles.length >= MAX_PHOTOS;
+    el.pmPhotoGrid.innerHTML = "";
+    pmPhotoFiles.forEach(function (p, i) {
+      var d = document.createElement("div");
+      d.className = "photo-thumb";
+      var img = document.createElement("img");
+      img.src = p.url;
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "rm"; b.textContent = "✕";
+      b.addEventListener("click", function () {
+        URL.revokeObjectURL(p.url);
+        pmPhotoFiles.splice(i, 1);
+        renderPmPhotos();
+      });
+      d.appendChild(img); d.appendChild(b);
+      el.pmPhotoGrid.appendChild(d);
+    });
+  }
+  function resetPmPhotos() {
+    pmPhotoFiles.forEach(function (p) { URL.revokeObjectURL(p.url); });
+    pmPhotoFiles = [];
+    renderPmPhotos();
+  }
+  el.pmAddPhotoBtn.addEventListener("click", function () { el.pmPhotos.click(); });
+  el.pmPhotos.addEventListener("change", function () {
+    var files = Array.prototype.slice.call(el.pmPhotos.files || []);
+    el.pmPhotos.value = "";
+    if (!files.length) return;
+    var room = MAX_PHOTOS - pmPhotoFiles.length;
+    if (files.length > room) {
+      files = files.slice(0, room);
+      flash("⚠️ ใส่รูปได้สูงสุด " + MAX_PHOTOS + " รูป");
+    }
+    files.forEach(function (f) {
+      compressImage(f).then(function (blob) {
+        if (pmPhotoFiles.length >= MAX_PHOTOS) return;
+        pmPhotoFiles.push({ blob: blob, url: URL.createObjectURL(blob) });
+        renderPmPhotos();
+      }).catch(function () { flash("⚠️ อ่านรูปไม่สำเร็จ 1 รูป"); });
+    });
+  });
+  // ---------- ซิงก์ข้อมูลขึ้น Supabase (ให้ QR ติดหน้าเครื่องแสดงข้อมูลล่าสุดเสมอ) ----------
+  function sbHeaders(json) {
+    var h = { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY };
+    if (json) h["Content-Type"] = "application/json";
+    return h;
+  }
+  function syncStore(c) {
+    return fetch(SUPABASE_URL + "/rest/v1/pm_stores", {
+      method: "POST",
+      headers: Object.assign(sbHeaders(true), { Prefer: "resolution=merge-duplicates,return=minimal" }),
+      body: JSON.stringify({
+        id: c.id, name: c.name, type: c.type || "", model: c.model || "",
+        phone: c.phone || "", address: c.address || "", cycle: Number(c.cycle) || 45,
+        note: c.note || "", last_pm: c.lastPM || null, active: true
+      })
+    }).then(function (r) { if (!r.ok) throw new Error("store " + r.status); });
+  }
+  function syncRecord(storeId, entry) {
+    return fetch(SUPABASE_URL + "/rest/v1/pm_records", {
+      method: "POST",
+      headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
+      body: JSON.stringify({
+        store_id: storeId, date: entry.date, tech: entry.tech || "",
+        note: entry.note || "", pf: entry.pf || "", pn: entry.pn || 0
+      })
+    }).then(function (r) { if (!r.ok) throw new Error("record " + r.status); });
+  }
+  function uploadPmPhotos(folder, blobs, onProgress) {
+    // อัปโหลดทีละรูปตามลำดับ คืนจำนวนที่สำเร็จ (หยุดเมื่อรูปไหนพลาด)
+    var done = 0;
+    function next() {
+      if (done >= blobs.length) return Promise.resolve(done);
+      onProgress(done + 1, blobs.length);
+      return fetch(SUPABASE_URL + "/storage/v1/object/pm-photos/" + folder + "/" + (done + 1) + ".jpg", {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, "Content-Type": "image/jpeg" },
+        body: blobs[done]
+      }).then(function (r) {
+        if (!r.ok) throw new Error("upload " + r.status);
+        done++;
+        return next();
+      }).catch(function () { return done; });
+    }
+    return next();
+  }
+
+  // ---------- ฟอร์มบันทึก PM ----------
+  function allTechNames() {
+    // รวมชื่อช่างที่เคยกรอกจากประวัติทุกลูกค้า (แยกชื่อที่คั่นด้วยจุลภาค)
+    var set = {};
+    customers.forEach(function (c) {
+      (c.history || []).forEach(function (h) {
+        String(h.tech || "").split(",").forEach(function (t) {
+          t = t.trim();
+          if (t) set[t] = true;
+        });
+      });
+    });
+    return Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "th"); });
+  }
+  function lastTechUsed() {
+    var best = null;
+    customers.forEach(function (c) {
+      (c.history || []).forEach(function (h) {
+        if (h.tech && (!best || h.date > best.date)) best = h;
+      });
+    });
+    return best ? best.tech : "";
+  }
+  var editingRec = null;   // บันทึก PM ที่กำลังแก้ไข (null = บันทึกใหม่)
+  function openPmSheet() {
+    editingRec = null;
+    el.pmSheetTitle.textContent = "บันทึกการทำ PM";
+    el.pmDate.value = todayStr();
+    el.pmTech.value = lastTechUsed();  // เติมชื่อช่างครั้งล่าสุดให้ แก้ได้
+    // ดึงชื่อช่างจากบันทึกบนเว็บ (ประวัติไม่ได้อยู่ในเครื่องแล้ว)
+    fetch(SUPABASE_URL + "/rest/v1/pm_records?select=tech,date&order=date.desc,created_at.desc&limit=100", { headers: sbHeaders() })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) {
+        var set = {}, lastT = "";
+        rows.forEach(function (x) {
+          if (!lastT && x.tech) lastT = x.tech;
+          String(x.tech || "").split(",").forEach(function (t) {
+            t = t.trim();
+            if (t) set[t] = true;
+          });
+        });
+        var names = Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "th"); });
+        if (names.length) {
+          el.techList.innerHTML = names.map(function (t) {
+            return '<option value="' + t.replace(/"/g, "&quot;") + '"></option>';
+          }).join("");
+        }
+        if (!el.pmTech.value && lastT) el.pmTech.value = lastT;
+      }).catch(function () {});
+    el.pmNote.value = "";
+    resetPmPhotos();
+    el.pmSubmitBtn.disabled = false;
+    el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
+    el.techList.innerHTML = allTechNames().map(function (t) {
+      return '<option value="' + t.replace(/"/g, "&quot;") + '"></option>';
+    }).join("");
+    el.pmOverlay.classList.add("show");
+    el.pmSheet.classList.add("show");
+  }
+  function closePmSheet() {
+    el.pmOverlay.classList.remove("show");
+    el.pmSheet.classList.remove("show");
+  }
+  // เปิดฟอร์มแก้ไขบันทึก PM เดิม — เติมข้อมูล+รูปเดิมให้ แก้แล้วบันทึกทับรายการเดิม
+  function openEditPmSheet(rid) {
+    var c = custById(currentId);
+    var h = c && (c.history || []).find(function (x) { return x.id === rid; });
+    if (!h) return;
+    editingRec = h;
+    el.pmSheetTitle.textContent = "✏️ แก้ไขบันทึก PM";
+    el.pmDate.value = h.date || todayStr();
+    el.pmTech.value = h.tech || "";
+    el.pmNote.value = h.note || "";
+    resetPmPhotos();
+    if (h.pf && h.pn) {
+      for (var i = 1; i <= h.pn; i++) {
+        pmPhotoFiles.push({ remote: photoUrl(h.pf, i), url: photoUrl(h.pf, i), folder: h.pf });
+      }
+      renderPmPhotos();
+    }
+    el.pmSubmitBtn.disabled = false;
+    el.pmSubmitBtn.textContent = "✓ บันทึกการแก้ไข";
+    el.pmOverlay.classList.add("show");
+    el.pmSheet.classList.add("show");
+  }
+
+  function submitEditPm() {
+    var c = custById(currentId);
+    var h = editingRec;
+    if (!c || !h) { closePmSheet(); return; }
+    var date = el.pmDate.value || todayStr();
+    var patch = { date: date, tech: el.pmTech.value.trim(), note: el.pmNote.value.trim() };
+    el.pmSubmitBtn.disabled = true;
+
+    // ถ้ารูปยังเป็นชุดเดิมครบถ้วน ไม่ต้องอัปโหลดใหม่
+    var unchanged = (Number(h.pn) || 0) === pmPhotoFiles.length &&
+      pmPhotoFiles.every(function (p) { return p.folder === h.pf; });
+    var prep;
+    if (unchanged) {
+      patch.pf = h.pf || "";
+      patch.pn = h.pn || 0;
+      prep = Promise.resolve();
+    } else if (pmPhotoFiles.length === 0) {
+      patch.pf = "";
+      patch.pn = 0;
+      prep = Promise.resolve();
+    } else {
+      // รวมรูปเดิมที่เหลือ + รูปใหม่ แล้วอัปโหลดเป็นชุดใหม่ (ของเดิมบนเว็บไม่ถูกแตะ)
+      var folder = c.id + "-" + date + "-" + Math.random().toString(36).slice(2, 6);
+      el.pmSubmitBtn.textContent = "⏳ กำลังเตรียมรูป...";
+      prep = Promise.all(pmPhotoFiles.map(function (p) {
+        if (p.blob) return Promise.resolve(p.blob);
+        return fetch(p.remote).then(function (r) {
+          if (!r.ok) throw new Error("img");
+          return r.blob();
+        });
+      })).then(function (blobs) {
+        return uploadPmPhotos(folder, blobs, function (i, n) {
+          el.pmSubmitBtn.textContent = "⏳ กำลังอัปโหลดรูป " + i + "/" + n + "...";
+        }).then(function (done) {
+          if (done < blobs.length) throw new Error("upload incomplete");
+          patch.pf = folder;
+          patch.pn = done;
+        });
+      });
+    }
+
+    prep.then(function () {
+      el.pmSubmitBtn.textContent = "⏳ กำลังบันทึกขึ้นเว็บ...";
+      return fetch(SUPABASE_URL + "/rest/v1/pm_records?id=eq." + h.id, {
+        method: "PATCH",
+        headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
+        body: JSON.stringify(patch)
+      }).then(function (r) { if (!r.ok) throw new Error("patch " + r.status); });
+    }).then(function () {
+      Object.assign(h, patch);
+      var mx = "";
+      (c.history || []).forEach(function (x) { if (x.date > mx) mx = x.date; });
+      if (mx) c.lastPM = mx;
+      saveCache();
+      resetPmPhotos();
+      editingRec = null;
+      el.pmSubmitBtn.disabled = false;
+      el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
+      closePmSheet();
+      flash("✅ แก้ไขบันทึก PM แล้ว");
+      openDetail(currentId);
+    }).catch(function () {
+      el.pmSubmitBtn.disabled = false;
+      el.pmSubmitBtn.textContent = "✓ บันทึกการแก้ไข";
+      flash("⚠️ แก้ไขไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+    });
+  }
+
+  el.pmDoneBtn.addEventListener("click", openPmSheet);
+  el.pmCancelBtn.addEventListener("click", closePmSheet);
+  el.pmOverlay.addEventListener("click", closePmSheet);
+
+  el.pmForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (editingRec) { submitEditPm(); return; }  // โหมดแก้ไขบันทึกเดิม
+    if (scanStore) { submitScanPm(); return; }   // โหมดสแกน QR หน้าเครื่อง
+    var c = custById(currentId);
+    if (!c) { closePmSheet(); return; }
+    var date = el.pmDate.value || todayStr();
+    var entry = { date: date, note: el.pmNote.value.trim(), tech: el.pmTech.value.trim() };
+    var folder = (c.id || "x") + "-" + date + "-" + Math.random().toString(36).slice(2, 6);
+    var blobs = pmPhotoFiles.map(function (p) { return p.blob; });
+    el.pmSubmitBtn.disabled = true;
+    var up = blobs.length === 0 ? Promise.resolve(0) : uploadPmPhotos(folder, blobs, function (i, n) {
+      el.pmSubmitBtn.textContent = "⏳ กำลังอัปโหลดรูป " + i + "/" + n + "...";
+    });
+    up.then(function (done) {
+      if (done > 0) { entry.pf = folder; entry.pn = done; }
+      el.pmSubmitBtn.textContent = "⏳ กำลังบันทึกขึ้นเว็บ...";
+      // บันทึกขึ้นเว็บต้องสำเร็จก่อน — ทุกเครื่อง (และ QR หน้าเครื่อง) จะได้เห็นตรงกัน
+      return syncStore(c).then(function () { return syncRecord(c.id, entry); }).then(function () { return done; });
+    }).then(function (done) {
+      if (!c.history) c.history = [];
+      c.history.push(entry);
+      c.lastPM = date;   // เริ่มนับรอบใหม่
+      saveCache();
+      resetPmPhotos();
+      el.pmSubmitBtn.disabled = false;
+      el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
+      closePmSheet();
+      flash(blobs.length && done < blobs.length
+        ? "⚠️ อัปโหลดรูปได้ " + done + "/" + blobs.length + " รูป — บันทึก PM แล้ว"
+        : "✅ บันทึก PM แล้ว เริ่มนับรอบใหม่");
+      openDetail(currentId);
+    }).catch(function () {
+      el.pmSubmitBtn.disabled = false;
+      el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
+      flash("⚠️ บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง");
+    });
+  });
+
+  // ---------- QR ตรวจเช็คสำหรับลูกค้า ----------
+  // ข้อมูล PM อยู่ใน localStorage ของมือถือช่างเท่านั้น จึงฝังรายละเอียดลงในลิงก์ QR
+  // ให้มือถือลูกค้าเปิดดูได้เองโดยไม่ต้องพึ่งฐานข้อมูล
+  function b64uEncode(obj) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
+      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64uDecode(s) {
+    s = s.replace(/-/g, "+").replace(/_/g, "/");
+    while (s.length % 4) s += "=";
+    return JSON.parse(decodeURIComponent(escape(atob(s))));
+  }
+  function sameMonth(dateStr) {
+    return !!dateStr && String(dateStr).slice(0, 7) === todayStr().slice(0, 7);
+  }
+
+  var qrShareUrl = "";
+  var qrSyncSeq = 0;
+  function openQrSheet(id) {
+    var c = custById(id);
+    if (!c) return;
+    if (typeof qrcode !== "function") {
+      flash("⚠️ โหลดตัวสร้าง QR ไม่สำเร็จ — ต่ออินเทอร์เน็ตแล้วรีเฟรชหน้า");
+      return;
+    }
+    // QR ประจำร้าน: เก็บแค่รหัสร้าน — สแกนเมื่อไหร่ก็เห็นการตรวจล่าสุดจากเว็บเสมอ ติดหน้าเครื่องได้ถาวร
+    qrShareUrl = PUBLIC_URL + "#store=" + encodeURIComponent(c.id);
+    var qr = qrcode(0, "M");
+    qr.addData(qrShareUrl);
+    qr.make();
+    el.qrHolder.innerHTML = qr.createImgTag(6, 8);
+    el.qrTitle.textContent = "QR ประจำร้าน · " + c.name;
+    var base;
+    if (sameMonth(c.lastPM)) {
+      el.qrStatus.className = "qr-status ok";
+      base = "✅ ตรวจเช็คเดือนนี้แล้ว (" + fmtThai(c.lastPM) + ")";
+    } else {
+      el.qrStatus.className = "qr-status warn";
+      base = c.lastPM
+        ? "⚠️ เดือนนี้ยังไม่มีบันทึก PM — คนสแกนจะเห็นการตรวจล่าสุด " + fmtThai(c.lastPM)
+        : "⚠️ ร้านนี้ยังไม่มีบันทึก PM เลย";
+    }
+    var seq = ++qrSyncSeq;
+    el.qrStatus.textContent = base + " · ⏳ กำลังเช็คข้อมูลบนเว็บ...";
+    Promise.all([
+      syncStore(c),   // กันร้านยังไม่อยู่บนเว็บ (เช่น QR ใบแรกของร้าน)
+      fetch(SUPABASE_URL + "/rest/v1/pm_records?store_id=eq." + encodeURIComponent(c.id) +
+          "&order=date.desc,created_at.desc&limit=1&select=pn", { headers: sbHeaders() })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; })
+    ]).then(function (rs) {
+      if (seq !== qrSyncSeq) return;
+      var rec = rs[1][0];
+      var photoTxt = (rec && rec.pn) ? " · 📷 มีรูปแนบ " + rec.pn + " รูป" : "";
+      el.qrStatus.textContent = base + photoTxt + " · ☁️ พร้อมใช้งาน";
+    }).catch(function () {
+      if (seq !== qrSyncSeq) return;
+      el.qrStatus.className = "qr-status warn";
+      el.qrStatus.textContent = base + " · ⚠️ เช็คข้อมูลบนเว็บไม่สำเร็จ (เช็คเน็ต) — ก่อนพิมพ์ไปติด ให้เปิด QR นี้อีกครั้งตอนมีเน็ต";
+    });
+    el.qrOverlay.classList.add("show");
+    el.qrSheet.classList.add("show");
+  }
+  function closeQrSheet() {
+    el.qrOverlay.classList.remove("show");
+    el.qrSheet.classList.remove("show");
+  }
+  el.qrBtn.addEventListener("click", function () { if (currentId) openQrSheet(currentId); });
+  el.qrCloseBtn.addEventListener("click", closeQrSheet);
+  el.qrOverlay.addEventListener("click", closeQrSheet);
+  el.qrShareBtn.addEventListener("click", function () {
+    if (!qrShareUrl) return;
+    if (navigator.share) {
+      navigator.share({ title: "รายละเอียดการตรวจเช็ค PM", url: qrShareUrl }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(qrShareUrl).then(function () { flash("📋 คัดลอกลิงก์แล้ว ส่งให้ลูกค้าได้เลย"); });
+    } else {
+      flash("⚠️ เบราว์เซอร์นี้ไม่รองรับการแชร์ — ให้ลูกค้าสแกน QR แทน");
+    }
+  });
+
+  // ---------- โหมด QR ติดหน้าเครื่อง (#store=<รหัสร้าน>) ----------
+  // ดึงข้อมูลร้าน + การตรวจล่าสุดจากเว็บ — ลูกค้าเห็นสถานะสด ช่างกดบันทึก PM ได้เลย
+  var scanStore = null, scanRecord = null;
+
+  function showScanShell() {
+    el.pageList.hidden = true;
+    el.pageDetail.hidden = true;
+    el.fabAdd.hidden = true;
+    el.pageQrView.hidden = false;
+  }
+  function renderStoreView(store, rec) {
+    scanStore = store; scanRecord = rec || null;
+    var checked = rec && sameMonth(rec.date);
+    el.qvIcon.textContent = checked ? "✓" : "🕐";
+    el.qvIcon.className = "qrv-check" + (checked ? "" : " warn");
+    el.qvHead.textContent = store.name;
+    el.qvBadge.hidden = false;
+    el.qvBadge.className = "count-badge " + (checked ? "green" : "yellow");
+    el.qvBadge.textContent = checked
+      ? "✅ ช่างเข้าตรวจเช็คเดือนนี้แล้ว"
+      : (rec ? "🕐 ตรวจเช็คล่าสุด " + fmtThai(rec.date) : "ยังไม่มีข้อมูลการตรวจเช็ค");
+    el.qvDate.textContent = rec ? fmtThai(rec.date) : "-";
+    el.qvTech.textContent = (rec && rec.tech) || "-";
+    el.qvWorkRow.hidden = !(rec && rec.note);
+    el.qvWork.textContent = (rec && rec.note) || "";
+    el.qvType.textContent = store.type || "-";
+    el.qvModel.textContent = store.model || "-";
+    el.qvNext.textContent = rec ? fmtThai(addDays(rec.date, Number(store.cycle) || 45)) : "-";
+    if (rec && rec.pf && rec.pn) {
+      el.qvPhotoTitle.textContent = "📷 รูปจุดที่ตรวจเช็ค (" + rec.pn + " รูป)";
+      el.qvPhotoGrid.innerHTML = photoLinks(rec.pf, rec.pn);
+      el.qvPhotoCard.hidden = false;
+    } else {
+      el.qvPhotoCard.hidden = true;
+    }
+    el.storeTechBtn.hidden = false;
+  }
+  function loadStoreView(id) {
+    showScanShell();
+    el.qvIcon.textContent = "⏳";
+    el.qvIcon.className = "qrv-check warn";
+    el.qvHead.textContent = "กำลังโหลดข้อมูล...";
+    el.qvBadge.hidden = true;
+    el.qvPhotoCard.hidden = true;
+    el.qvWorkRow.hidden = true;
+    el.qvDate.textContent = el.qvTech.textContent = el.qvType.textContent = el.qvModel.textContent = el.qvNext.textContent = "-";
+    Promise.all([
+      fetch(SUPABASE_URL + "/rest/v1/pm_stores?id=eq." + encodeURIComponent(id) + "&limit=1", { headers: sbHeaders() })
+        .then(function (r) { if (!r.ok) throw new Error("s"); return r.json(); }),
+      fetch(SUPABASE_URL + "/rest/v1/pm_records?store_id=eq." + encodeURIComponent(id) + "&order=date.desc,created_at.desc&limit=1", { headers: sbHeaders() })
+        .then(function (r) { if (!r.ok) throw new Error("r"); return r.json(); })
+    ]).then(function (rs) {
+      if (!rs[0].length) {
+        el.qvIcon.textContent = "❓";
+        el.qvHead.textContent = "ไม่พบข้อมูลร้านนี้";
+        el.qvBadge.hidden = false;
+        el.qvBadge.className = "count-badge yellow";
+        el.qvBadge.textContent = "ให้ช่างเปิดแอปแล้วกดปุ่ม QR ของร้านนี้ 1 ครั้ง เพื่อซิงก์ข้อมูล";
+        return;
+      }
+      renderStoreView(rs[0][0], rs[1][0] || null);
+    }).catch(function () {
+      el.qvIcon.textContent = "⚠️";
+      el.qvHead.textContent = "โหลดข้อมูลไม่สำเร็จ";
+      el.qvBadge.hidden = false;
+      el.qvBadge.className = "count-badge yellow";
+      el.qvBadge.textContent = "เช็คสัญญาณเน็ต แล้วลองสแกนใหม่อีกครั้ง";
+    });
+  }
+  function tryOpenStoreView() {
+    var m = location.hash.match(/^#store=([A-Za-z0-9_.~%-]+)$/);
+    if (!m) return false;
+    var id;
+    try { id = decodeURIComponent(m[1]); } catch (e) { id = m[1]; }
+    loadStoreView(id);
+    return true;
+  }
+
+  // ปุ่ม "สำหรับช่าง" — ต้องใส่รหัสช่างครั้งแรก แล้วจำไว้ในเครื่อง
+  function closePinSheet() {
+    el.pinOverlay.classList.remove("show");
+    el.pinSheet.classList.remove("show");
+  }
+  function openScanPmSheet() {
+    openPmSheet();
+    if (scanRecord && scanRecord.tech && !el.pmTech.value) el.pmTech.value = scanRecord.tech;
+  }
+  el.storeTechBtn.addEventListener("click", function () {
+    var ok = false;
+    try { ok = localStorage.getItem("omega_pm_tech_ok") === "1"; } catch (e) {}
+    if (ok) { openScanPmSheet(); return; }
+    el.pinInput.value = "";
+    el.pinErr.textContent = "";
+    el.pinOverlay.classList.add("show");
+    el.pinSheet.classList.add("show");
+  });
+  el.pinCancelBtn.addEventListener("click", closePinSheet);
+  el.pinOverlay.addEventListener("click", closePinSheet);
+  el.pinOkBtn.addEventListener("click", function () {
+    if (el.pinInput.value.trim() === TECH_PIN) {
+      try { localStorage.setItem("omega_pm_tech_ok", "1"); } catch (e) {}
+      closePinSheet();
+      openScanPmSheet();
+    } else {
+      el.pinErr.textContent = "รหัสไม่ถูกต้อง";
+    }
+  });
+
+  // บันทึก PM จากการสแกน QR หน้าเครื่อง — ขึ้นเว็บเป็นหลัก (+ เข้าเครื่องช่างถ้ามีร้านนี้ในแอป)
+  function submitScanPm() {
+    var date = el.pmDate.value || todayStr();
+    var entry = { date: date, note: el.pmNote.value.trim(), tech: el.pmTech.value.trim() };
+    var folder = scanStore.id + "-" + date + "-" + Math.random().toString(36).slice(2, 6);
+    var blobs = pmPhotoFiles.map(function (p) { return p.blob; });
+    el.pmSubmitBtn.disabled = true;
+    var up = blobs.length === 0 ? Promise.resolve(0) : uploadPmPhotos(folder, blobs, function (i, n) {
+      el.pmSubmitBtn.textContent = "⏳ กำลังอัปโหลดรูป " + i + "/" + n + "...";
+    });
+    up.then(function (done) {
+      if (done > 0) { entry.pf = folder; entry.pn = done; }
+      el.pmSubmitBtn.textContent = "⏳ กำลังบันทึก...";
+      return syncRecord(scanStore.id, entry).then(function () { return done; });
+    }).then(function (done) {
+      var lc = custById(scanStore.id);
+      if (lc) {
+        if (!lc.history) lc.history = [];
+        lc.history.push(entry);
+        lc.lastPM = date;
+        saveCache();
+      }
+      resetPmPhotos();
+      el.pmSubmitBtn.disabled = false;
+      el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
+      closePmSheet();
+      flash(blobs.length && done < blobs.length
+        ? "⚠️ อัปโหลดรูปได้ " + done + "/" + blobs.length + " รูป — บันทึก PM แล้ว"
+        : "✅ บันทึก PM แล้ว");
+      loadStoreView(scanStore.id);
+    }).catch(function () {
+      el.pmSubmitBtn.disabled = false;
+      el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
+      flash("⚠️ บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง");
+    });
+  }
+
+  // หน้าบัตรตรวจเช็ค — เปิดเมื่อลูกค้าสแกน QR (ข้อมูลอยู่ใน #qr=... ของลิงก์)
+  function tryOpenQrView() {
+    var m = location.hash.match(/^#qr=([A-Za-z0-9_-]+)$/);
+    if (!m) return false;
+    var d;
+    try { d = b64uDecode(m[1]); } catch (e) { return false; }
+    if (!d || !d.n) return false;
+    var checked = sameMonth(d.d);
+    el.qvIcon.textContent = checked ? "✓" : "🕐";
+    el.qvIcon.className = "qrv-check" + (checked ? "" : " warn");
+    el.qvHead.textContent = d.n;
+    el.qvBadge.className = "count-badge " + (checked ? "green" : "yellow");
+    el.qvBadge.textContent = checked
+      ? "✅ ช่างเข้าตรวจเช็คเดือนนี้แล้ว"
+      : (d.d ? "🕐 ตรวจเช็คล่าสุด " + fmtThai(d.d) : "ยังไม่มีข้อมูลการตรวจเช็ค");
+    el.qvDate.textContent = fmtThai(d.d);
+    el.qvTech.textContent = d.tech || "-";
+    el.qvWorkRow.hidden = !d.w;
+    el.qvWork.textContent = d.w || "";
+    el.qvType.textContent = d.t || "-";
+    el.qvModel.textContent = d.m || "-";
+    el.qvNext.textContent = fmtThai(d.nd);
+    if (d.pf && d.pn) {
+      el.qvPhotoTitle.textContent = "📷 รูปจุดที่ตรวจเช็ค (" + d.pn + " รูป)";
+      el.qvPhotoGrid.innerHTML = photoLinks(d.pf, d.pn);
+      el.qvPhotoCard.hidden = false;
+    } else {
+      el.qvPhotoCard.hidden = true;
+    }
+    el.pageList.hidden = true;
+    el.pageDetail.hidden = true;
+    el.fabAdd.hidden = true;
+    el.pageQrView.hidden = false;
+    return true;
+  }
+
+  // ---------- ลบลูกค้า (ซ่อนจากทุกเครื่อง — ข้อมูลเดิมยังอยู่ในฐานข้อมูล กู้คืนได้) ----------
+  el.deleteBtn.addEventListener("click", function () {
+    var c = custById(currentId);
+    if (!c) return;
+    if (!confirm('ลบลูกค้า "' + c.name + '" ?\nร้านนี้จะหายจากรายชื่อของทุกเครื่อง')) return;
+    fetch(SUPABASE_URL + "/rest/v1/pm_stores?id=eq." + encodeURIComponent(c.id), {
+      method: "PATCH",
+      headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
+      body: JSON.stringify({ active: false })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("del " + r.status);
+      customers = customers.filter(function (x) { return x.id !== currentId; });
+      saveCache();
+      flash("🗑 ลบลูกค้าแล้ว");
+      backToList();
+    }).catch(function () {
+      flash("⚠️ ลบไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+    });
+  });
+
+  // ---------- init ----------
+  var PM_VERSION = "v3";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
+  function timeStr() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+  function setCloudStatus(mode, txt) {
+    el.cloudStatus.className = "st" + (mode ? " " + mode : "");
+    el.cloudStatus.textContent = txt;
+  }
+  function cloudOkStatus() {
+    setCloudStatus("ok", "☁️ ข้อมูลกลางล่าสุด · " + customers.length + " ร้าน · " + timeStr() + " · " + PM_VERSION);
+  }
+  function refreshFromCloud() {
+    setCloudStatus("", "☁️ กำลังเชื่อมต่อข้อมูลกลาง...");
+    return migrateLocalToCloud().catch(function () {})
+      .then(fetchCustomers)
+      .then(function () {
+        cloudLoaded = true;
+        renderList();
+        cloudOkStatus();
+      })
+      .catch(function () {
+        cloudLoaded = true;  // ออฟไลน์ — ใช้แคชในเครื่องไปก่อน
+        renderList();
+        setCloudStatus("err", "📴 ต่อข้อมูลกลางไม่ได้ — แสดงข้อมูลที่เคยโหลดในเครื่องนี้ · " + PM_VERSION);
+        flash("📴 โหลดจากเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกด 🔄 รีเฟรช");
+      });
+  }
+  if (!tryOpenStoreView() && !tryOpenQrView()) {
+    renderList();  // โชว์แคช/สถานะกำลังโหลดไปก่อน
+    refreshFromCloud();
+    el.cloudRefreshBtn.addEventListener("click", refreshFromCloud);
+    // กลับมาเปิดแอปเมื่อไหร่ รีเฟรชรายชื่อจากเว็บให้เอง (เห็นข้อมูลที่เครื่องอื่นเพิ่งบันทึก)
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden && cloudLoaded && !el.pageList.hidden) {
+        fetchCustomers().then(function () {
+          renderList();
+          cloudOkStatus();
+        }).catch(function () {});
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
