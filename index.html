@@ -90,6 +90,7 @@
   .cust-card .info { flex: 1; min-width: 0; }
   .cust-card .name { font-weight: 600; font-size: .98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cust-card .phone { font-size: .84rem; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .cust-card .prov { font-size: .78rem; color: var(--muted); margin-top: 1px; }
   .cust-card .phone:active { opacity: .6; }
   .cust-card .days { flex-shrink: 0; text-align: right; }
   .cust-card .days .dn { font-size: 1.15rem; font-weight: 700; line-height: 1.1; }
@@ -332,6 +333,7 @@
 
     <div class="detail-card">
       <table class="info">
+        <tr><td class="k">จังหวัด</td><td id="dProvince"></td></tr>
         <tr><td class="k">ที่อยู่</td><td id="dAddress"></td></tr>
         <tr><td class="k">ประเภทเครื่อง</td><td id="dType"></td></tr>
         <tr><td class="k">ยี่ห้อ/รุ่น</td><td id="dModel"></td></tr>
@@ -415,6 +417,32 @@
         <label for="fModel">ยี่ห้อ/รุ่น</label>
         <input id="fModel" placeholder="เช่น Hobart AM15">
       </div>
+    </div>
+    <div class="field">
+      <label for="fProvince">จังหวัด (ภาคอีสาน)</label>
+      <select id="fProvince">
+        <option value="">— เลือกจังหวัด —</option>
+        <option>กาฬสินธุ์</option>
+        <option>ขอนแก่น</option>
+        <option>ชัยภูมิ</option>
+        <option>นครพนม</option>
+        <option>นครราชสีมา</option>
+        <option>บึงกาฬ</option>
+        <option>บุรีรัมย์</option>
+        <option>มหาสารคาม</option>
+        <option>มุกดาหาร</option>
+        <option>ยโสธร</option>
+        <option>ร้อยเอ็ด</option>
+        <option>เลย</option>
+        <option>ศรีสะเกษ</option>
+        <option>สกลนคร</option>
+        <option>สุรินทร์</option>
+        <option>หนองคาย</option>
+        <option>หนองบัวลำภู</option>
+        <option>อำนาจเจริญ</option>
+        <option>อุดรธานี</option>
+        <option>อุบลราชธานี</option>
+      </select>
     </div>
     <div class="field">
       <label for="fAddress">ที่อยู่</label>
@@ -534,7 +562,7 @@
   function storeRowToCust(s, old) {
     return {
       id: s.id, name: s.name, phone: s.phone || "", type: s.type || "",
-      model: s.model || "", address: s.address || "", cycle: s.cycle || 45,
+      model: s.model || "", province: s.province || "", address: s.address || "", cycle: s.cycle || 45,
       note: s.note || "", lastPM: s.last_pm || "",
       history: (old && old.history) || null   // โหลดตอนเปิดหน้ารายละเอียด
     };
@@ -604,14 +632,14 @@
     fabAdd: $("fabAdd"), backBtn: $("backBtn"),
     dName: $("dName"), dTypeModel: $("dTypeModel"), dBadge: $("dBadge"),
     dProgText: $("dProgText"), dProgPct: $("dProgPct"), dProgFill: $("dProgFill"),
-    dCallBtn: $("dCallBtn"), dMapBtn: $("dMapBtn"), dAddress: $("dAddress"), dType: $("dType"), dModel: $("dModel"),
+    dCallBtn: $("dCallBtn"), dMapBtn: $("dMapBtn"), dProvince: $("dProvince"), dAddress: $("dAddress"), dType: $("dType"), dModel: $("dModel"),
     dLastPM: $("dLastPM"), dNextDue: $("dNextDue"), dCycle: $("dCycle"), dNote: $("dNote"),
     dHistory: $("dHistory"),
     pmDoneBtn: $("pmDoneBtn"), editBtn: $("editBtn"), deleteBtn: $("deleteBtn"),
     custOverlay: $("custOverlay"), custSheet: $("custSheet"), custSheetTitle: $("custSheetTitle"),
     pickWrap: $("pickWrap"), fPick: $("fPick"),
     custForm: $("custForm"), fName: $("fName"), fPhone: $("fPhone"), fType: $("fType"),
-    fModel: $("fModel"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
+    fModel: $("fModel"), fProvince: $("fProvince"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
     fNote: $("fNote"), fErr: $("fErr"), custCancelBtn: $("custCancelBtn"),
     pmOverlay: $("pmOverlay"), pmSheet: $("pmSheet"), pmSheetTitle: $("pmSheetTitle"), pmForm: $("pmForm"),
     pmDate: $("pmDate"), pmTech: $("pmTech"), techList: $("techList"),
@@ -717,7 +745,7 @@
 
     var q = el.searchInput.value.trim().toLowerCase();
     var list = customers.filter(function (c) {
-      var hitQ = !q || [c.name, c.phone, c.model].some(function (v) {
+      var hitQ = !q || [c.name, c.phone, c.model, c.province, c.address].some(function (v) {
         return String(v || "").toLowerCase().indexOf(q) !== -1;
       });
       var hitS = !statusFilter || statusOf(c) === statusFilter;
@@ -740,6 +768,7 @@
       return '<div class="cust-card ' + st + '" data-id="' + c.id + '">' +
         '<div class="info">' +
           '<div class="name">' + esc(c.name) + "</div>" +
+          (c.province ? '<div class="prov">📍 ' + esc(c.province) + "</div>" : "") +
           (c.phone
             ? '<a class="phone" href="tel:' + esc(c.phone.replace(/[^0-9+]/g, "")) + '" onclick="event.stopPropagation()">📞 ' + esc(c.phone) + "</a>"
             : '<span class="phone" style="color:var(--muted)">ไม่มีเบอร์โทร</span>') +
@@ -803,6 +832,7 @@
     el.dMapBtn.hidden = !mu;
     if (mu) el.dMapBtn.href = mu;
 
+    el.dProvince.textContent = c.province || "-";
     renderAddress(el.dAddress, c.address);
     el.dType.textContent = c.type || "-";
     el.dModel.textContent = c.model || "-";
@@ -950,6 +980,7 @@
     el.fPhone.value = c ? c.phone : "";
     el.fType.value = c ? c.type : "เครื่องล้างจาน";
     el.fModel.value = c ? c.model : "";
+    el.fProvince.value = c ? (c.province || "") : "";
     el.fAddress.value = c ? c.address : "";
     el.fLastPM.value = c ? c.lastPM : todayStr();
     el.fCycle.value = c ? c.cycle : 45;
@@ -994,6 +1025,7 @@
       phone: el.fPhone.value.trim(),
       type: el.fType.value,
       model: el.fModel.value.trim(),
+      province: el.fProvince.value,
       address: el.fAddress.value.trim(),
       lastPM: el.fLastPM.value || todayStr(),
       cycle: cycle,
@@ -1113,7 +1145,7 @@
       headers: Object.assign(sbHeaders(true), { Prefer: "resolution=merge-duplicates,return=minimal" }),
       body: JSON.stringify({
         id: c.id, name: c.name, type: c.type || "", model: c.model || "",
-        phone: c.phone || "", address: c.address || "", cycle: Number(c.cycle) || 45,
+        phone: c.phone || "", province: c.province || "", address: c.address || "", cycle: Number(c.cycle) || 45,
         note: c.note || "", last_pm: c.lastPM || null, active: true
       })
     }).then(function (r) { if (!r.ok) throw new Error("store " + r.status); });
