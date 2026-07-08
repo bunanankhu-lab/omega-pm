@@ -337,6 +337,7 @@
         <tr><td class="k">ที่อยู่</td><td id="dAddress"></td></tr>
         <tr><td class="k">ประเภทเครื่อง</td><td id="dType"></td></tr>
         <tr><td class="k">ยี่ห้อ/รุ่น</td><td id="dModel"></td></tr>
+        <tr><td class="k">Serial No. (S/N)</td><td id="dSerial"></td></tr>
         <tr><td class="k">วัน PM ล่าสุด</td><td id="dLastPM"></td></tr>
         <tr><td class="k">วันครบรอบถัดไป</td><td id="dNextDue"></td></tr>
         <tr><td class="k">รอบ PM</td><td id="dCycle"></td></tr>
@@ -371,6 +372,7 @@
         <tr id="qvWorkRow"><td class="k">งานที่ทำ</td><td id="qvWork"></td></tr>
         <tr><td class="k">ประเภทเครื่อง</td><td id="qvType"></td></tr>
         <tr><td class="k">ยี่ห้อ/รุ่น</td><td id="qvModel"></td></tr>
+        <tr id="qvSerialRow"><td class="k">Serial No. (S/N)</td><td id="qvSerial"></td></tr>
         <tr><td class="k">กำหนดตรวจครั้งถัดไป</td><td id="qvNext"></td></tr>
       </table>
     </div>
@@ -417,6 +419,10 @@
         <label for="fModel">ยี่ห้อ/รุ่น</label>
         <input id="fModel" placeholder="เช่น Hobart AM15">
       </div>
+    </div>
+    <div class="field">
+      <label for="fSerial">Serial No. (S/N) ของเครื่อง</label>
+      <input id="fSerial" placeholder="เช่น A12345678 (ดูจากป้ายข้างเครื่อง)">
     </div>
     <div class="field">
       <label for="fProvince">จังหวัด (ภาคอีสาน)</label>
@@ -562,7 +568,7 @@
   function storeRowToCust(s, old) {
     return {
       id: s.id, name: s.name, phone: s.phone || "", type: s.type || "",
-      model: s.model || "", province: s.province || "", address: s.address || "", cycle: s.cycle || 45,
+      model: s.model || "", serial: s.serial || "", province: s.province || "", address: s.address || "", cycle: s.cycle || 45,
       note: s.note || "", lastPM: s.last_pm || "",
       history: (old && old.history) || null   // โหลดตอนเปิดหน้ารายละเอียด
     };
@@ -632,14 +638,14 @@
     fabAdd: $("fabAdd"), backBtn: $("backBtn"),
     dName: $("dName"), dTypeModel: $("dTypeModel"), dBadge: $("dBadge"),
     dProgText: $("dProgText"), dProgPct: $("dProgPct"), dProgFill: $("dProgFill"),
-    dCallBtn: $("dCallBtn"), dMapBtn: $("dMapBtn"), dProvince: $("dProvince"), dAddress: $("dAddress"), dType: $("dType"), dModel: $("dModel"),
+    dCallBtn: $("dCallBtn"), dMapBtn: $("dMapBtn"), dProvince: $("dProvince"), dAddress: $("dAddress"), dType: $("dType"), dModel: $("dModel"), dSerial: $("dSerial"),
     dLastPM: $("dLastPM"), dNextDue: $("dNextDue"), dCycle: $("dCycle"), dNote: $("dNote"),
     dHistory: $("dHistory"),
     pmDoneBtn: $("pmDoneBtn"), editBtn: $("editBtn"), deleteBtn: $("deleteBtn"),
     custOverlay: $("custOverlay"), custSheet: $("custSheet"), custSheetTitle: $("custSheetTitle"),
     pickWrap: $("pickWrap"), fPick: $("fPick"),
     custForm: $("custForm"), fName: $("fName"), fPhone: $("fPhone"), fType: $("fType"),
-    fModel: $("fModel"), fProvince: $("fProvince"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
+    fModel: $("fModel"), fSerial: $("fSerial"), fProvince: $("fProvince"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
     fNote: $("fNote"), fErr: $("fErr"), custCancelBtn: $("custCancelBtn"),
     pmOverlay: $("pmOverlay"), pmSheet: $("pmSheet"), pmSheetTitle: $("pmSheetTitle"), pmForm: $("pmForm"),
     pmDate: $("pmDate"), pmTech: $("pmTech"), techList: $("techList"),
@@ -653,7 +659,7 @@
     qrStatus: $("qrStatus"), qrHolder: $("qrHolder"), qrShareBtn: $("qrShareBtn"), qrCloseBtn: $("qrCloseBtn"),
     pageQrView: $("pageQrView"), qvIcon: $("qvIcon"), qvHead: $("qvHead"), qvBadge: $("qvBadge"),
     qvDate: $("qvDate"), qvTech: $("qvTech"), qvWorkRow: $("qvWorkRow"), qvWork: $("qvWork"),
-    qvType: $("qvType"), qvModel: $("qvModel"), qvNext: $("qvNext"),
+    qvType: $("qvType"), qvModel: $("qvModel"), qvSerialRow: $("qvSerialRow"), qvSerial: $("qvSerial"), qvNext: $("qvNext"),
     toast: $("toast")
   };
 
@@ -745,7 +751,7 @@
 
     var q = el.searchInput.value.trim().toLowerCase();
     var list = customers.filter(function (c) {
-      var hitQ = !q || [c.name, c.phone, c.model, c.province, c.address].some(function (v) {
+      var hitQ = !q || [c.name, c.phone, c.model, c.serial, c.province, c.address].some(function (v) {
         return String(v || "").toLowerCase().indexOf(q) !== -1;
       });
       var hitS = !statusFilter || statusOf(c) === statusFilter;
@@ -836,6 +842,7 @@
     renderAddress(el.dAddress, c.address);
     el.dType.textContent = c.type || "-";
     el.dModel.textContent = c.model || "-";
+    el.dSerial.textContent = c.serial || "-";
     el.dLastPM.textContent = fmtThai(c.lastPM);
     el.dNextDue.textContent = fmtThai(nextDue(c));
     el.dCycle.textContent = cyc + " วัน";
@@ -980,6 +987,7 @@
     el.fPhone.value = c ? c.phone : "";
     el.fType.value = c ? c.type : "เครื่องล้างจาน";
     el.fModel.value = c ? c.model : "";
+    el.fSerial.value = c ? (c.serial || "") : "";
     el.fProvince.value = c ? (c.province || "") : "";
     el.fAddress.value = c ? c.address : "";
     el.fLastPM.value = c ? c.lastPM : todayStr();
@@ -1025,6 +1033,7 @@
       phone: el.fPhone.value.trim(),
       type: el.fType.value,
       model: el.fModel.value.trim(),
+      serial: el.fSerial.value.trim(),
       province: el.fProvince.value,
       address: el.fAddress.value.trim(),
       lastPM: el.fLastPM.value || todayStr(),
@@ -1145,7 +1154,7 @@
       headers: Object.assign(sbHeaders(true), { Prefer: "resolution=merge-duplicates,return=minimal" }),
       body: JSON.stringify({
         id: c.id, name: c.name, type: c.type || "", model: c.model || "",
-        phone: c.phone || "", province: c.province || "", address: c.address || "", cycle: Number(c.cycle) || 45,
+        serial: c.serial || "", phone: c.phone || "", province: c.province || "", address: c.address || "", cycle: Number(c.cycle) || 45,
         note: c.note || "", last_pm: c.lastPM || null, active: true
       })
     }).then(function (r) { if (!r.ok) throw new Error("store " + r.status); });
@@ -1483,6 +1492,8 @@
     el.qvWork.textContent = (rec && rec.note) || "";
     el.qvType.textContent = store.type || "-";
     el.qvModel.textContent = store.model || "-";
+    el.qvSerialRow.hidden = !store.serial;
+    el.qvSerial.textContent = store.serial || "-";
     el.qvNext.textContent = rec ? fmtThai(addDays(rec.date, Number(store.cycle) || 45)) : "-";
     if (rec && rec.pf && rec.pn) {
       el.qvPhotoTitle.textContent = "📷 รูปจุดที่ตรวจเช็ค (" + rec.pn + " รูป)";
@@ -1501,6 +1512,7 @@
     el.qvBadge.hidden = true;
     el.qvPhotoCard.hidden = true;
     el.qvWorkRow.hidden = true;
+    el.qvSerialRow.hidden = true;
     el.qvDate.textContent = el.qvTech.textContent = el.qvType.textContent = el.qvModel.textContent = el.qvNext.textContent = "-";
     Promise.all([
       fetch(SUPABASE_URL + "/rest/v1/pm_stores?id=eq." + encodeURIComponent(id) + "&limit=1", { headers: sbHeaders() })
