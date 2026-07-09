@@ -88,6 +88,16 @@
   }
   .cloud-bar button:active { background: var(--primary-soft); }
 
+  /* แจ้งเตือนสติ๊กเกอร์ QR ครบ 1 ปี (ปริ้นจากกระดาษ สีซีด/ลอกได้) */
+  .sticker-bar {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    background: var(--yellow-bg); border: 2px solid transparent; color: var(--yellow);
+    border-radius: 14px; padding: 11px 14px; font-family: inherit; font-size: .86rem;
+    font-weight: 600; margin-bottom: 12px; box-shadow: var(--shadow); line-height: 1.45;
+  }
+  .sticker-bar.active { border-color: var(--yellow); }
+  .stick-tag { font-size: .74rem; color: var(--yellow); font-weight: 700; margin-top: 2px; }
+
   .search-wrap { position: relative; margin-bottom: 12px; }
   .search-wrap input {
     width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border); border-radius: 999px;
@@ -332,6 +342,8 @@
       </button>
     </div>
 
+    <button type="button" class="sticker-bar" id="stickerBar" hidden></button>
+
     <div class="search-wrap">
       <span class="ico">🔍</span>
       <input id="searchInput" placeholder="ค้นหาชื่อ เบอร์โทร หรือรุ่นเครื่อง...">
@@ -371,6 +383,7 @@
         <tr><td class="k">วัน PM ล่าสุด</td><td id="dLastPM"></td></tr>
         <tr><td class="k">วันครบรอบถัดไป</td><td id="dNextDue"></td></tr>
         <tr><td class="k">รอบ PM</td><td id="dCycle"></td></tr>
+        <tr><td class="k">สติ๊กเกอร์ QR หน้าเครื่อง</td><td id="dSticker"></td></tr>
       </table>
       <div class="note-box" id="dNote" hidden></div>
     </div>
@@ -383,6 +396,7 @@
     <div class="btn-row">
       <button type="button" class="btn primary" id="pmDoneBtn">✓ ทำ PM วันนี้แล้ว</button>
       <button type="button" class="btn secondary" id="qrBtn">🔲 QR แจ้งลูกค้า — ตรวจเช็คแล้ว</button>
+      <button type="button" class="btn secondary" id="stickerBtn">🏷️ เปลี่ยนสติ๊กเกอร์ใหม่แล้ว — เริ่มนับ 1 ปีใหม่</button>
       <button type="button" class="btn secondary" id="editBtn">✏️ แก้ไขข้อมูล</button>
       <button type="button" class="btn danger" id="deleteBtn">🗑 ลบลูกค้า</button>
     </div>
@@ -602,6 +616,7 @@
       id: s.id, name: s.name, phone: s.phone || "", type: s.type || "",
       model: s.model || "", serial: s.serial || "", province: s.province || "", address: s.address || "", cycle: s.cycle || 45,
       note: s.note || "", lastPM: s.last_pm || "",
+      stickerDate: s.sticker_date || "",      // วันที่ติดสติ๊กเกอร์ QR หน้าเครื่อง
       history: (old && old.history) || null   // โหลดตอนเปิดหน้ารายละเอียด
     };
   }
@@ -656,6 +671,7 @@
   var customers = loadCache();  // โชว์แคชไปก่อน แล้วข้อมูลจริงจากเว็บจะมาแทน
   var cloudLoaded = false;      // โหลดจากเว็บสำเร็จแล้วหรือยัง
   var statusFilter = "";      // "" | red | yellow | green
+  var stickerFilter = false;  // กรองเฉพาะร้านที่สติ๊กเกอร์ QR ครบ 1 ปี
   var currentId = null;       // ลูกค้าที่เปิดหน้ารายละเอียดอยู่
   var editingId = null;       // ลูกค้าที่กำลังแก้ไขในฟอร์ม (null = เพิ่มใหม่)
 
@@ -668,6 +684,7 @@
     sumRed: $("sumRed"), sumYellow: $("sumYellow"), sumGreen: $("sumGreen"),
     sumRedN: $("sumRedN"), sumYellowN: $("sumYellowN"), sumGreenN: $("sumGreenN"),
     searchInput: $("searchInput"), custList: $("custList"), listEmpty: $("listEmpty"),
+    stickerBar: $("stickerBar"), dSticker: $("dSticker"), stickerBtn: $("stickerBtn"),
     fabAdd: $("fabAdd"), backBtn: $("backBtn"),
     dName: $("dName"), dTypeModel: $("dTypeModel"), dBadge: $("dBadge"),
     dProgText: $("dProgText"), dProgPct: $("dProgPct"), dProgFill: $("dProgFill"),
@@ -739,6 +756,19 @@
     if (d === 0) return "ครบวันนี้";
     return "อีก " + d + " วัน";
   }
+  // สติ๊กเกอร์ QR ปริ้นจากกระดาษไปแปะหน้าเครื่อง — ครบ 1 ปีสีซีด/ลอก ควรปริ้นใหม่ไปเปลี่ยน
+  var STICKER_LIFE = 365;
+  function stickerAge(c) {
+    if (!c.stickerDate) return null;
+    var d0 = new Date(c.stickerDate + "T00:00:00");
+    if (isNaN(d0)) return null;
+    var today = new Date(todayStr() + "T00:00:00");
+    return Math.round((today - d0) / 86400000);
+  }
+  function stickerDue(c) {
+    var a = stickerAge(c);
+    return a !== null && a >= STICKER_LIFE;
+  }
   function custById(id) { return customers.find(function (c) { return c.id === id; }) || null; }
   // ที่อยู่อาจมีลิงก์ Google Maps แปะมาด้วย — ดึงลิงก์ออกมาให้กดนำทางได้
   function extractUrl(s) {
@@ -782,13 +812,23 @@
     el.sumYellow.classList.toggle("active", statusFilter === "yellow");
     el.sumGreen.classList.toggle("active", statusFilter === "green");
 
+    // แถบเตือนสติ๊กเกอร์ QR ครบ 1 ปี — แตะเพื่อกรองดูเฉพาะร้านที่ต้องเปลี่ยน
+    var stickerCount = customers.filter(stickerDue).length;
+    if (stickerCount === 0) stickerFilter = false;
+    el.stickerBar.hidden = stickerCount === 0;
+    el.stickerBar.classList.toggle("active", stickerFilter);
+    el.stickerBar.textContent = stickerFilter
+      ? "🏷️ กำลังแสดง " + stickerCount + " ร้านที่สติ๊กเกอร์ครบ 1 ปี — แตะอีกครั้งเพื่อดูทุกร้าน"
+      : "🏷️ " + stickerCount + " ร้านติดสติ๊กเกอร์ QR ครบ 1 ปีแล้ว — ปริ้นใหม่ไปเปลี่ยน (แตะดูรายชื่อ)";
+
     var q = el.searchInput.value.trim().toLowerCase();
     var list = customers.filter(function (c) {
       var hitQ = !q || [c.name, c.phone, c.model, c.serial, c.province, c.address].some(function (v) {
         return String(v || "").toLowerCase().indexOf(q) !== -1;
       });
       var hitS = !statusFilter || statusOf(c) === statusFilter;
-      return hitQ && hitS;
+      var hitK = !stickerFilter || stickerDue(c);
+      return hitQ && hitS && hitK;
     });
     // ใกล้ครบ/เกินกำหนดมากสุดอยู่บนสุด (ยังไม่เคยทำ PM = ด่วนสุด)
     var sk = function (x) { var d = daysLeft(x); return d === null ? -99999 : d; };
@@ -808,6 +848,7 @@
         '<div class="info">' +
           '<div class="name">' + esc(c.name) + "</div>" +
           (c.province ? '<div class="prov">📍 ' + esc(c.province) + "</div>" : "") +
+          (stickerDue(c) ? '<div class="stick-tag">🏷️ ครบ 1 ปี — เปลี่ยนสติ๊กเกอร์</div>' : "") +
           (c.phone
             ? '<a class="phone" href="tel:' + esc(c.phone.replace(/[^0-9+]/g, "")) + '" onclick="event.stopPropagation()">📞 ' + esc(c.phone) + "</a>"
             : '<span class="phone" style="color:var(--muted)">ไม่มีเบอร์โทร</span>') +
@@ -831,8 +872,14 @@
   [["sumRed", "red"], ["sumYellow", "yellow"], ["sumGreen", "green"]].forEach(function (pair) {
     el[pair[0]].addEventListener("click", function () {
       statusFilter = statusFilter === pair[1] ? "" : pair[1];
+      stickerFilter = false;   // กรองทีละอย่าง ไม่ให้ตัวกรองซ้อนกันจนรายชื่อหาย
       renderList();
     });
+  });
+  el.stickerBar.addEventListener("click", function () {
+    stickerFilter = !stickerFilter;
+    if (stickerFilter) statusFilter = "";
+    renderList();
   });
 
   // ---------- หน้ารายละเอียด ----------
@@ -879,6 +926,22 @@
     el.dLastPM.textContent = fmtThai(c.lastPM);
     el.dNextDue.textContent = fmtThai(nextDue(c));
     el.dCycle.textContent = cyc + " วัน";
+
+    // อายุสติ๊กเกอร์ QR หน้าเครื่อง — ครบ 1 ปีเตือนให้ปริ้นใหม่ไปเปลี่ยน
+    var sa = stickerAge(c);
+    if (sa === null) {
+      el.dSticker.textContent = "-";
+    } else if (stickerDue(c)) {
+      el.dSticker.innerHTML = "ติดเมื่อ " + fmtThai(c.stickerDate) +
+        '<br><span style="color:var(--red);font-weight:700">🏷️ ครบ 1 ปีแล้ว (ติดมา ' + sa + " วัน) — ปริ้นใหม่ไปเปลี่ยน</span>";
+    } else {
+      var sLeft = STICKER_LIFE - sa;
+      el.dSticker.innerHTML = "ติดเมื่อ " + fmtThai(c.stickerDate) +
+        (sLeft <= 30
+          ? '<br><span style="color:var(--yellow);font-weight:600">⏳ อีก ' + sLeft + " วันครบ 1 ปี — เตรียมปริ้นใบใหม่</span>"
+          : " · อีก " + sLeft + " วันครบ 1 ปี");
+    }
+
     el.dNote.hidden = !c.note;
     el.dNote.textContent = c.note ? "📝 " + c.note : "";
 
@@ -1052,6 +1115,27 @@
 
   el.fabAdd.addEventListener("click", function () { openCustSheet(null); });
   el.editBtn.addEventListener("click", function () { if (currentId) openCustSheet(currentId); });
+
+  // กดเมื่อเอาสติ๊กเกอร์ QR ใบใหม่ไปแปะที่ร้านแล้ว — เริ่มนับอายุ 1 ปีใหม่
+  el.stickerBtn.addEventListener("click", function () {
+    var c = custById(currentId);
+    if (!c) return;
+    if (!confirm('เอาสติ๊กเกอร์ QR ใบใหม่ไปติดที่ร้าน "' + c.name + '" แล้วใช่ไหม?\nระบบจะเริ่มนับอายุสติ๊กเกอร์ 1 ปีใหม่ตั้งแต่วันนี้')) return;
+    var d = todayStr();
+    fetch(SUPABASE_URL + "/rest/v1/pm_stores?id=eq." + encodeURIComponent(c.id), {
+      method: "PATCH",
+      headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
+      body: JSON.stringify({ sticker_date: d })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("sticker " + r.status);
+      c.stickerDate = d;
+      saveCache();
+      flash("🏷️ บันทึกแล้ว — เริ่มนับอายุสติ๊กเกอร์ใหม่");
+      openDetail(currentId);
+    }).catch(function () {
+      flash("⚠️ บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+    });
+  });
   el.custCancelBtn.addEventListener("click", closeCustSheet);
   el.custOverlay.addEventListener("click", closeCustSheet);
 
@@ -1076,7 +1160,7 @@
     // บันทึกขึ้นเว็บก่อน (ทุกเครื่องจะเห็นเหมือนกัน) สำเร็จแล้วค่อยอัปเดตหน้าจอ
     var target = editingId ? custById(editingId) : null;
     var obj = Object.assign({}, target || {}, data);
-    if (!editingId) { obj.id = newId(); obj.history = []; }
+    if (!editingId) { obj.id = newId(); obj.history = []; obj.stickerDate = todayStr(); }
     var sbtn = el.custForm.querySelector('button[type="submit"]');
     sbtn.disabled = true;
     el.fErr.textContent = "";
@@ -1182,14 +1266,17 @@
     return h;
   }
   function syncStore(c) {
+    var body = {
+      id: c.id, name: c.name, type: c.type || "", model: c.model || "",
+      serial: c.serial || "", phone: c.phone || "", province: c.province || "", address: c.address || "", cycle: Number(c.cycle) || 45,
+      note: c.note || "", last_pm: c.lastPM || null, active: true
+    };
+    // ส่งวันที่ติดสติ๊กเกอร์เฉพาะตอนมีค่า — ไม่มี = ปล่อยให้ฐานข้อมูลตั้ง/คงค่าเดิมไว้
+    if (c.stickerDate) body.sticker_date = c.stickerDate;
     return fetch(SUPABASE_URL + "/rest/v1/pm_stores", {
       method: "POST",
       headers: Object.assign(sbHeaders(true), { Prefer: "resolution=merge-duplicates,return=minimal" }),
-      body: JSON.stringify({
-        id: c.id, name: c.name, type: c.type || "", model: c.model || "",
-        serial: c.serial || "", phone: c.phone || "", province: c.province || "", address: c.address || "", cycle: Number(c.cycle) || 45,
-        note: c.note || "", last_pm: c.lastPM || null, active: true
-      })
+      body: JSON.stringify(body)
     }).then(function (r) { if (!r.ok) throw new Error("store " + r.status); });
   }
   function syncRecord(storeId, entry) {
@@ -1459,6 +1546,10 @@
       base = c.lastPM
         ? "⚠️ เดือนนี้ยังไม่มีบันทึก PM — คนสแกนจะเห็นการตรวจล่าสุด " + fmtThai(c.lastPM)
         : "⚠️ ร้านนี้ยังไม่มีบันทึก PM เลย";
+    }
+    if (stickerDue(c)) {
+      el.qrStatus.className = "qr-status warn";
+      base += " · 🏷️ สติ๊กเกอร์เดิมติดครบ 1 ปีแล้ว — ปริ้น QR นี้ไปเปลี่ยน แล้วกดปุ่ม “เปลี่ยนสติ๊กเกอร์ใหม่แล้ว” ในหน้าร้าน";
     }
     var seq = ++qrSyncSeq;
     el.qrStatus.textContent = base + " · ⏳ กำลังเช็คข้อมูลบนเว็บ...";
@@ -1739,7 +1830,7 @@
   });
 
   // ---------- init ----------
-  var PM_VERSION = "v3";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
+  var PM_VERSION = "v4";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
   function timeStr() {
     var d = new Date();
     return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
