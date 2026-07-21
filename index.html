@@ -262,7 +262,7 @@
   .qr-status.warn { background: var(--yellow-bg); color: var(--yellow); }
   #qrHolder { text-align: center; padding: 8px 0 2px; }
   #qrHolder img {
-    width: 100%; max-width: 250px; image-rendering: pixelated;
+    width: 100%; max-width: 260px;
     border: 1px solid var(--border); border-radius: 12px; background: #fff;
   }
   .qr-hint { text-align: center; color: var(--muted); font-size: .82rem; margin: 8px 0 14px; }
@@ -559,7 +559,7 @@
   <h3 id="qrTitle">QR ตรวจเช็ค PM</h3>
   <div class="qr-status" id="qrStatus"></div>
   <div id="qrHolder"></div>
-  <div class="qr-hint">พิมพ์หรือบันทึกรูป QR นี้ ไปติดหน้าเครื่องของร้านได้ถาวร<br>👀 ลูกค้าสแกน = เห็นการตรวจล่าสุด+รูป · 🧑‍🔧 ช่างสแกน = กดบันทึก PM + แนบรูปได้เลย<br>(กดค้างที่รูป QR เพื่อบันทึกเป็นรูปภาพ)</div>
+  <div class="qr-hint">พิมพ์หรือบันทึกรูป QR นี้ ไปติดหน้าเครื่องของร้านได้ถาวร<br>🏷️ ใต้ QR มีชื่อร้าน + เครื่อง/รุ่นกำกับ — ร้านที่มีหลายเครื่องจะได้ไม่ติดสลับใบกัน<br>👀 ลูกค้าสแกน = เห็นการตรวจล่าสุด+รูป · 🧑‍🔧 ช่างสแกน = กดบันทึก PM + แนบรูปได้เลย<br>(กดค้างที่รูป QR เพื่อบันทึกเป็นรูปภาพ)</div>
   <button type="button" class="btn primary" id="qrShareBtn" style="background:var(--primary)">📤 แชร์ลิงก์ให้ลูกค้า</button>
   <button type="button" class="btn secondary" id="qrCloseBtn" style="margin-top:8px">ปิด</button>
 </div>
@@ -844,9 +844,11 @@
       var d = daysLeft(c);
       var dn = d === null ? "–" : d < 0 ? "-" + Math.abs(d) : String(d);
       var dl = d === null ? "ยังไม่มี PM" : d < 0 ? "เกินกำหนด (วัน)" : d === 0 ? "ครบวันนี้" : "เหลือ (วัน)";
+      var mach = [c.type, c.model].filter(Boolean).join(" · ");
       return '<div class="cust-card ' + st + '" data-id="' + c.id + '">' +
         '<div class="info">' +
           '<div class="name">' + esc(c.name) + "</div>" +
+          (mach ? '<div class="prov">🔧 ' + esc(mach) + "</div>" : "") +
           (c.province ? '<div class="prov">📍 ' + esc(c.province) + "</div>" : "") +
           (stickerDue(c) ? '<div class="stick-tag">🏷️ ครบ 1 ปี — เปลี่ยนสติ๊กเกอร์</div>' : "") +
           (c.phone
@@ -1523,6 +1525,53 @@
 
   var qrShareUrl = "";
   var qrSyncSeq = 0;
+  var QR_FONT = "'Noto Sans Thai', 'Segoe UI', Tahoma, sans-serif";
+  // วาดข้อความกลางบรรทัด — ย่อฟอนต์ให้พอดีความกว้าง ถ้ายังเกินค่อยตัดท้ายด้วย …
+  function drawFitText(ctx, text, weight, px, x, y, maxW) {
+    while (px > 15) {
+      ctx.font = weight + " " + px + "px " + QR_FONT;
+      if (ctx.measureText(text).width <= maxW) break;
+      px--;
+    }
+    var t = text;
+    if (ctx.measureText(t).width > maxW) {
+      while (t.length > 1 && ctx.measureText(t + "…").width > maxW) t = t.slice(0, -1);
+      t += "…";
+    }
+    ctx.fillText(t, x, y);
+  }
+  // รูปสติ๊กเกอร์ = QR + ชื่อร้าน + เครื่อง/รุ่น + S/N ในรูปเดียว
+  // ร้านที่มีหลายเครื่องจะได้รู้ว่า QR ใบไหนเป็นของเครื่องไหน ไม่สลับใบกัน
+  function qrStickerUrl(qr, c) {
+    var count = qr.getModuleCount();
+    var cell = 10, pad = 24;
+    var qrPx = count * cell;
+    var W = qrPx + pad * 2;
+    var mach = [c.type, c.model].filter(Boolean).join(" · ");
+    var lines = [{ t: c.name, w: "700", px: 30 }];
+    if (mach) lines.push({ t: mach, w: "600", px: 26 });
+    if (c.serial) lines.push({ t: "S/N " + c.serial, w: "500", px: 22 });
+    var lineH = function (l) { return Math.round(l.px * 1.4); };
+    var textH = lines.reduce(function (s, l) { return s + lineH(l); }, 0);
+    var cv = document.createElement("canvas");
+    cv.width = W;
+    cv.height = pad + qrPx + 10 + textH + pad;
+    var ctx = cv.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = "#000";
+    for (var r = 0; r < count; r++)
+      for (var col = 0; col < count; col++)
+        if (qr.isDark(r, col)) ctx.fillRect(pad + col * cell, pad + r * cell, cell, cell);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    var y = pad + qrPx + 10;
+    lines.forEach(function (l) {
+      drawFitText(ctx, l.t, l.w, l.px, W / 2, y, W - 20);
+      y += lineH(l);
+    });
+    return cv.toDataURL("image/png");
+  }
   function openQrSheet(id) {
     var c = custById(id);
     if (!c) return;
@@ -1535,8 +1584,19 @@
     var qr = qrcode(0, "M");
     qr.addData(qrShareUrl);
     qr.make();
-    el.qrHolder.innerHTML = qr.createImgTag(6, 8);
-    el.qrTitle.textContent = "QR ประจำร้าน · " + c.name;
+    el.qrHolder.innerHTML = "";
+    var qImg = document.createElement("img");
+    qImg.alt = "QR " + c.name;
+    qImg.src = qrStickerUrl(qr, c);
+    el.qrHolder.appendChild(qImg);
+    // ฟอนต์ไทยอาจยังโหลดไม่เสร็จตอนวาดครั้งแรก — พร้อมเมื่อไหร่วาดซ้ำให้ตัวหนังสือสวย
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        if (el.qrHolder.contains(qImg)) qImg.src = qrStickerUrl(qr, c);
+      });
+    }
+    var mach = [c.type, c.model].filter(Boolean).join(" · ");
+    el.qrTitle.textContent = "QR ประจำร้าน · " + c.name + (mach ? " (" + mach + ")" : "");
     var base;
     if (sameMonth(c.lastPM)) {
       el.qrStatus.className = "qr-status ok";
@@ -1830,7 +1890,7 @@
   });
 
   // ---------- init ----------
-  var PM_VERSION = "v4";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
+  var PM_VERSION = "v5";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
   function timeStr() {
     var d = new Date();
     return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
