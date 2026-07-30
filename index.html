@@ -298,6 +298,41 @@
   }
   .photo-add:active { opacity: .8; }
 
+  /* หน้าสต๊อกเครื่อง */
+  .stock-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+    text-align: left; cursor: pointer;
+    background: var(--card); border: 2px solid transparent; color: var(--text);
+    border-radius: 14px; padding: 12px 14px; font-family: inherit; font-size: .92rem;
+    font-weight: 600; margin-bottom: 12px; box-shadow: var(--shadow);
+  }
+  .stock-bar:active { transform: scale(.985); }
+  .stock-bar .arr { color: var(--primary); font-size: .82rem; flex-shrink: 0; }
+  .stk-group { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .stk-group h3 { margin: 0 0 2px; font-size: 1rem; color: var(--primary); }
+  .stk-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .stk-row:last-child { border-bottom: none; }
+  .stk-row .nm { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stk-row .q { font-size: 1.25rem; font-weight: 700; min-width: 36px; text-align: center; }
+  .stk-row .q.zero { color: var(--muted); font-weight: 600; }
+  .stk-btn {
+    width: 42px; height: 42px; border-radius: 12px; border: none; flex-shrink: 0;
+    font-size: 1.3rem; font-weight: 700; font-family: inherit; cursor: pointer; line-height: 1;
+  }
+  .stk-btn.minus { background: var(--red-bg); color: var(--red); }
+  .stk-btn.plus { background: var(--green-bg); color: var(--green); }
+  .stk-btn:active { opacity: .7; }
+  .stk-btn[disabled] { opacity: .3; cursor: default; }
+  .stk-del { border: none; background: none; color: var(--muted); font-size: .95rem; cursor: pointer; padding: 4px 6px; flex-shrink: 0; }
+  .reason-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .reason-chip {
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    border-radius: 999px; padding: 9px 16px; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
+  }
+  .reason-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .stk-preview { background: var(--primary-soft); border-radius: 12px; padding: 10px 14px; font-size: .95rem; font-weight: 600; margin-bottom: 12px; }
+  .stk-preview.bad { background: var(--red-bg); color: var(--red); }
+
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -341,6 +376,11 @@
         <div class="l">ปกติ</div>
       </button>
     </div>
+
+    <button type="button" class="stock-bar" id="stockBar">
+      <span>📦 สต๊อกเครื่อง <span id="stockBarInfo" style="color:var(--muted);font-weight:500"></span></span>
+      <span class="arr">ดู / ตัดสต๊อก ›</span>
+    </button>
 
     <button type="button" class="sticker-bar" id="stickerBar" hidden></button>
 
@@ -399,6 +439,31 @@
       <button type="button" class="btn secondary" id="stickerBtn">🏷️ เปลี่ยนสติ๊กเกอร์ใหม่แล้ว — เริ่มนับ 1 ปีใหม่</button>
       <button type="button" class="btn secondary" id="editBtn">✏️ แก้ไขข้อมูล</button>
       <button type="button" class="btn danger" id="deleteBtn">🗑 ลบลูกค้า</button>
+    </div>
+  </div>
+
+  <!-- ==================== หน้าสต๊อกเครื่อง ==================== -->
+  <div id="pageStock" hidden>
+    <button type="button" class="back-btn" id="stockBackBtn">← กลับหน้ารายชื่อ</button>
+
+    <div class="detail-card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="min-width:0">
+        <h2 style="margin:0;font-size:1.2rem">📦 สต๊อกเครื่อง</h2>
+        <div class="sub" id="stockSub">⏳ กำลังโหลด...</div>
+      </div>
+      <button type="button" class="qr-btn" id="stockRefreshBtn">🔄 รีเฟรช</button>
+    </div>
+
+    <div id="stockGroups"></div>
+
+    <div class="btn-row" style="margin-bottom:12px">
+      <button type="button" class="btn primary" id="stockShareBtn" style="background:var(--primary)">📋 คัดลอกสรุปส่งเข้าไลน์</button>
+      <button type="button" class="btn secondary" id="stockAddBtn">＋ เพิ่มรุ่น/รายการใหม่</button>
+    </div>
+
+    <div class="detail-card">
+      <h3 style="margin:0 0 6px;font-size:1rem">📜 ความเคลื่อนไหวล่าสุด</h3>
+      <div id="stockMovesList"></div>
     </div>
   </div>
 
@@ -578,6 +643,60 @@
   <button type="button" class="btn secondary" id="pinCancelBtn" style="margin-top:8px">ยกเลิก</button>
 </div>
 
+<!-- ==================== ฟอร์มตัด/รับสต๊อก ==================== -->
+<div class="sheet-overlay" id="stkMoveOverlay"></div>
+<div class="sheet" id="stkMoveSheet">
+  <div class="grip"></div>
+  <h3 id="stkMoveTitle"></h3>
+  <div class="stk-preview" id="stkMovePreview"></div>
+  <div class="field">
+    <label>เหตุผล</label>
+    <div class="reason-row" id="stkReasonRow"></div>
+  </div>
+  <div class="field">
+    <label for="stkQty">จำนวน (เครื่อง)</label>
+    <input id="stkQty" type="number" inputmode="numeric" min="1" value="1">
+  </div>
+  <div class="field">
+    <label for="stkNote" id="stkNoteLabel">รายละเอียด</label>
+    <input id="stkNote" list="stkNoteList" placeholder="">
+    <datalist id="stkNoteList"></datalist>
+  </div>
+  <div class="field">
+    <label for="stkBy">ผู้บันทึก</label>
+    <input id="stkBy" list="techList" placeholder="เช่น ช่างต้น">
+  </div>
+  <div class="err" id="stkErr"></div>
+  <button type="button" class="btn primary" id="stkMoveOkBtn">บันทึก</button>
+  <button type="button" class="btn secondary" id="stkMoveCancelBtn" style="margin-top:8px">ยกเลิก</button>
+</div>
+
+<!-- ==================== ฟอร์มเพิ่มรุ่น/รายการสต๊อกใหม่ ==================== -->
+<div class="sheet-overlay" id="stkItemOverlay"></div>
+<div class="sheet" id="stkItemSheet">
+  <div class="grip"></div>
+  <h3>เพิ่มรุ่น/รายการใหม่</h3>
+  <div class="field">
+    <label for="stkItemGrp">กลุ่ม</label>
+    <select id="stkItemGrp"></select>
+  </div>
+  <div class="field" id="stkItemGrpNewWrap" hidden>
+    <label for="stkItemGrpNew">ชื่อกลุ่มใหม่</label>
+    <input id="stkItemGrpNew" placeholder="เช่น Hood, Under, อะไหล่">
+  </div>
+  <div class="field">
+    <label for="stkItemName">ชื่อรุ่น / รายการ *</label>
+    <input id="stkItemName" placeholder="เช่น 60/22, VHT-60">
+  </div>
+  <div class="field">
+    <label for="stkItemQty">จำนวนเริ่มต้น (เครื่อง)</label>
+    <input id="stkItemQty" type="number" inputmode="numeric" min="0" value="1">
+  </div>
+  <div class="err" id="stkItemErr"></div>
+  <button type="button" class="btn primary" id="stkItemOkBtn" style="background:var(--primary)">เพิ่มเข้าไปในสต๊อก</button>
+  <button type="button" class="btn secondary" id="stkItemCancelBtn" style="margin-top:8px">ยกเลิก</button>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -710,6 +829,17 @@
     pageQrView: $("pageQrView"), qvIcon: $("qvIcon"), qvHead: $("qvHead"), qvBadge: $("qvBadge"),
     qvDate: $("qvDate"), qvTech: $("qvTech"), qvWorkRow: $("qvWorkRow"), qvWork: $("qvWork"),
     qvType: $("qvType"), qvModel: $("qvModel"), qvSerialRow: $("qvSerialRow"), qvSerial: $("qvSerial"), qvNext: $("qvNext"),
+    stockBar: $("stockBar"), stockBarInfo: $("stockBarInfo"), pageStock: $("pageStock"),
+    stockBackBtn: $("stockBackBtn"), stockSub: $("stockSub"), stockRefreshBtn: $("stockRefreshBtn"),
+    stockGroups: $("stockGroups"), stockShareBtn: $("stockShareBtn"), stockAddBtn: $("stockAddBtn"),
+    stockMovesList: $("stockMovesList"),
+    stkMoveOverlay: $("stkMoveOverlay"), stkMoveSheet: $("stkMoveSheet"), stkMoveTitle: $("stkMoveTitle"),
+    stkMovePreview: $("stkMovePreview"), stkReasonRow: $("stkReasonRow"), stkQty: $("stkQty"),
+    stkNote: $("stkNote"), stkNoteList: $("stkNoteList"), stkNoteLabel: $("stkNoteLabel"),
+    stkBy: $("stkBy"), stkErr: $("stkErr"), stkMoveOkBtn: $("stkMoveOkBtn"), stkMoveCancelBtn: $("stkMoveCancelBtn"),
+    stkItemOverlay: $("stkItemOverlay"), stkItemSheet: $("stkItemSheet"), stkItemGrp: $("stkItemGrp"),
+    stkItemGrpNewWrap: $("stkItemGrpNewWrap"), stkItemGrpNew: $("stkItemGrpNew"), stkItemName: $("stkItemName"),
+    stkItemQty: $("stkItemQty"), stkItemErr: $("stkItemErr"), stkItemOkBtn: $("stkItemOkBtn"), stkItemCancelBtn: $("stkItemCancelBtn"),
     toast: $("toast")
   };
 
@@ -1853,6 +1983,396 @@
     });
   });
 
+  // ---------- สต๊อกเครื่อง (ตาราง stock_items/stock_moves — ทุกเครื่องเห็นยอดเดียวกัน) ----------
+  // ตัด/รับสต๊อกผ่าน RPC stock_adjust ฝั่งฐานข้อมูล: ปรับยอด+ลงประวัติในทีเดียว กันยอดเพี้ยนตอนกดพร้อมกัน
+  var stockItems = null;   // null = ยังไม่เคยโหลด
+  var stockMoves = null;
+  var stockOpen = false;
+  var stkMoveItem = null, stkMoveDir = 0, stkReason = "";
+  var STK_REASONS_OUT = ["ติดตั้ง", "ขาย", "อื่นๆ"];
+  var STK_REASONS_IN = ["รับเข้า", "คืนจากงาน", "อื่นๆ"];
+  var STK_BY_KEY = "omega_pm_stock_by";   // จำชื่อผู้บันทึกล่าสุดในเครื่อง
+
+  function fetchStockItems() {
+    return fetch(SUPABASE_URL + "/rest/v1/stock_items?active=eq.true&order=pos,id", { headers: sbHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error("stock " + r.status); return r.json(); })
+      .then(function (rows) { stockItems = rows; });
+  }
+  function fetchStockMoves() {
+    return fetch(SUPABASE_URL + "/rest/v1/stock_moves?select=delta,reason,note,by_name,created_at,stock_items(name,grp)&order=created_at.desc&limit=25", { headers: sbHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error("moves " + r.status); return r.json(); })
+      .then(function (rows) { stockMoves = rows; });
+  }
+  function stockItemById(id) {
+    return (stockItems || []).find(function (x) { return x.id === id; }) || null;
+  }
+  // จัดกลุ่มตามลำดับที่เจอครั้งแรก (เรียงตาม pos) — กลุ่มหลักอยู่บนสุดเสมอ
+  function stockGrouped() {
+    var byGrp = {}, order = [];
+    (stockItems || []).forEach(function (it) {
+      if (!byGrp[it.grp]) { byGrp[it.grp] = []; order.push(it.grp); }
+      byGrp[it.grp].push(it);
+    });
+    return order.map(function (g) { return { grp: g, items: byGrp[g] }; });
+  }
+  function stockTotal() {
+    var t = 0;
+    (stockItems || []).forEach(function (it) { t += it.qty; });
+    return t;
+  }
+  function updateStockBar() {
+    if (stockItems) el.stockBarInfo.textContent = "· รวม " + stockTotal() + " เครื่อง";
+  }
+  function fmtThaiDT(ts) {
+    var d = new Date(ts);
+    if (isNaN(d)) return "";
+    return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) +
+      " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") + " น.";
+  }
+
+  function renderStock() {
+    if (!stockItems) {
+      el.stockGroups.innerHTML = '<div class="empty">⏳ กำลังโหลดสต๊อกจากเว็บ...</div>';
+      renderStockMoves();
+      return;
+    }
+    el.stockSub.textContent = "รวมทั้งหมด " + stockTotal() + " เครื่อง";
+    var boss = loginRole() === "boss";
+    el.stockGroups.innerHTML = stockGrouped().map(function (go) {
+      return '<div class="stk-group"><h3>' + esc(go.grp || "ไม่ระบุกลุ่ม") + "</h3>" +
+        go.items.map(function (it) {
+          return '<div class="stk-row">' +
+            '<div class="nm">' + esc(it.name) + "</div>" +
+            (boss ? '<button type="button" class="stk-del" data-del="' + it.id + '" title="ลบรายการ">🗑</button>' : "") +
+            '<button type="button" class="stk-btn minus" data-minus="' + it.id + '"' + (it.qty <= 0 ? " disabled" : "") + ">−</button>" +
+            '<div class="q' + (it.qty === 0 ? " zero" : "") + '">' + it.qty + "</div>" +
+            '<button type="button" class="stk-btn plus" data-plus="' + it.id + '">＋</button>' +
+            "</div>";
+        }).join("") + "</div>";
+    }).join("") || '<div class="empty">ยังไม่มีรายการในสต๊อก<br>กดปุ่ม "＋ เพิ่มรุ่น/รายการใหม่" เพื่อเริ่มต้น</div>';
+    renderStockMoves();
+    updateStockBar();
+  }
+  function renderStockMoves() {
+    if (!stockMoves) {
+      el.stockMovesList.innerHTML = '<div class="hist-empty">⏳ กำลังโหลด...</div>';
+      return;
+    }
+    el.stockMovesList.innerHTML = stockMoves.length === 0
+      ? '<div class="hist-empty">ยังไม่มีความเคลื่อนไหว</div>'
+      : stockMoves.map(function (m) {
+          var it = m.stock_items || {};
+          var plus = m.delta > 0;
+          var col = plus ? "var(--green)" : "var(--red)";
+          return '<div class="hist-item"><div class="dot" style="background:' + col + '"></div><div style="flex:1;min-width:0">' +
+            '<div class="d">' + esc(it.name || "?") + ' <span style="color:' + col + '">' + (plus ? "+" : "") + m.delta + " เครื่อง</span></div>" +
+            ((m.reason || m.note) ? '<div class="n">' + esc([m.reason, m.note].filter(Boolean).join(" · ")) + "</div>" : "") +
+            '<div class="n">' + fmtThaiDT(m.created_at) + (m.by_name ? " · " + esc(m.by_name) : "") + "</div>" +
+            "</div></div>";
+        }).join("");
+  }
+
+  function refreshStock() {
+    return Promise.all([fetchStockItems(), fetchStockMoves()])
+      .then(renderStock)
+      .catch(function () {
+        el.stockSub.textContent = "⚠️ โหลดไม่สำเร็จ — เช็คเน็ตแล้วกด 🔄 รีเฟรช";
+        if (!stockItems) el.stockGroups.innerHTML = '<div class="empty">📴 โหลดสต๊อกไม่สำเร็จ<br>เช็คสัญญาณเน็ตแล้วกด 🔄 รีเฟรชด้านบน</div>';
+      });
+  }
+  function openStock() {
+    stockOpen = true;
+    el.pageList.hidden = true;
+    el.pageDetail.hidden = true;
+    el.fabAdd.hidden = true;
+    el.pageStock.hidden = false;
+    window.scrollTo(0, 0);
+    // ลิงก์ตรง #stock — แชร์เข้ากลุ่มไลน์แล้วกดเปิดหน้านี้ได้เลย
+    if (location.hash !== "#stock") {
+      try { history.replaceState(null, "", "#stock"); } catch (e) {}
+    }
+    renderStock();
+    refreshStock();
+  }
+  function closeStock() {
+    stockOpen = false;
+    el.pageStock.hidden = true;
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    backToList();
+  }
+  el.stockBar.addEventListener("click", openStock);
+  el.stockBackBtn.addEventListener("click", closeStock);
+  el.stockRefreshBtn.addEventListener("click", function () {
+    el.stockSub.textContent = "⏳ กำลังโหลด...";
+    refreshStock();
+  });
+
+  el.stockGroups.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-minus],[data-plus],[data-del]") : null;
+    if (!t) return;
+    if (t.hasAttribute("data-del")) { deleteStockItem(Number(t.getAttribute("data-del"))); return; }
+    var minus = t.hasAttribute("data-minus");
+    openStkMoveSheet(Number(t.getAttribute(minus ? "data-minus" : "data-plus")), minus ? -1 : 1);
+  });
+
+  // ชื่อช่างสำหรับช่อง "ผู้บันทึก" — ดึงจากบันทึก PM บนเว็บครั้งเดียว
+  function fillTechDatalist() {
+    if (el.techList.innerHTML) return;
+    fetch(SUPABASE_URL + "/rest/v1/pm_records?select=tech&order=date.desc&limit=100", { headers: sbHeaders() })
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (rows) {
+        var set = {};
+        rows.forEach(function (x) {
+          String(x.tech || "").split(",").forEach(function (t) {
+            t = t.trim();
+            if (t) set[t] = true;
+          });
+        });
+        var names = Object.keys(set).sort(function (a, b) { return a.localeCompare(b, "th"); });
+        if (names.length && !el.techList.innerHTML) {
+          el.techList.innerHTML = names.map(function (t) {
+            return '<option value="' + t.replace(/"/g, "&quot;") + '"></option>';
+          }).join("");
+        }
+      }).catch(function () {});
+  }
+
+  // ---------- ฟอร์มตัด/รับสต๊อก ----------
+  function updateStkNoteLabel() {
+    if (stkMoveDir < 0 && stkReason === "ติดตั้ง") {
+      el.stkNoteLabel.textContent = "ติดตั้งที่ร้าน / ลูกค้า";
+      el.stkNote.placeholder = "เช่น ร้านครัวคุณหญิง";
+    } else if (stkMoveDir < 0 && stkReason === "ขาย") {
+      el.stkNoteLabel.textContent = "ขายให้ / รายละเอียด";
+      el.stkNote.placeholder = "เช่น ลูกค้าหน้าร้าน จ.ขอนแก่น";
+    } else {
+      el.stkNoteLabel.textContent = "รายละเอียด (ไม่บังคับ)";
+      el.stkNote.placeholder = stkMoveDir > 0 ? "เช่น ซื้อเข้ามาใหม่ 31/7" : "";
+    }
+  }
+  function updateStkPreview() {
+    var it = stkMoveItem;
+    if (!it) return;
+    var n = parseInt(el.stkQty.value, 10) || 0;
+    var after = it.qty + stkMoveDir * n;
+    var bad = after < 0;
+    el.stkMovePreview.className = "stk-preview" + (bad ? " bad" : "");
+    el.stkMovePreview.textContent = bad
+      ? "⚠️ สต๊อกมีแค่ " + it.qty + " เครื่อง — ตัดเกินไม่ได้"
+      : "คงเหลือ " + it.qty + " → " + after + " เครื่อง";
+    el.stkMoveOkBtn.disabled = bad || n < 1;
+  }
+  function openStkMoveSheet(id, dir) {
+    var it = stockItemById(id);
+    if (!it) return;
+    stkMoveItem = it;
+    stkMoveDir = dir;
+    var reasons = dir < 0 ? STK_REASONS_OUT : STK_REASONS_IN;
+    stkReason = reasons[0];
+    el.stkMoveTitle.textContent = (dir < 0 ? "➖ ตัดสต๊อก — " : "➕ รับเข้า — ") + it.name + (it.grp ? " (" + it.grp + ")" : "");
+    el.stkReasonRow.innerHTML = reasons.map(function (rn) {
+      return '<button type="button" class="reason-chip' + (rn === stkReason ? " active" : "") + '" data-reason="' + esc(rn) + '">' + esc(rn) + "</button>";
+    }).join("");
+    el.stkQty.value = 1;
+    el.stkNote.value = "";
+    // ตัดไปติดตั้ง — เลือกชื่อร้านจากรายชื่อลูกค้าในแอปได้เลย
+    el.stkNoteList.innerHTML = customers.map(function (c) {
+      return '<option value="' + esc(c.name) + '"></option>';
+    }).join("");
+    try { el.stkBy.value = localStorage.getItem(STK_BY_KEY) || ""; } catch (e) { el.stkBy.value = ""; }
+    fillTechDatalist();
+    el.stkErr.textContent = "";
+    el.stkMoveOkBtn.disabled = false;
+    el.stkMoveOkBtn.textContent = "บันทึก";
+    updateStkNoteLabel();
+    updateStkPreview();
+    el.stkMoveOverlay.classList.add("show");
+    el.stkMoveSheet.classList.add("show");
+  }
+  function closeStkMoveSheet() {
+    el.stkMoveOverlay.classList.remove("show");
+    el.stkMoveSheet.classList.remove("show");
+    stkMoveItem = null;
+  }
+  el.stkReasonRow.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".reason-chip") : null;
+    if (!b) return;
+    stkReason = b.getAttribute("data-reason");
+    el.stkReasonRow.querySelectorAll(".reason-chip").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    updateStkNoteLabel();
+  });
+  el.stkQty.addEventListener("input", updateStkPreview);
+  el.stkMoveCancelBtn.addEventListener("click", closeStkMoveSheet);
+  el.stkMoveOverlay.addEventListener("click", closeStkMoveSheet);
+
+  el.stkMoveOkBtn.addEventListener("click", function () {
+    var it = stkMoveItem;
+    if (!it) return;
+    var n = parseInt(el.stkQty.value, 10);
+    if (!n || n < 1) { el.stkErr.textContent = "จำนวนต้องอย่างน้อย 1 เครื่อง"; return; }
+    var delta = stkMoveDir * n;
+    if (it.qty + delta < 0) { el.stkErr.textContent = "สต๊อกมีแค่ " + it.qty + " เครื่อง"; return; }
+    var by = el.stkBy.value.trim();
+    try { localStorage.setItem(STK_BY_KEY, by); } catch (e) {}
+    el.stkMoveOkBtn.disabled = true;
+    el.stkMoveOkBtn.textContent = "⏳ กำลังบันทึก...";
+    fetch(SUPABASE_URL + "/rest/v1/rpc/stock_adjust", {
+      method: "POST",
+      headers: sbHeaders(true),
+      body: JSON.stringify({ p_item: it.id, p_delta: delta, p_reason: stkReason, p_note: el.stkNote.value.trim(), p_by: by })
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error(t || String(r.status)); });
+      return r.json();
+    }).then(function (newQty) {
+      it.qty = typeof newQty === "number" ? newQty : it.qty + delta;
+      closeStkMoveSheet();
+      flash(delta < 0
+        ? "✅ ตัด " + it.name + " ออก " + n + " เครื่อง (เหลือ " + it.qty + ")"
+        : "✅ รับ " + it.name + " เข้า " + n + " เครื่อง (รวม " + it.qty + ")");
+      renderStock();
+      fetchStockMoves().then(renderStockMoves).catch(function () {});
+    }).catch(function (e2) {
+      el.stkMoveOkBtn.disabled = false;
+      el.stkMoveOkBtn.textContent = "บันทึก";
+      el.stkErr.textContent = String(e2.message).indexOf("QTY_BELOW_ZERO") !== -1
+        ? "ยอดบนเว็บมีไม่พอ (มีคนตัดไปก่อนหน้า) — กด 🔄 รีเฟรชดูยอดล่าสุด"
+        : "บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง";
+    });
+  });
+
+  // ---------- เพิ่มรุ่น/รายการใหม่ ----------
+  function openStkItemSheet() {
+    var grps = stockGrouped().map(function (go) { return go.grp; });
+    el.stkItemGrp.innerHTML = grps.map(function (g) {
+      return '<option value="' + esc(g) + '">' + esc(g || "ไม่ระบุกลุ่ม") + "</option>";
+    }).join("") + '<option value="__new__">➕ สร้างกลุ่มใหม่...</option>';
+    el.stkItemGrpNewWrap.hidden = grps.length > 0;
+    if (!grps.length) el.stkItemGrp.value = "__new__";
+    el.stkItemGrpNew.value = "";
+    el.stkItemName.value = "";
+    el.stkItemQty.value = 1;
+    el.stkItemErr.textContent = "";
+    el.stkItemOkBtn.disabled = false;
+    el.stkItemOkBtn.textContent = "เพิ่มเข้าไปในสต๊อก";
+    el.stkItemOverlay.classList.add("show");
+    el.stkItemSheet.classList.add("show");
+  }
+  function closeStkItemSheet() {
+    el.stkItemOverlay.classList.remove("show");
+    el.stkItemSheet.classList.remove("show");
+  }
+  el.stockAddBtn.addEventListener("click", function () {
+    if (!stockItems) { flash("⏳ รอโหลดสต๊อกก่อนสักครู่ แล้วลองใหม่"); return; }
+    openStkItemSheet();
+  });
+  el.stkItemGrp.addEventListener("change", function () {
+    el.stkItemGrpNewWrap.hidden = el.stkItemGrp.value !== "__new__";
+  });
+  el.stkItemCancelBtn.addEventListener("click", closeStkItemSheet);
+  el.stkItemOverlay.addEventListener("click", closeStkItemSheet);
+
+  el.stkItemOkBtn.addEventListener("click", function () {
+    var grp = el.stkItemGrp.value === "__new__" ? el.stkItemGrpNew.value.trim() : el.stkItemGrp.value;
+    var name = el.stkItemName.value.trim();
+    var qty0 = parseInt(el.stkItemQty.value, 10);
+    if (!name) { el.stkItemErr.textContent = "กรุณาใส่ชื่อรุ่น/รายการ"; return; }
+    if (isNaN(qty0) || qty0 < 0) { el.stkItemErr.textContent = "จำนวนเริ่มต้นต้องเป็น 0 ขึ้นไป"; return; }
+    var dup = (stockItems || []).some(function (x) {
+      return x.grp === grp && x.name.toLowerCase() === name.toLowerCase();
+    });
+    if (dup) { el.stkItemErr.textContent = "มีรายการนี้ในกลุ่มนี้อยู่แล้ว"; return; }
+    var maxPos = 0;
+    (stockItems || []).forEach(function (x) { if (x.pos > maxPos) maxPos = x.pos; });
+    el.stkItemOkBtn.disabled = true;
+    el.stkItemOkBtn.textContent = "⏳ กำลังบันทึก...";
+    var by = "";
+    try { by = localStorage.getItem(STK_BY_KEY) || ""; } catch (e) {}
+    fetch(SUPABASE_URL + "/rest/v1/stock_items", {
+      method: "POST",
+      headers: Object.assign(sbHeaders(true), { Prefer: "return=representation" }),
+      body: JSON.stringify({ grp: grp, name: name, qty: 0, pos: maxPos + 1 })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("item " + r.status);
+      return r.json();
+    }).then(function (rows) {
+      var row = rows[0];
+      // ยอดเริ่มต้นลงผ่าน RPC เพื่อให้มีประวัติ "รับเข้า" กำกับ
+      if (qty0 > 0) {
+        return fetch(SUPABASE_URL + "/rest/v1/rpc/stock_adjust", {
+          method: "POST",
+          headers: sbHeaders(true),
+          body: JSON.stringify({ p_item: row.id, p_delta: qty0, p_reason: "รับเข้า", p_note: "ยอดเริ่มต้น", p_by: by })
+        }).then(function (r) {
+          if (!r.ok) throw new Error("adjust " + r.status);
+          row.qty = qty0;
+          return row;
+        });
+      }
+      return row;
+    }).then(function (row) {
+      stockItems.push(row);
+      closeStkItemSheet();
+      flash("✅ เพิ่ม " + row.name + " เข้าสต๊อกแล้ว");
+      renderStock();
+      fetchStockMoves().then(renderStockMoves).catch(function () {});
+    }).catch(function () {
+      el.stkItemOkBtn.disabled = false;
+      el.stkItemOkBtn.textContent = "เพิ่มเข้าไปในสต๊อก";
+      el.stkItemErr.textContent = "บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง";
+    });
+  });
+
+  // ลบรายการ (เฉพาะรหัสเจ้าของ) — แค่ซ่อน ประวัติยังอยู่ในฐานข้อมูล
+  function deleteStockItem(id) {
+    var it = stockItemById(id);
+    if (!it) return;
+    if (!confirm('ลบ "' + it.name + '" ออกจากสต๊อก?\n(ประวัติความเคลื่อนไหวยังอยู่ กู้คืนได้)')) return;
+    fetch(SUPABASE_URL + "/rest/v1/stock_items?id=eq." + id, {
+      method: "PATCH",
+      headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
+      body: JSON.stringify({ active: false })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("del " + r.status);
+      stockItems = stockItems.filter(function (x) { return x.id !== id; });
+      flash("🗑 ลบ " + it.name + " แล้ว");
+      renderStock();
+    }).catch(function () {
+      flash("⚠️ ลบไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+    });
+  }
+
+  // ---------- คัดลอกสรุปสต๊อกส่งเข้าไลน์ (รูปแบบเดียวกับที่เคยพิมพ์กันในกลุ่ม) ----------
+  function stockSummaryText() {
+    var d = new Date();
+    var yy = (d.getFullYear() + 543) % 100;   // ปี พ.ศ. 2 หลัก เช่น 69
+    var lines = ["📦 สต๊อกเครื่อง อัพเดท " + d.getDate() + "/" + (d.getMonth() + 1) + "/" + yy, ""];
+    stockGrouped().forEach(function (go) {
+      lines.push(go.grp || "อื่นๆ");
+      go.items.forEach(function (it) {
+        lines.push(it.name + " " + it.qty + " เครื่อง");
+      });
+      lines.push("");
+    });
+    lines.push("รวม " + stockTotal() + " เครื่อง");
+    lines.push("ดูสด/ตัดสต๊อกในแอป: " + PUBLIC_URL + "#stock");
+    return lines.join("\n");
+  }
+  el.stockShareBtn.addEventListener("click", function () {
+    if (!stockItems) return;
+    var txt = stockSummaryText();
+    if (navigator.share) {
+      navigator.share({ text: txt }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function () {
+        flash("📋 คัดลอกสรุปแล้ว — ไปวางในกลุ่มไลน์ได้เลย");
+      });
+    } else {
+      flash("⚠️ เบราว์เซอร์นี้ไม่รองรับการคัดลอก");
+    }
+  });
+
   // ---------- ล็อกอิน (2 รหัส: ช่าง / เจ้าของ) — หน้า QR ลูกค้าไม่ต้องล็อกอิน ----------
   function loginRole() {
     try {
@@ -1890,7 +2410,7 @@
   });
 
   // ---------- init ----------
-  var PM_VERSION = "v5";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
+  var PM_VERSION = "v6";   // โชว์ในแถบสถานะ ไว้เช็คว่าเครื่องไหนยังโหลดหน้าเวอร์ชันเก่าค้างอยู่
   function timeStr() {
     var d = new Date();
     return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
@@ -1927,9 +2447,14 @@
     renderList();  // โชว์แคช/สถานะกำลังโหลดไปก่อน
     refreshFromCloud();
     el.cloudRefreshBtn.addEventListener("click", refreshFromCloud);
-    // กลับมาเปิดแอปเมื่อไหร่ รีเฟรชรายชื่อจากเว็บให้เอง (เห็นข้อมูลที่เครื่องอื่นเพิ่งบันทึก)
+    // เปิดจากลิงก์ #stock (เช่น ลิงก์ที่แชร์ไว้ในกลุ่มไลน์) — เข้าหน้าสต๊อกทันที
+    if (location.hash === "#stock") openStock();
+    else fetchStockItems().then(updateStockBar).catch(function () {});  // โหลดยอดรวมโชว์บนปุ่มสต๊อก
+    // กลับมาเปิดแอปเมื่อไหร่ รีเฟรชข้อมูลจากเว็บให้เอง (เห็นข้อมูลที่เครื่องอื่นเพิ่งบันทึก)
     document.addEventListener("visibilitychange", function () {
-      if (!document.hidden && cloudLoaded && !el.pageList.hidden) {
+      if (document.hidden) return;
+      if (stockOpen) { refreshStock(); return; }
+      if (cloudLoaded && !el.pageList.hidden) {
         fetchCustomers().then(function () {
           renderList();
           cloudOkStatus();
