@@ -59,6 +59,12 @@
   .paper table.items td:last-child { white-space: nowrap; text-align: right; }
   .paper .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 30px; margin-top: 26px; text-align: center; }
   .paper .sign-line { margin-top: 34px; }
+  /* หัวกระดาษบริษัท — บนจอโชว์ครั้งเดียวด้านบน · ตอนพิมพ์ขึ้นซ้ำทุกหน้า (fixed + spacer ใน thead) */
+  .lh-screen { width: 100%; display: block; margin-bottom: 14px; }
+  .lh-print { display: none; }
+  .doc-table { width: 100%; border-collapse: collapse; }
+  .doc-table > thead > tr > td, .doc-table > tbody > tr > td { padding: 0; }
+  .doc-table .lh-space { height: 0; }
   .v { font-weight: 600; }
   [contenteditable="true"]:focus { outline: 2px dashed rgba(43,122,158,.4); outline-offset: 2px; }
 
@@ -79,7 +85,10 @@
     .wrap { padding: 0; max-width: none; }
     .cols { display: block; }
     .paper { box-shadow: none; border-radius: 0; max-width: none; padding: 0; font-size: 14.5px; }
-    @page { size: A4; margin: 16mm 18mm; }
+    .lh-screen { display: none; }
+    .lh-print { display: block; position: fixed; top: 0; left: 0; width: 100%; }
+    .doc-table .lh-space { height: 43mm; }   /* กันที่ให้หัวกระดาษ (สูง ~39mm) ทุกหน้า */
+    @page { size: A4; margin: 8mm 18mm 14mm; }
   }
 </style>
 </head>
@@ -188,7 +197,14 @@
     <!-- ==================== ตัวสัญญา ==================== -->
     <div class="paper-holder">
       <p class="edit-note no-print">✏️ แตะแก้ข้อความในสัญญาตรงนี้ได้เลย (การแก้ในฟอร์มจะเขียนทับ)</p>
-      <div class="paper" id="paper" contenteditable="true" spellcheck="false"></div>
+      <div class="paper">
+        <img class="lh-screen" src="letterhead.jpg" alt="หัวกระดาษบริษัท">
+        <table class="doc-table">
+          <thead><tr><td><div class="lh-space"></div></td></tr></thead>
+          <tbody><tr><td><div id="paper" contenteditable="true" spellcheck="false"></div></td></tr></tbody>
+        </table>
+      </div>
+      <img class="lh-print" src="letterhead.jpg" alt="">
     </div>
   </div>
 </div>
