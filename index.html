@@ -2717,6 +2717,16 @@
 
   el.impOkBtn.addEventListener("click", function () {
     if (!impRows || !impRows.length) return;
+    // เช็คซ้ำอีกรอบตอนกดปุ่ม — ระหว่างรอ ข้อมูลชุดเดียวกันอาจถูกนำเข้าทางอื่นสำเร็จไปแล้ว
+    var exS = {}, exNM = {};
+    customers.forEach(function (c) {
+      if (c.serial) exS[impNorm(c.serial)] = 1;
+      exNM[impNorm(c.name) + "|" + impNorm(c.model)] = 1;
+    });
+    impRows = impRows.filter(function (r) {
+      return !(r.serial && exS[impNorm(r.serial)]) && !exNM[impNorm(r.name) + "|" + impNorm(r.model)];
+    });
+    if (!impRows.length) { closeImp(); flash("✅ ข้อมูลทั้งหมดมีในระบบแล้ว — ไม่มีอะไรต้องนำเข้าเพิ่ม"); return; }
     var rows = impRows.map(function (r) {
       return {
         id: newId(), name: r.name, phone: r.phone, type: r.type, model: r.model, serial: r.serial,
