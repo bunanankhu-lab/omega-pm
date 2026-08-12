@@ -310,14 +310,42 @@
   .stock-bar:active { transform: scale(.985); }
 
   /* หน้าแผนที่ภาคอีสาน */
-  .map-card svg { width: 100%; height: auto; display: block; }
-  .map-card path { stroke: #fff; stroke-width: 1.6; cursor: pointer; transition: opacity .15s; }
-  .map-card path:active { opacity: .75; }
+  .map-card { position: relative; background: linear-gradient(180deg, #ffffff 0%, #EFF8FC 100%); overflow: hidden; }
+  .map-card svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 10px rgba(43,122,158,.18)); }
+  .map-card path, #bigMapSvg path { stroke: #fff; stroke-width: 1.6; cursor: pointer; transition: fill .25s, opacity .15s; }
+  .map-card path:active, #bigMapSvg path:active { opacity: .75; }
   .map-card path.sel { stroke: var(--text); stroke-width: 3; }
-  .map-card text { pointer-events: none; font-family: inherit; font-weight: 700; }
-  .map-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; font-size: .78rem; color: var(--muted); }
-  .map-legend .sw { display: inline-block; width: 13px; height: 13px; border-radius: 4px; vertical-align: -2px; margin-right: 4px; border: 1px solid var(--border); }
-  .map-hint { color: var(--muted); font-size: .82rem; margin-top: 8px; }
+  .map-card text, #bigMapSvg text { pointer-events: none; font-family: inherit; font-weight: 700; }
+  .map-expand {
+    position: absolute; top: 10px; right: 10px; z-index: 2; width: 40px; height: 40px;
+    border-radius: 13px; border: 1px solid var(--border); background: rgba(255,255,255,.92);
+    font-size: 18px; color: var(--primary); cursor: pointer; box-shadow: var(--shadow);
+  }
+  .map-expand:active { transform: scale(.94); }
+  .map-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; font-size: .76rem; color: var(--text); }
+  .map-legend .pill {
+    display: inline-flex; align-items: center; gap: 6px; background: #fff;
+    border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-weight: 600;
+  }
+  .map-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 4px; border: 1px solid rgba(23,48,59,.12); }
+  .map-hint { color: var(--muted); font-size: .82rem; margin-top: 10px; }
+
+  /* แผนที่เต็มจอ */
+  #bigMapModal { position: fixed; inset: 0; z-index: 60; background: linear-gradient(180deg, #0E2836 0%, #1A3D4E 100%); display: flex; flex-direction: column; }
+  .bm-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; color: #fff; }
+  .bm-top .bm-title { font-weight: 700; font-size: 1.02rem; min-width: 0; }
+  .bm-top .bm-sub { font-size: .76rem; color: rgba(255,255,255,.65); font-weight: 500; }
+  .bm-tools { display: flex; gap: 8px; flex: none; }
+  .bm-tools button {
+    width: 42px; height: 42px; border-radius: 13px; border: none; cursor: pointer;
+    background: rgba(255,255,255,.14); color: #fff; font-size: 20px; font-family: inherit;
+  }
+  .bm-tools button:active { background: rgba(255,255,255,.28); }
+  .bm-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 12px; }
+  #bigMapSvg { width: var(--bmw, 165%); max-width: none; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,.4)); }
+  #bigMapSvg path { stroke: #10303F; stroke-width: 1.1; }
+  #bigMapSvg path.sel { stroke: #FFD54F; stroke-width: 3; }
+  .bm-hint { color: rgba(255,255,255,.75); text-align: center; font-size: .8rem; padding: 8px 12px 14px; }
   .map-prov { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 14px; margin-bottom: 12px; }
   .map-prov.hl { outline: 3px solid var(--primary); }
   .map-prov .mp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-weight: 700; margin-bottom: 6px; }
@@ -519,12 +547,32 @@
     </div>
 
     <div class="detail-card map-card">
+      <button type="button" class="map-expand" id="mapExpandBtn" title="ดูแผนที่ใหญ่เต็มจอ">⛶</button>
       <svg id="isanSvg" viewBox="-8 -8 736 701" role="img" aria-label="แผนที่ภาคอีสาน"></svg>
       <div class="map-legend" id="mapLegend"></div>
-      <div class="map-hint">ตัวเลขในแผนที่ = จำนวนเครื่อง · แตะจังหวัดเพื่อดูรายชื่อร้าน</div>
+      <div class="map-hint">ตัวเลข = จำนวนเครื่อง · แตะจังหวัดดูรายชื่อร้าน · ปุ่ม ⛶ ขยายเต็มจอ</div>
     </div>
 
     <div id="mapProvList"></div>
+  </div>
+
+  <!-- ==================== แผนที่เต็มจอ ==================== -->
+  <div id="bigMapModal" hidden>
+    <div class="bm-top">
+      <div style="min-width:0">
+        <div class="bm-title">🗺️ แผนที่ลูกค้าภาคอีสาน</div>
+        <div class="bm-sub" id="bmSub"></div>
+      </div>
+      <div class="bm-tools">
+        <button type="button" id="bmZoomOut" title="ซูมออก">−</button>
+        <button type="button" id="bmZoomIn" title="ซูมเข้า">＋</button>
+        <button type="button" id="bmClose" title="ปิด">✕</button>
+      </div>
+    </div>
+    <div class="bm-body" id="bmBody">
+      <svg id="bigMapSvg" viewBox="-8 -8 736 701" role="img" aria-label="แผนที่ภาคอีสานขนาดใหญ่"></svg>
+    </div>
+    <div class="bm-hint">แตะจังหวัดเพื่อดูยอดรวม · ปุ่ม ＋/− หรือถ่างนิ้วเพื่อซูม · เลื่อนดูได้ทุกทิศ</div>
   </div>
 
   <!-- ==================== หน้าบัตรตรวจเช็ค (ลูกค้าเปิดจากการสแกน QR) ==================== -->
@@ -910,6 +958,8 @@
     impFile: $("impFile"), impInfo: $("impInfo"), impErr: $("impErr"), impOkBtn: $("impOkBtn"), impCancelBtn: $("impCancelBtn"),
     mapBar: $("mapBar"), mapBarInfo: $("mapBarInfo"), pageMap: $("pageMap"),
     mapBackBtn: $("mapBackBtn"), mapSub: $("mapSub"), isanSvg: $("isanSvg"), mapLegend: $("mapLegend"), mapProvList: $("mapProvList"),
+    mapExpandBtn: $("mapExpandBtn"), bigMapModal: $("bigMapModal"), bigMapSvg: $("bigMapSvg"),
+    bmSub: $("bmSub"), bmZoomIn: $("bmZoomIn"), bmZoomOut: $("bmZoomOut"), bmClose: $("bmClose"), bmBody: $("bmBody"),
     stockBar: $("stockBar"), stockBarInfo: $("stockBarInfo"), pageStock: $("pageStock"),
     stockBackBtn: $("stockBackBtn"), stockSub: $("stockSub"), stockRefreshBtn: $("stockRefreshBtn"),
     stockGroups: $("stockGroups"), stockShareBtn: $("stockShareBtn"), stockAddBtn: $("stockAddBtn"),
@@ -2811,7 +2861,7 @@
       ? "รวม " + st.shopTotal + " ร้าน · " + st.machTotal + " เครื่อง ใน " + provCount + " จังหวัด"
       : (cloudLoaded ? "ยังไม่มีลูกค้าในระบบ" : "⏳ กำลังโหลดข้อมูลจากเว็บ...");
 
-    // วาดจังหวัดก่อน แล้วค่อยวางตัวเลขทับ ให้ตัวเลขลอยเหนือเส้นขอบเสมอ
+    // วาดจังหวัดก่อน แล้วค่อยวางตัวเลข+ชื่อจังหวัดทับ ให้ตัวหนังสือลอยเหนือเส้นขอบเสมอ
     var svg = provs.map(function (p) {
       var shops = st.byProv[p];
       var b = mapBucket(shops ? machOf(shops) : 0);
@@ -2819,15 +2869,24 @@
         (p === mapSelProv ? ' class="sel"' : "") + ' data-prov="' + esc(p) + '"><title>' + esc(p) + "</title></path>";
     }).join("");
     svg += provs.map(function (p) {
-      var shops = st.byProv[p];
-      if (!shops) return "";
+      var m = ISAN_MAP[p], shops = st.byProv[p];
+      if (!shops) {
+        // จังหวัดที่ยังไม่มีร้าน — โชว์แค่ชื่อจาง ๆ
+        return '<text x="' + m.cx + '" y="' + (m.cy + 6) + '" text-anchor="middle" font-size="16" font-weight="500" fill="#7E98A6">' + esc(p) + "</text>";
+      }
       var mach = machOf(shops);
-      return '<text x="' + ISAN_MAP[p].cx + '" y="' + (ISAN_MAP[p].cy + 11) + '" text-anchor="middle" font-size="32" fill="' + mapBucket(mach).txt + '">' + mach + "</text>";
+      var b = mapBucket(mach);
+      return '<text x="' + m.cx + '" y="' + (m.cy + 2) + '" text-anchor="middle" font-size="30" fill="' + b.txt + '">' + mach + "</text>" +
+        '<text x="' + m.cx + '" y="' + (m.cy + 26) + '" text-anchor="middle" font-size="16" fill="' + b.txt + '" fill-opacity=".88" font-weight="600">' + esc(p) + "</text>";
     }).join("");
     el.isanSvg.innerHTML = svg;
+    if (!el.bigMapModal.hidden) {
+      el.bigMapSvg.innerHTML = svg;
+      el.bmSub.textContent = el.mapSub.textContent;
+    }
 
     el.mapLegend.innerHTML = MAP_COLORS.slice().reverse().map(function (c) {
-      return '<span><span class="sw" style="background:' + c.fill + '"></span>' + c.label + "</span>";
+      return '<span class="pill"><span class="sw" style="background:' + c.fill + '"></span>' + c.label + "</span>";
     }).join("");
 
     // การ์ดรายจังหวัด — เครื่องเยอะสุดอยู่บน · ร้านที่มีหลายเครื่องแตกแถวรายเครื่อง
@@ -2886,6 +2945,37 @@
   el.mapProvList.addEventListener("click", function (e) {
     var row = e.target.closest ? e.target.closest(".mp-shop[data-id]") : null;
     if (row) openDetail(row.getAttribute("data-id"));
+  });
+
+  // ---------- แผนที่เต็มจอ (ซูม/เลื่อนได้) ----------
+  var bmScale = 1.65;
+  function bmApply() { el.bigMapSvg.style.width = Math.round(bmScale * 100) + "%"; }
+  function bigMapOpen() {
+    el.bigMapModal.hidden = false;
+    document.body.style.overflow = "hidden";   // ล็อกหน้าหลังไว้ ไม่ให้เลื่อนซ้อนกัน
+    bmApply();
+    renderMap();
+    el.bmBody.scrollLeft = (el.bmBody.scrollWidth - el.bmBody.clientWidth) / 2;
+  }
+  function bigMapClose() {
+    el.bigMapModal.hidden = true;
+    document.body.style.overflow = "";
+  }
+  el.mapExpandBtn.addEventListener("click", bigMapOpen);
+  el.bmClose.addEventListener("click", bigMapClose);
+  el.bmZoomIn.addEventListener("click", function () { bmScale = Math.min(3.4, bmScale + 0.45); bmApply(); });
+  el.bmZoomOut.addEventListener("click", function () { bmScale = Math.max(1.0, bmScale - 0.45); bmApply(); });
+  // แตะจังหวัดบนแผนที่ใหญ่ — ไฮไลต์ + เด้งยอดรวมของจังหวัดนั้น
+  el.bigMapSvg.addEventListener("click", function (e) {
+    var path = e.target.closest ? e.target.closest("path[data-prov]") : null;
+    if (!path) return;
+    var p = path.getAttribute("data-prov");
+    mapSelProv = p;
+    renderMap();
+    var shops = mapStats().byProv[p];
+    flash(shops
+      ? "📍 " + p + " — " + Object.keys(shops).length + " ร้าน · " + machOf(shops) + " เครื่อง"
+      : "📍 " + p + " — ยังไม่มีร้าน");
   });
 
   function openMap() {
