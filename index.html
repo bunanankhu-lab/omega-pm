@@ -53,7 +53,12 @@
   .login-box .btn { margin-top: 14px; }
   .login-box .err { color: var(--red); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
 
-  header.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  header.top .motto {
+    font-size: .78rem; font-weight: 600; color: var(--primary);
+    background: var(--primary-soft); border: 1px solid var(--border);
+    border-radius: 999px; padding: 5px 12px; white-space: nowrap;
+  }
   header.top h1 { font-size: 1.25rem; margin: 0; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
   header.top .home-link { font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); background: var(--card); padding: 6px 12px; border-radius: 999px; }
 
@@ -413,7 +418,7 @@
   <div id="pageList">
     <header class="top">
       <h1>🔧 เตือนรอบ PM</h1>
-      
+      <span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span>
     </header>
 
     <div class="cloud-bar">
