@@ -54,11 +54,12 @@
   .login-box .err { color: var(--red); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
 
   header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; margin-bottom: 14px; flex-wrap: wrap; }
-  header.top .motto {
-    font-size: .78rem; font-weight: 600; color: var(--primary);
+  .motto {
+    display: inline-block; font-size: .95rem; font-weight: 700; color: var(--primary);
     background: var(--primary-soft); border: 1px solid var(--border);
-    border-radius: 999px; padding: 5px 12px; white-space: nowrap;
+    border-radius: 999px; padding: 7px 16px; line-height: 1.45;
   }
+  .motto-line { text-align: center; margin: 0 0 12px; }
   header.top h1 { font-size: 1.25rem; margin: 0; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
   header.top .home-link { font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); background: var(--card); padding: 6px 12px; border-radius: 999px; }
 
@@ -407,6 +408,7 @@
     <div class="big-icon">🔧</div>
     <h2>เตือนรอบ PM</h2>
     <p class="sub">บริษัทโอเมก้าอีสาน — ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
+    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
     <input id="loginPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
     <button type="button" class="btn primary" id="loginBtn" style="background:var(--primary)">เข้าใช้งาน</button>
     <div class="err" id="loginErr"></div>
@@ -474,6 +476,7 @@
   <!-- ==================== หน้ารายละเอียด ==================== -->
   <div id="pageDetail" hidden>
     <button type="button" class="back-btn" id="backBtn">← กลับหน้ารายชื่อ</button>
+    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
     <div class="detail-card">
       <h2 id="dName"></h2>
@@ -520,6 +523,7 @@
   <!-- ==================== หน้าสต๊อกเครื่อง ==================== -->
   <div id="pageStock" hidden>
     <button type="button" class="back-btn" id="stockBackBtn">← กลับหน้ารายชื่อ</button>
+    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
     <div class="detail-card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
       <div style="min-width:0">
@@ -545,6 +549,7 @@
   <!-- ==================== หน้าแผนที่ภาคอีสาน ==================== -->
   <div id="pageMap" hidden>
     <button type="button" class="back-btn" id="mapBackBtn">← กลับหน้ารายชื่อ</button>
+    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
     <div class="detail-card">
       <h2 style="margin:0;font-size:1.2rem">🗺️ แผนที่ลูกค้าภาคอีสาน</h2>
