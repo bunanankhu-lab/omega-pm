@@ -604,23 +604,49 @@
       });
     });
   }
-  $("pdfBtn").addEventListener("click", function () {
-    var btn = $("pdfBtn");
-    btn.disabled = true;
-    btn.textContent = "⏳ กำลังสร้าง PDF...";
-    var v = values();
-    var fname = "สัญญาเช่า-" + (v.fLessee || "ไม่ระบุชื่อ").replace(/[\\\/:*?"<>|]/g, " ").trim() +
-      (v.fNo ? "-" + v.fNo.replace(/[\\\/:*?"<>|]/g, "-") : "") + ".pdf";
-    Promise.all([loadPdfLib(), loadLetterhead()]).then(function () {
+  // CSS ของเอกสาร PDF ฝั่งเซิร์ฟเวอร์ — สำเนาสไตล์ตัวสัญญา + หัวกระดาษซ้ำทุกหน้า
+  var PDF_CSS = "" +
+    "body{margin:0;font-family:'Sarabun','Noto Sans Thai',serif;font-size:14.5px;line-height:1.7;color:#000;}" +
+    "h1{text-align:center;font-size:20px;margin:0 0 2px;}" +
+    ".cond{margin:0 0 4px;}.docno{text-align:right;margin:0;}" +
+    "p{margin:0 0 8px;text-indent:2.5em;text-align:justify;}p.noindent{text-indent:0;}" +
+    "table.items{width:100%;border-collapse:collapse;margin:2px 0 8px;}" +
+    "table.items td{padding:1px 4px;vertical-align:top;}table.items td:last-child{white-space:nowrap;text-align:right;}" +
+    ".sign-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;margin-top:26px;text-align:center;}" +
+    ".sign-line{margin-top:34px;}.v{font-weight:600;}" +
+    ".sig-holder{display:inline-block;position:relative;min-width:200px;}" +
+    ".sig-holder img{position:absolute;left:50%;transform:translateX(-50%);bottom:0;height:44px;max-width:195px;object-fit:contain;}" +
+    ".lh-print{position:fixed;top:0;left:0;width:100%;}" +
+    ".doc-table{width:100%;border-collapse:collapse;}" +
+    ".doc-table>thead>tr>td,.doc-table>tbody>tr>td{padding:0;}" +
+    ".doc-table .lh-space{height:43mm;}";
+  function buildPdfHtml() {
+    return "<!DOCTYPE html><html lang=\"th\"><head><meta charset=\"utf-8\">" +
+      '<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">' +
+      "<style>" + PDF_CSS + "</style></head><body>" +
+      '<img class="lh-print" src="' + lhData + '">' +
+      '<table class="doc-table"><thead><tr><td><div class="lh-space"></div></td></tr></thead>' +
+      "<tbody><tr><td>" + $("paper").innerHTML + "</td></tr></tbody></table></body></html>";
+  }
+  function downloadBlob(blob, fname) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  }
+  // แผนสอง (เผื่อเซิร์ฟเวอร์มีปัญหา): สร้างในเครื่องด้วย html2pdf — สระไทยอาจวางเพี้ยน
+  function legacyPdf(fname) {
+    return loadPdfLib().then(function () {
       return html2pdf().set({
-        margin: [46, 18, 14, 18],            // เว้นหัวกระดาษ 46mm ทุกหน้า
+        margin: [46, 18, 14, 18],
         filename: fname,
         image: { type: "jpeg", quality: 0.95 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         pagebreak: { mode: ["avoid-all", "css", "legacy"] }
       }).from($("paper")).toPdf().get("pdf").then(function (pdf) {
-        // แปะหัวกระดาษบนทุกหน้า
         var pw = pdf.internal.pageSize.getWidth();
         var lw = pw - 36, lh = lw * LH_RATIO;
         for (var i = 1; i <= pdf.internal.getNumberOfPages(); i++) {
@@ -628,6 +654,29 @@
           pdf.addImage(lhData, "JPEG", 18, 5, lw, lh);
         }
       }).save();
+    });
+  }
+  $("pdfBtn").addEventListener("click", function () {
+    var btn = $("pdfBtn");
+    btn.disabled = true;
+    btn.textContent = "⏳ กำลังสร้าง PDF...";
+    var v = values();
+    var fname = "สัญญาเช่า-" + (v.fLessee || "ไม่ระบุชื่อ").replace(/[\\\/:*?"<>|]/g, " ").trim() +
+      (v.fNo ? "-" + v.fNo.replace(/[\\\/:*?"<>|]/g, "-") : "") + ".pdf";
+    loadLetterhead().then(function () {
+      // สร้างบนเซิร์ฟเวอร์ก่อน (ตัวหนังสือไทยตรงเป๊ะเหมือนสั่งพิมพ์) — ล่มค่อยถอยไปสร้างในเครื่อง
+      return fetch("/api/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ html: buildPdfHtml() })
+      }).then(function (r) {
+        if (!r.ok) throw new Error("api " + r.status);
+        return r.blob();
+      }).then(function (blob) {
+        downloadBlob(blob, fname);
+      }).catch(function () {
+        return legacyPdf(fname);
+      });
     }).then(function () {
       btn.textContent = "✅ ดาวน์โหลดแล้ว";
       setTimeout(function () { btn.textContent = "⬇️ ดาวน์โหลด PDF"; btn.disabled = false; }, 1800);
