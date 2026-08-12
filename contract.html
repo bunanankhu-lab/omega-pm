@@ -437,8 +437,12 @@
     ["wit1", "พยานบริษัท 1"], ["wit2", "พยานบริษัท 2"],
     ["witL1", "พยานฝั่งผู้เช่า 1"], ["witL2", "พยานฝั่งผู้เช่า 2"]
   ];
+  // ลายเซ็นตั้งต้นฝั่งบริษัท (กรรมการ + พยาน 2 คน) — ฝังไว้เลยเพราะผู้ลงนามไม่เปลี่ยน
+  var DEFAULT_SIGS = { lessor: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHUAAAA8CAYAAABYU/UYAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAK9SURBVHic7Zt9buQgDMU9qx6g6nl6/DnPaG7Q/SsSSgL42cbA6P2kSq02CcQPf2CyIoQQQgiJ4DF7AgTn++f37/j9/XpeNKSom1EKenAWlqJuhEZQoaj7oBVUKOoeIIIKRV0fVFChqGtjEVQo6rpYBRWKuiYeQYWirodXUBGRf6EzIuGggkqWqHerj1w528kiqGSIekyUwraJtM9QUSmkjog8WsKcOploQYWizmWEoDJSVIZenAhBhZ46j6hK944hotJL24y2T7iovU8tyJVoOzH8JjMy7B6EikovbZMhqIjIF3JxqwRnHl2HpqgaoUbttT6NLC+Vmqger6OgfUbb6CIq6nkMu32ybdQMv70VlRlSPoUMG5mrX42g9OI5NoCqX2FhtAXu6ve4jsKuw0XU9+v5sISM456auEixxQXiY0hVe9eQqAlVG6dcXJkiR3XFyrlnp6xq+C0HHVEUIdfPCu/luMgCK9/teMb5fUe2VOHqVxNee4L1/j3iJb9/fv/KH+09d/M4i4Q84/ws5B4rrurXYvw7w2WU/Wje7olgiVbIwveg8lQ0H2q5EzQqFKGNE5RWnny/ng/kPaLDr9pTI1ZZK6+cx4igFwVqUcczDzTnCpivNZg6SsdKRCaRkUc1z63N27ONW42wQ3JPrvXkN5SIlOGdQ/opTQaWEOUdD6lg7+5Hx9SGfc8YNUI8FTHSJ3SLPPXFXR0xrVDS4qk6RwqetXVqkdUOdXvqiM5I5gds0aG1dn1mf9sl6m5hF52Dphtlea9tCiXNRFtbCeQQIBokNK9QPfcwixphfE9FGgHScEAq1tkfErjFEOWpjeXozTK3SDxF3cwP20Ma8r3rVjZAi9keZwUuHMq/tcdJOxjikzDnVP53i3UJa8i3oKfmotqn0hv3wr1PpReuh/m0hGKui7pNOOI0gRCi5D9WuStZ9XsKDQAAAABJRU5ErkJggg==", wit1: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAiCAYAAAAkjjtxAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAEkSURBVFiF7ZdRDoQgDETrZg9gOI/H9zzGG7hfJARbaKdF18T50ojwqGVsiV69eramURPPaTmkZ/u2wuuGArcga6HQIcAWUHJG+Iu+mCXBllDWDbUE71QDyo3zRJfQCHOwGhAvLCERRmDntBwRsGQFRiMbKfVi0bmISrXov8ASEX16AzywkXaW5fZhTiVoeT3cJZDo9qLqhRZTYgSsVnNaDmmubg5T8CFrwVAjnbJYYCRS1ne48Zo52MhZD4o3FfZtnbQ/JVVKtGStgTkIyx/0BOy1IW8RJG0qy+XDFiepn+X7PIc2OOHl5ejuw5zDyAGLtEUTsKbLkD59lLq2ptGV1Zvb1q4uNV3Ad9TFog/Xfnhn0V4K7unu2oA6JUZ0D4ge19P9AFR8wDqGVC5HAAAAAElFTkSuQmCC", wit2: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGoAAAAnCAYAAADn590lAAAABHNCSVQICAgIfAhkiAAAAAFzUkdCAK7OHOkAAAIXSURBVHic7ZlbjsMgDEWb0Syg6nq6/Kwnyg46X5EQ9ePaGAIaH2l+0gQufmGYxyNJEp3n6/15vt4f7b2fMXISCsRBF+moRUhHLUI6ahHSUYuQjlqEdNQipKMWIR01CdqZ6l85Cr0FGMV57Bv67m9fKXMwk3NKLLpgj64IZQhLFPeEcxKn7/aMugRHGnDWDGohZI/y1v47DDqLE62B2ZxRLQs/j327y1mloaxlKIprfMQGrBCL+JbyVc7T0zD1elAj1Zp6lGoEMqMk8aOFSlokDbVOb/bW2edBGgMNVDY7EKioRARp43m/0ZxK6eS0W5/XIBXJ0pWKzcR57Fv5J70rEdFoaAGgzWEtsWgAaHNRv0nNF/fc1PV5Ir61WSiDhAsaLjJnOTNpIDrhrq+s+ajxpaywbuJWUI3lerRMQDRZ18w1Z/XzL0ehwq3UE7e25ne19lbQkqutp9ulbETbrdXzKKgyiZZYCy3fk6WP8u6Ieq+1sVpESuMi81vXiBxVojKfzSiu44s8oFJRjH47U9mz7Lde3abS550kyqh3XfW0zBW1dnPX5xXBla6ZW2hL+UdvH7xAGeWZSLoT9DDTuci7V7aw5L/iW/fJEQf1kgjnQaVvhki+SstdTYTlHFj/ZtVM2btrRkV3hZ4jQ0/HlvOja9XKputSdmZGXjFpc6FNUovm7o6KagK8Y0gG633T4Mm4JEmSJFmNP+Iw6DOfX1ktAAAAAElFTkSuQmCC" };
   var sigs = {};
   try { sigs = JSON.parse(localStorage.getItem(SIG_KEY) || "{}") || {}; } catch (e) { sigs = {}; }
+  // ช่องที่ผู้ใช้ยังไม่เคยแตะ (undefined) ใช้ค่าตั้งต้น · เคยกดลบ (เก็บเป็น "") ก็เว้นว่างตามนั้น
+  Object.keys(DEFAULT_SIGS).forEach(function (k) { if (sigs[k] === undefined) sigs[k] = DEFAULT_SIGS[k]; });
   function saveSigs() { try { localStorage.setItem(SIG_KEY, JSON.stringify(sigs)); } catch (e) { alert("บันทึกลายเซ็นไม่สำเร็จ (พื้นที่เก็บเต็ม)"); } }
   function sigSlot(key) {
     return '<span class="sig-holder">' +
@@ -452,6 +456,7 @@
         '<button type="button" data-draw="' + s[0] + '">✍️ วาด</button>' +
         '<button type="button" data-up="' + s[0] + '">📷 รูป</button>' +
         (sigs[s[0]] ? '<button type="button" class="del" data-del="' + s[0] + '">✕</button>' : "") +
+        (!sigs[s[0]] && DEFAULT_SIGS[s[0]] ? '<button type="button" data-restore="' + s[0] + '">↺</button>' : "") +
         "</div>";
     }).join("");
   }
@@ -514,7 +519,8 @@
     if (!b) return;
     if (b.dataset.draw) sigModalOpen(b.dataset.draw);
     else if (b.dataset.up) { sigTarget = b.dataset.up; $("sigFile").click(); }
-    else if (b.dataset.del) { delete sigs[b.dataset.del]; saveSigs(); renderSigRows(); render(); }
+    else if (b.dataset.del) { sigs[b.dataset.del] = ""; saveSigs(); renderSigRows(); render(); }
+    else if (b.dataset.restore) { sigs[b.dataset.restore] = DEFAULT_SIGS[b.dataset.restore]; saveSigs(); renderSigRows(); render(); }
   });
   $("sigFile").addEventListener("change", function () {
     var f = $("sigFile").files && $("sigFile").files[0];
