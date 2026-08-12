@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ทำสัญญาเช่าเครื่อง · บริษัทโอเมก้าอีสาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F8FB; --card: #fff; --text: #17303B; --muted: #6B8290; --border: #DCEAF1;
+    --primary: #2B7A9E; --primary-soft: #E3F2F8; --red: #C0392B;
+    --radius: 16px; --shadow: 0 1px 3px rgba(23,48,59,.06), 0 6px 20px rgba(43,122,158,.08);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Noto Sans Thai", Tahoma, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 16px 14px 60px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  header.top h1 { font-size: 1.25rem; margin: 0; color: var(--primary); }
+  .motto { display: inline-block; font-size: .95rem; font-weight: 700; color: var(--primary); background: var(--primary-soft); border: 1px solid var(--border); border-radius: 999px; padding: 7px 16px; }
+  .cols { display: grid; grid-template-columns: 400px 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+  .panel h2 { font-size: 1rem; margin: 0 0 12px; color: var(--primary); }
+  .panel h3 { font-size: .88rem; margin: 16px 0 8px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 12px; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px;
+    font-family: inherit; font-size: .92rem; background: var(--bg); color: var(--text);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .hintline { font-size: .76rem; color: var(--muted); margin-top: -6px; margin-bottom: 10px; }
+  .btn { border: none; border-radius: 12px; padding: 12px 16px; font-size: .98rem; font-weight: 700; font-family: inherit; cursor: pointer; width: 100%; margin-top: 8px; }
+  .btn.primary { background: var(--primary); color: #fff; }
+  .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn:active { opacity: .85; }
+  .copy-btn { font-size: .78rem; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-family: inherit; color: var(--primary); font-weight: 600; }
+
+  /* ตัวสัญญา (พรีวิว = หน้ากระดาษ) */
+  .paper-holder { overflow: auto; }
+  .paper {
+    background: #fff; box-shadow: var(--shadow); border-radius: 6px;
+    max-width: 794px; margin: 0 auto; padding: 60px 68px;
+    font-family: "Sarabun", "Noto Sans Thai", serif; font-size: 15px; line-height: 1.7; color: #000;
+  }
+  .paper h1 { text-align: center; font-size: 20px; margin: 0 0 2px; }
+  .paper .cond { margin: 0 0 4px; }
+  .paper .docno { text-align: right; margin: 0; }
+  .paper p { margin: 0 0 8px; text-indent: 2.5em; text-align: justify; }
+  .paper p.noindent { text-indent: 0; }
+  .paper .eq { display: flex; justify-content: space-between; gap: 10px; }
+  .paper table.items { width: 100%; border-collapse: collapse; margin: 2px 0 8px; }
+  .paper table.items td { padding: 1px 4px; vertical-align: top; }
+  .paper table.items td:last-child { white-space: nowrap; text-align: right; }
+  .paper .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 30px; margin-top: 26px; text-align: center; }
+  .paper .sign-line { margin-top: 34px; }
+  .v { font-weight: 600; }
+  [contenteditable="true"]:focus { outline: 2px dashed rgba(43,122,158,.4); outline-offset: 2px; }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .toolbar .btn { width: auto; flex: 1; margin-top: 0; }
+  .edit-note { font-size: .78rem; color: var(--muted); margin: 0 0 10px; text-align: center; }
+
+  /* ล็อกอินแบบเดียวกับแอปหลัก */
+  #gate { position: fixed; inset: 0; background: var(--bg); z-index: 99; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  #gate[hidden] { display: none; }
+  .gate-box { width: 100%; max-width: 320px; text-align: center; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 26px 22px; }
+  .gate-box input { width: 100%; text-align: center; font-size: 1.5rem; letter-spacing: 9px; padding: 11px; border: 2px solid var(--border); border-radius: 13px; }
+  .gate-box .err { color: var(--red); font-size: .85rem; min-height: 1.2em; margin-top: 8px; }
+
+  @media print {
+    body { background: #fff; }
+    .no-print, header.top, #gate { display: none !important; }
+    .wrap { padding: 0; max-width: none; }
+    .cols { display: block; }
+    .paper { box-shadow: none; border-radius: 0; max-width: none; padding: 0; font-size: 14.5px; }
+    @page { size: A4; margin: 16mm 18mm; }
+  }
+</style>
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-box">
+    <div style="font-size:42px">📑</div>
+    <h2 style="color:var(--primary);margin:6px 0 2px">ทำสัญญาเช่าเครื่อง</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin:0 0 14px">บริษัทโอเมก้าอีสาน — ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
+    <input id="gatePin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">
+    <button type="button" class="btn primary" id="gateBtn">เข้าใช้งาน</button>
+    <div class="err" id="gateErr"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="top">
+    <h1>📑 ทำสัญญาเช่าเครื่อง</h1>
+    <span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span>
+  </header>
+
+  <div class="cols">
+    <!-- ==================== ฟอร์มกรอก ==================== -->
+    <div class="panel no-print">
+      <h2>กรอกข้อมูลสัญญา</h2>
+
+      <div class="row2">
+        <div class="field"><label>สัญญาเลขที่ (OMGE)</label><input id="fNo" placeholder="6900/00279"></div>
+        <div class="field"><label>อ้างอิง (QT)</label><input id="fRef" placeholder="QT2026060019"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>วันที่ทำสัญญา</label><input id="fDate" type="date"></div>
+        <div class="field"><label>ประเภทเครื่อง</label>
+          <select id="fKind">
+            <option>เครื่องล้างจาน</option>
+            <option>เครื่องล้างแก้ว</option>
+            <option>เครื่องทำน้ำแข็ง</option>
+          </select>
+        </div>
+      </div>
+
+      <h3>ผู้เช่า</h3>
+      <div class="field"><label>ชื่อผู้เช่า (ใส่คำนำหน้าเอง เช่น ร้าน / บริษัท ... จำกัด)</label><input id="fLessee" placeholder="ร้าน ลาบโต๊ะแดง ร้อยเอ็ด"></div>
+      <div class="field"><label>ผู้มีอำนาจลงนามฝั่งผู้เช่า</label><input id="fSigner" placeholder="นายธนากร ศิริโยธา"></div>
+      <div class="row2">
+        <div class="field"><label>ประเภททะเบียน</label>
+          <select id="fRegType"><option>ทะเบียนการค้าเลขที่</option><option>ทะเบียนนิติบุคคลเลขที่</option><option>บัตรประชาชนเลขที่</option></select>
+        </div>
+        <div class="field"><label>เลขทะเบียน</label><input id="fRegNo" placeholder="3440400376971"></div>
+      </div>
+      <div class="field"><label>ที่อยู่ผู้เช่า</label><textarea id="fAddr" rows="2" placeholder="247,149 ถนนสุริยเดชบำรุง ตำบลในเมือง อำเภอเมืองร้อยเอ็ด จังหวัดร้อยเอ็ด 45000"></textarea></div>
+      <div class="field"><label>เบอร์โทรศัพท์ผู้เช่า</label><input id="fPhone" placeholder="065-173-5444"></div>
+
+      <h3>สถานที่ติดตั้ง <button type="button" class="copy-btn" id="copyLessee">คัดลอกจากผู้เช่า</button></h3>
+      <div class="field"><label>ชื่อร้าน/สถานที่ใช้เครื่อง</label><input id="fSite" placeholder="ร้าน ลาบโต๊ะแดง ร้อยเอ็ด"></div>
+      <div class="field"><label>ที่อยู่สถานที่ติดตั้ง</label><textarea id="fSiteAddr" rows="2"></textarea></div>
+      <div class="field"><label>เบอร์โทรสถานที่ติดตั้ง</label><input id="fSitePhone"></div>
+
+      <h3>เครื่องและอุปกรณ์</h3>
+      <div class="row3">
+        <div class="field"><label>ขนาดเครื่อง</label>
+          <select id="fSize"><option>ขนาดเล็ก</option><option selected>ขนาดกลาง</option><option>ขนาดใหญ่</option></select>
+        </div>
+        <div class="field"><label>รุ่น</label><input id="fModel" placeholder="L600"></div>
+        <div class="field"><label>S/N</label><input id="fSN" placeholder="20260116002"></div>
+      </div>
+      <div class="field"><label>รายการอุปกรณ์ประกอบ (บรรทัดละรายการ ใช้ | คั่นจำนวน)</label>
+        <textarea id="fItems" rows="6">โต๊ะซิงค์สแตนเลส 1 หลุม ขนาด 750x1100x850x150mm.|จำนวน 1 ตัว
+โต๊ะซิงค์สแตนเลสเรียบ ขนาด 750x700x850x150mm.|จำนวน 1 ตัว
+ฐานรองเครื่อง|จำนวน 1 ตัว
+กระบะล้างจาน แบบหนาม|จำนวน 3 ตัว
+กระบะล้างจานแบบเรียบ (ล้างช้อน)|จำนวน 1 ตัว
+น้ำยาล้างจาน OMEGA DISH C,R,A อย่างละ 1 ถัง รวม 3 ถัง|</textarea>
+      </div>
+
+      <h3>ระยะเวลาและเงิน</h3>
+      <div class="row2">
+        <div class="field"><label>เริ่มเช่าวันที่</label><input id="fStart" type="date"></div>
+        <div class="field"><label>ถึงวันที่ (เว้นว่าง = ครบ 1 ปีอัตโนมัติ)</label><input id="fEnd" type="date"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>ค่าเช่า/เดือน (ก่อน VAT)</label><input id="fRent" type="number" step="any" placeholder="5000"></div>
+        <div class="field"><label>งวดแรกวันที่</label><input id="fFirstPay" type="date"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>เงินประกัน (บาท)</label><input id="fDeposit" type="number" step="any" placeholder="5000"></div>
+        <div class="field"><label>เงินประกันรวม VAT?</label>
+          <select id="fDepVat"><option value="incl">รวม VAT 7%</option><option value="excl">ไม่รวม VAT</option></select>
+        </div>
+      </div>
+      <div class="field"><label>รอบเข้าบริการ (เดือน)</label><input id="fService" type="number" value="2" min="1"></div>
+
+      <h3>พยาน</h3>
+      <div class="row2">
+        <div class="field"><label>พยานฝั่งบริษัท 1</label><input id="fWit1" value="นางสาวอุมาวดี แหล่งสนาม"></div>
+        <div class="field"><label>พยานฝั่งบริษัท 2</label><input id="fWit2" value="นายบุญอนันต์ คุ้มภัย"></div>
+      </div>
+
+      <div class="toolbar" style="margin-top:14px">
+        <button type="button" class="btn primary" id="printBtn">🖨️ พิมพ์ / บันทึก PDF</button>
+        <button type="button" class="btn secondary" id="resetBtn">ล้างฟอร์ม</button>
+      </div>
+      <p class="hintline" style="margin-top:8px">ข้อมูลที่กรอกจะถูกจำไว้ในเครื่องนี้อัตโนมัติ</p>
+    </div>
+
+    <!-- ==================== ตัวสัญญา ==================== -->
+    <div class="paper-holder">
+      <p class="edit-note no-print">✏️ แตะแก้ข้อความในสัญญาตรงนี้ได้เลย (การแก้ในฟอร์มจะเขียนทับ)</p>
+      <div class="paper" id="paper" contenteditable="true" spellcheck="false"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---------- ประตูรหัสผ่าน (รหัสเดียวกับแอป PM — ล็อกอินแอปไว้แล้วไม่ต้องใส่ซ้ำ) ----------
+  var TECH_PIN = "2569", BOSS_PIN = "4768", LOGIN_KEY = "omega_pm_login";
+  function loggedIn() { try { var v = localStorage.getItem(LOGIN_KEY); return v === "tech" || v === "boss"; } catch (e) { return false; } }
+  if (!loggedIn()) {
+    $("gate").hidden = false;
+    $("gateBtn").addEventListener("click", tryPin);
+    $("gatePin").addEventListener("keydown", function (e) { if (e.key === "Enter") tryPin(); });
+  }
+  function tryPin() {
+    var v = $("gatePin").value.trim();
+    if (v === BOSS_PIN || v === TECH_PIN) {
+      try { localStorage.setItem(LOGIN_KEY, v === BOSS_PIN ? "boss" : "tech"); } catch (e) {}
+      $("gate").hidden = true;
+    } else {
+      $("gateErr").textContent = "รหัสไม่ถูกต้อง";
+      $("gatePin").value = "";
+    }
+  }
+
+  // ---------- ตัวช่วยวันที่/เงินไทย ----------
+  var TH_M = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  function thDate(iso) {
+    if (!iso) return { d: "........", m: "..............", y: "........", full: "วันที่ ........ เดือน .............. พ.ศ. ........" };
+    var p = iso.split("-");
+    var d = Number(p[2]), m = TH_M[Number(p[1]) - 1], y = Number(p[0]) + 543;
+    return { d: d, m: m, y: y, full: "วันที่ " + d + " เดือน" + m + " พ.ศ. " + y };
+  }
+  function thDateShort(iso) {
+    if (!iso) return "..............................";
+    var p = iso.split("-");
+    return Number(p[2]) + " " + TH_M[Number(p[1]) - 1] + " พ.ศ. " + (Number(p[0]) + 543);
+  }
+  function money(n) { return Number(n).toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  // จำนวนเงินเป็นตัวหนังสือไทย
+  function bahtText(num) {
+    num = Math.round(Number(num) * 100) / 100;
+    if (!isFinite(num)) return "";
+    var t = ["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"];
+    var p = ["","สิบ","ร้อย","พัน","หมื่น","แสน","ล้าน"];
+    function read(sN) {
+      var out = "", len = sN.length;
+      for (var i = 0; i < len; i++) {
+        var digit = Number(sN[i]), pos = (len - i - 1) % 6;
+        var isMillion = (len - i - 1) >= 6 && pos === 0;
+        if (digit !== 0) {
+          if (pos === 1 && digit === 1) out += "สิบ";
+          else if (pos === 1 && digit === 2) out += "ยี่สิบ";
+          else if (pos === 0 && digit === 1 && i > 0 && Number(sN[i - 1]) !== 0) out += "เอ็ด";
+          else out += t[digit] + p[pos];
+        }
+        if (isMillion) out += "ล้าน";
+      }
+      return out || "ศูนย์";
+    }
+    var baht = Math.floor(num), st = Math.round((num - baht) * 100);
+    var s = read(String(baht)) + "บาท";
+    return s + (st > 0 ? read(String(st)) + "สตางค์" : "ถ้วน");
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function or(v, dots) { return v ? esc(v) : (dots || ".............................."); }
+
+  // ---------- ฟิลด์ทั้งหมด ----------
+  var IDS = ["fNo","fRef","fDate","fKind","fLessee","fSigner","fRegType","fRegNo","fAddr","fPhone","fSite","fSiteAddr","fSitePhone","fSize","fModel","fSN","fItems","fStart","fEnd","fRent","fFirstPay","fDeposit","fDepVat","fService","fWit1","fWit2"];
+  var SAVE_KEY = "omega_contract_draft";
+
+  function values() {
+    var v = {};
+    IDS.forEach(function (id) { v[id] = $(id).value; });
+    return v;
+  }
+  function saveDraft() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(values())); } catch (e) {} }
+  function loadDraft() {
+    try {
+      var d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      if (d) IDS.forEach(function (id) { if (d[id] !== undefined) $(id).value = d[id]; });
+    } catch (e) {}
+  }
+
+  function autoEnd(startIso) {
+    // ครบ 1 ปีพอดี: +1 ปี −1 วัน
+    var d = new Date(startIso + "T00:00:00");
+    d.setFullYear(d.getFullYear() + 1);
+    d.setDate(d.getDate() - 1);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  // ---------- สร้างตัวสัญญา ----------
+  function render() {
+    var v = values();
+    var kind = v.fKind || "เครื่องล้างจาน";
+    var made = thDate(v.fDate);
+    var rent = Number(v.fRent) || 0;
+    var rentVat = rent * 1.07;
+    var dep = Number(v.fDeposit) || 0;
+    var depIncl = v.fDepVat === "incl";
+    var depVal = depIncl ? dep * 1.07 : dep;
+    var endIso = v.fEnd || (v.fStart ? autoEnd(v.fStart) : "");
+    var items = (v.fItems || "").split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
+    var itemRows = ('<tr><td>2.1&nbsp; ' + kind + esc(v.fSize ? v.fSize.replace("ขนาด", "ขนาด") : "") + '  ยี่ห้อ OMEGA รุ่น <span class="v">' + or(v.fModel) + '</span> SN: <span class="v">' + or(v.fSN) + '</span></td><td>จำนวน 1 เครื่อง</td></tr>')
+      .replace(kind + esc(v.fSize || ""), kind + (v.fSize || ""));
+    items.forEach(function (l, i) {
+      var parts = l.split("|");
+      itemRows += "<tr><td>2." + (i + 2) + "&nbsp; " + esc(parts[0]) + "</td><td>" + esc(parts[1] || "") + "</td></tr>";
+    });
+
+    var html = "" +
+      '<h1>สัญญาเช่า' + kind + "</h1>" +
+      '<p class="cond noindent">เงื่อนไข : เช่า</p>' +
+      '<p class="docno">สัญญาเลขที่ OMGE; <span class="v">' + or(v.fNo) + "</span><br>อ้างอิง; <span class=\"v\">" + or(v.fRef) + "</span></p>" +
+      "<p>สัญญาฉบับนี้ทำขึ้นที่ บริษัท โอเมก้า อีสาน จำกัด เมื่อ" + made.full + " ระหว่าง</p>" +
+      "<p>บริษัท โอเมก้า อีสาน จำกัด โดย นายปิยะพงษ์ พันธุ์ธนวิบูลย์ กรรมการผู้มีอำนาจ สำนักงานตั้งอยู่เลขที่ 20/43 หมู่ที่ 12 ตำบลในเมือง อำเภอเมืองขอนแก่น จังหวัดขอนแก่น 40000 เบอร์โทรศัพท์ 089-711-7153, 082-245-5959, 090-788-5551 ซึ่งต่อไปในสัญญานี้เรียกว่า &ldquo;ผู้ให้เช่า&rdquo; ฝ่ายหนึ่ง กับ</p>" +
+      "<p><span class=\"v\">" + or(v.fLessee) + "</span> โดย <span class=\"v\">" + or(v.fSigner) + "</span> ผู้มีอำนาจลงนาม (ผู้เช่า) " + esc(v.fRegType || "ทะเบียนการค้าเลขที่") + " <span class=\"v\">" + or(v.fRegNo) + "</span> ที่อยู่ <span class=\"v\">" + or(v.fAddr) + "</span> เบอร์โทรศัพท์ <span class=\"v\">" + or(v.fPhone) + "</span> ซึ่งต่อไปในสัญญานี้เรียกว่า &ldquo;ผู้เช่า&rdquo; อีกฝ่ายหนึ่ง</p>" +
+
+      '<p class="noindent"><b>ข้อ 1. ข้อตกลงเช่า</b></p>' +
+      "<p>ผู้เช่าตกลงเช่าและผู้ให้เช่าตกลงให้เช่า" + kind + (v.fSize || "") + " ยี่ห้อ OMEGA ของ บริษัท โอเมก้า อีสาน จำกัด เพื่อใช้งานใน <span class=\"v\">" + or(v.fSite) + "</span> สถานที่ตั้ง <span class=\"v\">" + or(v.fSiteAddr) + "</span> เบอร์โทรศัพท์ <span class=\"v\">" + or(v.fSitePhone) + "</span> ซึ่งต่อไปในสัญญานี้เรียกว่า &ldquo;" + kind + "&rdquo; ตามรายละเอียดแนบท้ายสัญญา ในกรณีการเช่า" + kind + "ตามข้อ 2. เครื่องดังกล่าวยังคงเป็นกรรมสิทธิ์ของ &ldquo;ผู้ให้เช่า&rdquo;</p>" +
+
+      '<p class="noindent"><b>ข้อ 2. รายการอุปกรณ์ประกอบ อันเป็นส่วนหนึ่งของสัญญา</b></p>' +
+      '<table class="items">' + itemRows + "</table>" +
+      "<p>หมายเหตุ : ทางบริษัทขอแจ้งการเก็บรักษาถังน้ำยาล้างจานทุกชนิด ที่เป็นรายการเช่า ให้อยู่ในสภาพที่สมบูรณ์ หากเกิดความเสียหายหรือสูญหายแก่อุปกรณ์ของผู้ให้เช่า ทางผู้เช่าจะต้องเป็นผู้รับผิดชอบเป็นจำนวนเงิน 600 บาท (ต่อชิ้น)</p>" +
+      "<p>หมายเหตุ : อุปกรณ์เสริมที่ผู้ให้เช่าให้ผู้เช่ายืมใช้ตามข้อ 2 หากเกิดความเสียหาย สูญหาย หรือเสียหายอันเนื่องมาจากอัคคีภัยหรือภัยธรรมชาติ ผู้เช่าตกลงรับผิดชอบต่อความเสียหายดังกล่าวทั้งหมดโดยไม่มีเงื่อนไข</p>" +
+
+      "<p><b>ข้อ 3. ระยะเวลาการเช่า</b> สัญญานี้มีผลใช้บังคับนับแต่วันที่ลงนามในสัญญา และมีกำหนดระยะเวลาการเช่า 1 ปี โดยเริ่มตั้งแต่วันที่ <span class=\"v\">" + thDateShort(v.fStart) + "</span> ถึงวันที่ <span class=\"v\">" + thDateShort(endIso) + "</span> ทั้งนี้ ให้นับรวมระยะเวลาหลังจากผู้เช่าได้รับมอบ" + kind + "เรียบร้อยแล้ว ตลอดอายุสัญญาเช่าและภายหลังครบกำหนดสัญญา กรรมสิทธิ์ใน" + kind + "และอุปกรณ์ประกอบตามข้อ 1 และข้อ 2 ยังคงเป็นของผู้ให้เช่าแต่เพียงผู้เดียว โดยผู้เช่าไม่มีสิทธิอ้างกรรมสิทธิ์หรือโต้แย้งสิทธิของผู้ให้เช่าแต่ประการใด</p>" +
+
+      "<p><b>ข้อ 4. การชำระค่าเช่าและค่าติดตั้งเครื่อง</b> การเช่า" + kind + "ตามสัญญานี้เป็นการเช่ามีกำหนดระยะเวลา โดยผู้เช่าตกลงชำระค่าเช่าเป็นรายเดือนตามอัตราที่กำหนดไว้ในสัญญานี้ ค่าเช่า" + kind + " OMEGA รุ่น <span class=\"v\">" + or(v.fModel) + "</span> จำนวน 1 เครื่อง เดือนละ <span class=\"v\">" + (rent ? money(rent) : "................") + "</span> บาท รวมภาษีมูลค่าเพิ่ม 7% เป็นเงิน <span class=\"v\">" + (rent ? money(rentVat) : "................") + "</span> บาท (<span class=\"v\">" + (rent ? bahtText(rentVat) : "..............................") + "</span>)</p>" +
+      "<p>ผู้เช่าตกลงชำระค่าเช่าล่วงหน้าภายในวันที่ 10 ของทุกเดือน โดยงวดแรกวันที่ <span class=\"v\">" + thDateShort(v.fFirstPay).replace(" พ.ศ. ", " ") + "</span> เป็นต้นไป จนกว่าจะครบกำหนดตามสัญญา</p>" +
+      "<p>ผู้ให้เช่าไม่มีนโยบายให้พนักงานรับชำระค่าสินค้าและค่าบริการผ่านบัญชีธนาคารส่วนบุคคลของพนักงาน หากพบเหตุการณ์ดังกล่าว โปรดติดต่อเจ้าหน้าที่ของบริษัทโดยเร็วที่หมายเลข 090-788-5551</p>" +
+      "<p>ผู้เช่าต้องโอนชำระเงินเข้า บัญชีธนาคารเลขที่ 196-3-60665-2 ธนาคารกสิกรไทย ชื่อบัญชี &ldquo;บริษัท โอเมก้า อีสาน จำกัด&rdquo; เท่านั้น หากผู้เช่าโอนเงินเข้าบัญชีอื่นนอกเหนือจากที่ระบุไว้ ผู้ให้เช่าไม่ต้องรับผิดชอบต่อความเสียหายหรือความสูญเสียใด ๆ ที่เกิดขึ้น</p>" +
+
+      "<p><b>ข้อ 5. เงินประกัน</b> ในวันทำสัญญา ผู้เช่าได้วางเงินประกันการเช่าไว้แก่ผู้ให้เช่า ดังต่อไปนี้</p>" +
+      "<p>5.1 " + kind + " OMEGA รุ่น <span class=\"v\">" + or(v.fModel) + "</span> เป็นจำนวนเงิน <span class=\"v\">" + (dep ? money(dep) : "................") + "</span> บาท " +
+        (depIncl
+          ? "รวมภาษีมูลค่าเพิ่มแล้ว เป็นเงิน <span class=\"v\">" + (dep ? money(depVal) : "................") + "</span> บาท (<span class=\"v\">" + (dep ? bahtText(depVal) : "....................") + "</span>)"
+          : "ไม่รวมภาษีมูลค่าเพิ่ม (<span class=\"v\">" + (dep ? bahtText(dep) : "....................") + "</span>)") +
+        " เพื่อเป็นหลักประกันความเสียหายที่อาจเกิดขึ้นกับ" + kind + "ที่เช่าและเพื่อประกันการปฏิบัติตามสัญญาของผู้เช่า ทั้งนี้ หากผู้เช่าเช่าไม่ครบกำหนดระยะเวลาตามสัญญาหรือผิดสัญญาข้อใดข้อหนึ่ง ผู้ให้เช่ามีสิทธิริบเงินประกันทั้งหมดได้</p>" +
+      "<p>เมื่อครบกำหนดระยะเวลาการเช่า และผู้เช่าไม่ได้ผิดสัญญา มิได้ก่อให้เกิดความเสียหายต่อ" + kind + "หรืออุปกรณ์ตามข้อ 2 และไม่มีหนี้ค่าเช่าหรือค่าเสียหายใดค้างชำระ ผู้ให้เช่าจะคืนเงินประกันให้แก่ผู้เช่าโดยไม่มีดอกเบี้ยภายใน 30 วัน นับแต่วันที่ผู้ให้เช่าได้รับคืนเครื่องเรียบร้อยแล้ว</p>" +
+
+      "<p><b>ข้อ 6. การรับรองคุณภาพ</b> ผู้ให้เช่ารับรองว่า" + kind + "ที่ให้เช่าตามสัญญานี้มีคุณสมบัติเป็นไปตามหรือไม่ต่ำกว่ารายละเอียดที่กำหนดไว้ในใบเสนอราคาและแคตตาล็อกสินค้าที่ได้เสนอแก่ผู้เช่า</p>" +
+      "<p><b>ข้อ 7. การส่งมอบและติดตั้ง</b> ผู้ให้เช่าจะดำเนินการขนส่งและติดตั้ง" + kind + "ตามสัญญานี้ โดยผู้เช่าต้องจัดเตรียมสถานที่ติดตั้ง พร้อมระบบน้ำประปา ระบบไฟฟ้า ระบบน้ำดี ระบบน้ำทิ้ง และระบบอื่นใดที่จำเป็นต่อการติดตั้งและการใช้งาน ให้พร้อมใช้งานตามคำแนะนำของผู้ให้เช่า ทั้งนี้ ค่าใช้จ่ายในการจัดเตรียมดังกล่าวให้เป็นภาระของผู้เช่าแต่เพียงผู้เดียว</p>" +
+      "<p><b>ข้อ 8. การตรวจรับ</b> เมื่อผู้เช่าได้ตรวจรับ" + kind + "ว่าถูกต้องครบถ้วนตามสัญญาแล้ว ผู้เช่าตกลงลงลายมือชื่อในเอกสารส่งมอบไว้เป็นหลักฐานการรับมอบ เพื่อให้ผู้ให้เช่าใช้เป็นหลักฐานประกอบการเรียกเก็บค่าเช่า</p>" +
+
+      '<p class="noindent"><b>ข้อ 9. การบำรุงรักษา</b></p>' +
+      "<p>9.1 ผู้เช่าตกลงดูแลรักษาและใช้" + kind + "ตามคำแนะนำของผู้ให้เช่าอย่างเคร่งครัด หากทรัพย์สินที่เช่าเกิดความเสียหายจากการใช้งานนอกเหนือจากวัตถุประสงค์ตามปกติ ผู้เช่าตกลงรับผิดชอบต่อความเสียหายทั้งหมด</p>" +
+      "<p>9.2 ผู้เช่าตกลงยินยอมให้ผู้ให้เช่าหรือตัวแทนเข้าตรวจสอบ บำรุงรักษา และซ่อมแซม" + kind + "ให้อยู่ในสภาพพร้อมใช้งาน โดยผู้ให้เช่าจะจัดให้มีการเข้าบริการตามรอบอย่างน้อยทุก <span class=\"v\">" + or(v.fService, "....") + "</span> เดือน ตลอดอายุสัญญาเช่า</p>" +
+
+      '<p class="noindent"><b>ข้อ 10. การซ่อมแซมแก้ไข</b></p>' +
+      "<p>10.1 ในกรณีที่" + kind + "ชำรุดบกพร่องจนไม่สามารถใช้งานได้ ผู้ให้เช่าจะจัดให้ช่างผู้มีความรู้ ความชำนาญ และประสบการณ์เข้าดำเนินการซ่อมแซมให้อยู่ในสภาพใช้งานได้ โดยมีหลักเกณฑ์ดังต่อไปนี้</p>" +
+      "<p>(1) ในกรณี" + kind + "ชำรุดบกพร่อง ผู้ให้เช่าจะเข้าดำเนินการซ่อมแซมภายใน 48 ชั่วโมง นับแต่เวลาที่ได้รับแจ้งจากผู้เช่าหรือผู้แทนของผู้เช่า</p>" +
+      "<p>(2) ในกรณีที่" + kind + "ชำรุดอันเกิดจากความประมาทเลินเล่อหรือการใช้งานไม่ถูกต้องของผู้เช่า ผู้เช่าตกลงรับผิดชอบค่าใช้จ่ายในการซ่อมแซมเพื่อให้เครื่องกลับคืนสู่สภาพใช้งานได้ตามปกติ</p>" +
+      "<p>(3) ในกรณีที่" + kind + "หรืออุปกรณ์ตามสัญญาได้รับความเสียหายจากอุบัติเหตุ อัคคีภัย น้ำท่วม ปัญหาระบบไฟฟ้าไม่ครบเฟส ไฟฟ้าตก ไฟฟ้าเกิน หรือเหตุขัดข้องทางไฟฟ้าอื่นใด ณ สถานที่ติดตั้ง และมิได้เกิดจากความบกพร่องของผู้ให้เช่า ผู้เช่าตกลงรับผิดชอบต่อค่าเสียหาย ค่าอะไหล่ ค่าซ่อมแซม หรือค่าทดแทนทรัพย์สินดังกล่าวทั้งหมด</p>" +
+
+      "<p><b>ข้อ 11. การจัดอบรม</b> ผู้ให้เช่าจะจัดอบรมวิธีการใช้และการดูแลรักษา" + kind + "ให้แก่เจ้าหน้าที่ของผู้เช่าหลังการติดตั้ง โดยผู้เช่าต้องจัดเตรียมเจ้าหน้าที่ วัน เวลา และสถานที่สำหรับการอบรม ทั้งนี้ ผู้ให้เช่าจะไม่เรียกเก็บค่าใช้จ่ายในการอบรมดังกล่าว และหากผู้เช่าไม่จัดให้เจ้าหน้าที่เข้ารับการอบรมจนเป็นเหตุให้เกิดความเสียหาย ผู้เช่าตกลงรับผิดชอบตามข้อ 9.1</p>" +
+
+      "<p><b>ข้อ 12. การบอกเลิกสัญญา</b> หากผู้เช่าผิดนัดหรือผิดสัญญาข้อหนึ่งข้อใด ผู้ให้เช่ามีสิทธิใช้สิทธิตามที่กำหนดไว้ดังต่อไปนี้</p>" +
+      "<p>12.1 ในกรณีที่ผู้เช่าผิดนัดชำระค่าเช่า ผู้ให้เช่ามีสิทธิคิดดอกเบี้ยในอัตราร้อยละ 15 ต่อปี และเบี้ยปรับในอัตราร้อยละ 9 ต่อปี หรือร้อยละ 0.75 ต่อเดือน ของจำนวนเงินที่ค้างชำระจนกว่าจะชำระครบถ้วน ทั้งนี้ หากผู้เช่าค้างชำระค่าเช่าเป็นเวลา 2 เดือน ผู้ให้เช่ามีสิทธิระงับการใช้งาน" + kind + "ได้โดยไม่ต้องบอกกล่าวล่วงหน้า</p>" +
+      '<p class="noindent" style="text-indent:2.5em">12.2 ขั้นตอนการติดตามค่าเช่าค้างชำระ</p>' +
+      "<p>(1) หากผู้เช่าค้างชำระเกิน 1 เดือน ผู้ให้เช่ามีสิทธิติดต่อทวงถาม และหากผู้เช่าขาดการติดต่อ ปฏิเสธการรับสาย หรือหลีกเลี่ยงการติดต่อ ผู้ให้เช่าอาจมอบหมายให้ทนายความออกหนังสือบอกกล่าวทวงถามเป็นลายลักษณ์อักษรได้ทันที</p>" +
+      "<p>(2) หากผู้เช่าค้างชำระค่าเช่าหรือค่าใช้จ่ายใด ๆ ติดต่อกันเกิน 30 วัน ให้ถือว่าผู้เช่าผิดสัญญาอย่างมีนัยสำคัญ และผู้ให้เช่ามีสิทธิบอกเลิกสัญญา เรียกคืนทรัพย์สินที่เช่า และเข้าดำเนินการขนย้ายทรัพย์สินที่เป็นของผู้ให้เช่าตามรายละเอียดที่ระบุในสัญญาได้โดยเข้าถอดถอนในสถานที่ที่ติดตั้งทันที</p>" +
+      "<p>(3) ผู้ให้เช่ามีสิทธิริบเงินประกันทั้งหมด และมีสิทธิเรียกชำระค่าเช่าและค่าเสียหายที่ค้างชำระได้อีกส่วนหนึ่งตามจำนวนความเสียหายที่เกิดขึ้นจริง</p>" +
+      "<p>(4) ในกรณีมีข้อพิพาทและจำเป็นต้องดำเนินคดี คู่สัญญาตกลงให้ศาลจังหวัดขอนแก่นเป็นศาลที่มีเขตอำนาจพิจารณาคดี</p>" +
+      "<p>12.3 ในกรณีที่ผู้เช่าผิดสัญญาข้อใดข้อหนึ่ง ผู้ให้เช่าจะแจ้งเป็นลายลักษณ์อักษรให้ผู้เช่าแก้ไขภายใน 30 วัน นับแต่วันที่ได้รับหนังสือแจ้ง หากผู้เช่าไม่แก้ไขภายในกำหนด หรือเป็นกรณีที่ไม่อาจแก้ไขได้ ผู้ให้เช่ามีสิทธิบอกเลิกสัญญาทันที ริบเงินประกัน และเข้าครอบครองทรัพย์สินของผู้ให้เช่าคืน โดยผู้ให้เช่ามีสิทธิเข้าถอดถอน" + kind + "ออกจากสถานที่ติดตั้ง ทั้งนี้ หากการถอดถอนโดยผู้ให้เช่าก่อให้เกิดความเสียหาย ผู้ให้เช่าจะรับผิดชอบต่อความเสียหายที่เกิดจากการถอดถอนนั้น แต่หากผู้เช่าเป็นผู้ถอดถอนเอง ผู้เช่าตกลงรับผิดชอบต่อความเสียหายทั้งหมด</p>" +
+      "<p>12.4 ในกรณีที่ผู้ให้เช่าผิดสัญญาหรือไม่ปฏิบัติตามเงื่อนไขการเช่า ผู้เช่ามีสิทธิบอกเลิกสัญญาโดยแจ้งล่วงหน้าไม่น้อยกว่า 30 วัน และหากพิสูจน์ได้ว่าเป็นความผิดของผู้ให้เช่าจริง ผู้ให้เช่าตกลงคืนเงินประกันให้แก่ผู้เช่าภายใน 30 วัน</p>" +
+
+      "<p><b>ข้อ 13. การต่อสัญญาเช่า</b> การเช่าตามสัญญานี้เป็นการเช่ามีกำหนดระยะเวลา โดยผู้ให้เช่าจะแจ้งการต่อสัญญาและการเปลี่ยนแปลงอัตราค่าเช่าให้ผู้เช่าทราบล่วงหน้าไม่น้อยกว่า 30 วันก่อนครบกำหนด หากเมื่อครบกำหนดสัญญาแล้วคู่สัญญายังมิได้ทำสัญญาใหม่หรือบอกเลิกสัญญา ให้ถือว่าคู่สัญญายังคงปฏิบัติตามเงื่อนไขเดิมไปพลางก่อนจนกว่าจะมีการทำสัญญาใหม่หรือมีการบอกเลิกสัญญา</p>" +
+      "<p><b>ข้อ 14. บททั่วไป</b> สัญญานี้ทำขึ้นเป็น 2 ฉบับ มีข้อความถูกต้องตรงกันทุกประการ คู่สัญญาได้อ่านและเข้าใจข้อความในสัญญาโดยตลอดแล้ว จึงได้ลงลายมือชื่อไว้ต่อหน้าพยาน และต่างฝ่ายต่างยึดถือไว้ฝ่ายละ 1 ฉบับเป็นหลักฐาน</p>" +
+
+      '<div class="sign-grid">' +
+        "<div>ในนาม <span class=\"v\">" + or(v.fLessee) + "</span></div>" +
+        "<div>ในนาม บจก.โอเมก้า อีสาน</div>" +
+        '<div class="sign-line">ลงชื่อ ................................................ ผู้เช่า<br>(<span class="v">' + or(v.fSigner) + '</span>)<br>ผู้มีอำนาจลงนาม</div>' +
+        '<div class="sign-line">ลงชื่อ ................................................ ผู้ให้เช่า<br>(นายปิยะพงษ์ พันธุ์ธนวิบูลย์)<br>กรรมการผู้มีอำนาจ</div>' +
+        '<div class="sign-line">ลงชื่อ ................................................ พยาน<br>(................................................)</div>' +
+        '<div class="sign-line">ลงชื่อ ................................................ พยาน<br>(<span class="v">' + or(v.fWit1) + '</span>)</div>' +
+        '<div class="sign-line">ลงชื่อ ................................................ พยาน<br>(................................................)</div>' +
+        '<div class="sign-line">ลงชื่อ ................................................ พยาน<br>(<span class="v">' + or(v.fWit2) + '</span>)</div>' +
+      "</div>";
+
+    $("paper").innerHTML = html;
+  }
+
+  // ---------- events ----------
+  IDS.forEach(function (id) {
+    $(id).addEventListener("input", function () { render(); saveDraft(); });
+    $(id).addEventListener("change", function () { render(); saveDraft(); });
+  });
+  $("copyLessee").addEventListener("click", function () {
+    $("fSite").value = $("fLessee").value;
+    $("fSiteAddr").value = $("fAddr").value;
+    $("fSitePhone").value = $("fPhone").value;
+    render(); saveDraft();
+  });
+  $("printBtn").addEventListener("click", function () { window.print(); });
+  $("resetBtn").addEventListener("click", function () {
+    if (!confirm("ล้างข้อมูลในฟอร์มทั้งหมด?")) return;
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    location.reload();
+  });
+
+  loadDraft();
+  render();
+})();
+</script>
+</body>
+</html>
