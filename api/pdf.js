@@ -1,5 +1,8 @@
 // สร้าง PDF สัญญาด้วย Chromium จริงบนเซิร์ฟเวอร์ — สระ/วรรณยุกต์ไทยตรงเป๊ะเหมือนสั่งพิมพ์
 // (ตัววาดฝั่งเบราว์เซอร์ html2canvas วางสระไทยเพี้ยน จึงย้ายมาทำที่นี่)
+// Vercel ไม่ส่ง env ของ AWS Lambda มาให้ @sparticuz/chromium เลยไม่แตกไลบรารีระบบ (libnss3ฯลฯ) — บังคับโหมด Lambda node20 (AL2023) เอง
+process.env.AWS_EXECUTION_ENV = process.env.AWS_EXECUTION_ENV || "AWS_Lambda_nodejs20.x";
+process.env.AWS_LAMBDA_JS_RUNTIME = process.env.AWS_LAMBDA_JS_RUNTIME || "nodejs20.x";
 const chromium = require("@sparticuz/chromium");
 const puppeteer = require("puppeteer-core");
 
