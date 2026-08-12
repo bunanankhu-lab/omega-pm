@@ -200,6 +200,7 @@
     font-family: inherit; cursor: pointer; width: 100%;
   }
   .btn:active { opacity: .85; }
+  .btn:disabled { opacity: .45; cursor: default; }
   .btn.primary { background: var(--green); color: #fff; box-shadow: 0 4px 14px rgba(47,125,79,.3); }
   .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow); }
   .btn.danger { background: var(--card); color: var(--red); border: 1px solid var(--red-bg); }
@@ -328,6 +329,16 @@
   .mp-shop .s-sub { color: var(--muted); font-size: .8rem; }
   .mp-shop .s-n { color: var(--primary); font-size: .85rem; font-weight: 700; white-space: nowrap; }
   .mp-mach { margin-left: 18px; }
+
+  /* นำเข้าลูกค้าจากไฟล์ */
+  .imp-drop {
+    border: 2px dashed var(--primary); background: var(--primary-soft); border-radius: 16px;
+    padding: 28px 14px; text-align: center; color: var(--primary); font-weight: 600;
+    cursor: pointer; margin-bottom: 12px; line-height: 1.6;
+  }
+  .imp-drop.drag { background: #CBE9F4; border-style: solid; }
+  .imp-drop .sub { font-size: .8rem; font-weight: 500; color: var(--muted); }
+  .imp-info { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: .88rem; margin-bottom: 12px; white-space: pre-line; }
   .stock-bar .arr { color: var(--primary); font-size: .82rem; flex-shrink: 0; }
   .stk-group { background: var(--card); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
   .stk-group h3 { margin: 0 0 2px; font-size: 1rem; color: var(--primary); }
@@ -406,6 +417,11 @@
     <button type="button" class="stock-bar" id="mapBar">
       <span>🗺️ แผนที่ลูกค้าภาคอีสาน <span id="mapBarInfo" style="color:var(--muted);font-weight:500"></span></span>
       <span class="arr">ดูแผนที่ ›</span>
+    </button>
+
+    <button type="button" class="stock-bar" id="importBar">
+      <span>📥 นำเข้าลูกค้าจากไฟล์ <span style="color:var(--muted);font-weight:500">· Excel / CSV</span></span>
+      <span class="arr">เปิด ›</span>
     </button>
 
     <button type="button" class="sticker-bar" id="stickerBar" hidden></button>
@@ -629,6 +645,22 @@
     <button type="submit" class="btn primary" style="background:var(--primary)">บันทึก</button>
     <button type="button" class="btn secondary" id="custCancelBtn" style="margin-top:8px">ยกเลิก</button>
   </form>
+</div>
+
+<!-- ==================== นำเข้าลูกค้าจากไฟล์ ==================== -->
+<div class="sheet-overlay" id="impOverlay"></div>
+<div class="sheet" id="impSheet">
+  <div class="grip"></div>
+  <h3>📥 นำเข้าลูกค้าจากไฟล์</h3>
+  <div class="imp-drop" id="impDrop">
+    ลากไฟล์มาวางที่นี่<br>หรือแตะเพื่อเลือกไฟล์
+    <div class="sub">รองรับ Excel (.xlsx) และ CSV — แถวแรกเป็นหัวตาราง เช่น ชื่อร้าน / ประเภท / รุ่น / เบอร์โทร / จังหวัด / S/N</div>
+  </div>
+  <input type="file" id="impFile" accept=".csv,.xlsx,.xls" hidden>
+  <div class="imp-info" id="impInfo" hidden></div>
+  <div class="err" id="impErr"></div>
+  <button type="button" class="btn primary" id="impOkBtn" style="background:var(--primary)" disabled>นำเข้า</button>
+  <button type="button" class="btn secondary" id="impCancelBtn" style="margin-top:8px">ปิด</button>
 </div>
 
 <!-- ==================== ฟอร์มบันทึก PM ==================== -->
@@ -874,6 +906,8 @@
     pageQrView: $("pageQrView"), qvIcon: $("qvIcon"), qvHead: $("qvHead"), qvBadge: $("qvBadge"),
     qvDate: $("qvDate"), qvTech: $("qvTech"), qvWorkRow: $("qvWorkRow"), qvWork: $("qvWork"),
     qvType: $("qvType"), qvModel: $("qvModel"), qvSerialRow: $("qvSerialRow"), qvSerial: $("qvSerial"), qvNext: $("qvNext"),
+    importBar: $("importBar"), impOverlay: $("impOverlay"), impSheet: $("impSheet"), impDrop: $("impDrop"),
+    impFile: $("impFile"), impInfo: $("impInfo"), impErr: $("impErr"), impOkBtn: $("impOkBtn"), impCancelBtn: $("impCancelBtn"),
     mapBar: $("mapBar"), mapBarInfo: $("mapBarInfo"), pageMap: $("pageMap"),
     mapBackBtn: $("mapBackBtn"), mapSub: $("mapSub"), isanSvg: $("isanSvg"), mapLegend: $("mapLegend"), mapProvList: $("mapProvList"),
     stockBar: $("stockBar"), stockBarInfo: $("stockBarInfo"), pageStock: $("pageStock"),
@@ -2493,6 +2527,233 @@
         flash("📴 โหลดจากเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกด 🔄 รีเฟรช");
       });
   }
+  // ==================== นำเข้าลูกค้าจากไฟล์ (Excel / CSV) ====================
+  // ลากไฟล์ลงช่อง → เดาคอลัมน์จากหัวตาราง → ข้ามแถวที่ซ้ำกับในระบบ → บันทึกขึ้นเว็บเป็นชุด
+  var impRows = null;   // แถวที่ผ่านการตรวจ พร้อมนำเข้า
+
+  function openImp() {
+    impRows = null;
+    el.impInfo.hidden = true;
+    el.impErr.textContent = "";
+    el.impOkBtn.disabled = true;
+    el.impOkBtn.textContent = "นำเข้า";
+    el.impOverlay.classList.add("show");
+    el.impSheet.classList.add("show");
+  }
+  function closeImp() {
+    el.impOverlay.classList.remove("show");
+    el.impSheet.classList.remove("show");
+  }
+  el.importBar.addEventListener("click", openImp);
+  el.impCancelBtn.addEventListener("click", closeImp);
+  el.impOverlay.addEventListener("click", closeImp);
+  el.impDrop.addEventListener("click", function () { el.impFile.click(); });
+  el.impFile.addEventListener("change", function () {
+    if (el.impFile.files && el.impFile.files[0]) handleImpFile(el.impFile.files[0]);
+    el.impFile.value = "";
+  });
+  ["dragover", "dragenter"].forEach(function (ev) {
+    el.impDrop.addEventListener(ev, function (e) { e.preventDefault(); el.impDrop.classList.add("drag"); });
+  });
+  ["dragleave", "drop"].forEach(function (ev) {
+    el.impDrop.addEventListener(ev, function (e) { e.preventDefault(); el.impDrop.classList.remove("drag"); });
+  });
+  el.impDrop.addEventListener("drop", function (e) {
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleImpFile(f);
+  });
+
+  // CSV จาก Excel ภาษาไทยอาจเป็น UTF-8 (มี BOM) หรือโค้ดเพจไทย windows-874 — ลอง UTF-8 ก่อน เพี้ยนค่อยถอยไป 874
+  function decodeCsv(buf) {
+    var u8 = new Uint8Array(buf);
+    if (u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return new TextDecoder("utf-8").decode(u8);
+    var t = new TextDecoder("utf-8", { fatal: false }).decode(u8);
+    if (t.indexOf("�") !== -1) { try { t = new TextDecoder("windows-874").decode(u8); } catch (e) {} }
+    return t;
+  }
+  function parseCsv(text) {
+    var rows = [], row = [], cell = "", q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === ",") { row.push(cell); cell = ""; }
+      else if (ch === "\n" || ch === "\r") {
+        if (ch === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); rows.push(row); row = []; cell = "";
+      } else cell += ch;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows;
+  }
+  var XLSX_CDN = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+  function loadXlsxLib() {
+    if (window.XLSX) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = XLSX_CDN;
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error("โหลดตัวอ่านไฟล์ Excel ไม่สำเร็จ — เช็คสัญญาณเน็ต")); };
+      document.head.appendChild(s);
+    });
+  }
+
+  // เดาว่าแต่ละคอลัมน์คือข้อมูลอะไรจากหัวตาราง
+  var IMP_HEADS = [
+    ["name", /ชื่อ|ร้าน|ลูกค้า|name/i],
+    ["type", /ประเภท|type/i],
+    ["model", /รุ่น|model/i],
+    ["phone", /เบอร|โทร|phone|tel/i],
+    ["province", /จังหวัด|province/i],
+    ["address", /ที่อยู่|ที่ตั้ง|address|พิกัด|maps/i],
+    ["serial", /s\s*\/?\s*n|serial|ซีเรียล/i],
+    ["note", /โน้ต|โน๊ต|หมายเหตุ|note/i],
+    ["cycle", /รอบ|cycle/i],
+    ["lastPM", /pm\s*ล่าสุด|last|วัน\s*pm/i],
+    ["install", /ติดตั้ง/i]
+  ];
+  var TH_MONTHS = { "มกราคม":1,"กุมภาพันธ์":2,"กุมภาพันธุ์":2,"มีนาคม":3,"เมษายน":4,"พฤษภาคม":5,"มิถุนายน":6,
+    "กรกฎาคม":7,"สิงหาคม":8,"กันยายน":9,"ตุลาคม":10,"พฤศจิกายน":11,"พฤษจิกายน":11,"ธันวาคม":12 };
+  function parseAnyDate(s) {
+    s = String(s || "").trim();
+    if (!s) return "";
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+    var m = s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{2,4})$/);
+    if (m) {
+      var y = Number(m[3]);
+      if (y < 100) y += 2500;            // ปีไทยสองหลัก เช่น 68 = 2568
+      if (y > 2400) y -= 543;
+      return y + "-" + String(m[2]).padStart(2, "0") + "-" + String(m[1]).padStart(2, "0");
+    }
+    var t = s.match(/^([ก-๙]+)\s*(\d{2})?$/);   // "มีนาคม69" / "สิงหาคม"
+    if (t && TH_MONTHS[t[1]]) {
+      var ce = t[2] ? (Number(t[2]) + 2500 - 543) : 2025;
+      return ce + "-" + String(TH_MONTHS[t[1]]).padStart(2, "0") + "-01";
+    }
+    return "";
+  }
+  function impNorm(s) { return String(s || "").replace(/\s+/g, "").toLowerCase(); }
+
+  function handleImpFile(f) {
+    el.impErr.textContent = "";
+    el.impInfo.hidden = true;
+    impRows = null;
+    el.impOkBtn.disabled = true;
+    var lower = (f.name || "").toLowerCase();
+    if (/\.pdf$/.test(lower)) {
+      el.impErr.textContent = "ไฟล์ PDF อ่านอัตโนมัติไม่ได้ — เปิดชีทต้นทางแล้วดาวน์โหลดเป็น CSV หรือ Excel ก่อน";
+      return;
+    }
+    var p;
+    if (/\.(xlsx|xls)$/.test(lower)) {
+      p = loadXlsxLib().then(function () { return f.arrayBuffer(); }).then(function (buf) {
+        var wb = XLSX.read(buf, { type: "array" });
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        return XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: "" });
+      });
+    } else {
+      p = f.arrayBuffer().then(function (buf) { return parseCsv(decodeCsv(buf)); });
+    }
+    p.then(function (grid) { prepareImport(grid); })
+     .catch(function (e) { el.impErr.textContent = "อ่านไฟล์ไม่สำเร็จ: " + e.message; });
+  }
+
+  function prepareImport(grid) {
+    // หาแถวหัวตาราง: แถวแรกใน 10 แถวแรกที่จับคู่หัวคอลัมน์ได้อย่างน้อย 2 ช่อง
+    var headIdx = -1, colMap = {};
+    for (var r = 0; r < Math.min(grid.length, 10); r++) {
+      var m = {}, hits = 0;
+      (grid[r] || []).forEach(function (cell, c) {
+        for (var k = 0; k < IMP_HEADS.length; k++) {
+          if (IMP_HEADS[k][1].test(String(cell || "")) && m[IMP_HEADS[k][0]] === undefined) {
+            m[IMP_HEADS[k][0]] = c; hits++; break;
+          }
+        }
+      });
+      if (hits >= 2) { headIdx = r; colMap = m; break; }
+    }
+    if (headIdx === -1) {
+      el.impErr.textContent = "หาหัวตารางไม่เจอ — แถวแรกของไฟล์ต้องมีชื่อคอลัมน์ เช่น ชื่อร้าน, ประเภท, รุ่น, เบอร์โทร, จังหวัด";
+      return;
+    }
+    var exSerial = {}, exNameModel = {};
+    customers.forEach(function (c) {
+      if (c.serial) exSerial[impNorm(c.serial)] = 1;
+      exNameModel[impNorm(c.name) + "|" + impNorm(c.model)] = 1;
+    });
+    var ok = [], dup = 0, blank = 0;
+    for (var i = headIdx + 1; i < grid.length; i++) {
+      var g = grid[i] || [];
+      var pick = function (k) { return colMap[k] === undefined ? "" : String(g[colMap[k]] || "").trim(); };
+      var name = pick("name");
+      if (!name) { blank++; continue; }
+      var serial = pick("serial"), model = pick("model");
+      if ((serial && exSerial[impNorm(serial)]) || exNameModel[impNorm(name) + "|" + impNorm(model)]) { dup++; continue; }
+      var note = pick("note");
+      var inst = pick("install");
+      var lastPM = parseAnyDate(pick("lastPM"));
+      if (!lastPM && inst) lastPM = parseAnyDate(inst);
+      if (inst) note = (note ? note + " · " : "") + "ติดตั้ง " + inst;
+      ok.push({
+        name: name, phone: pick("phone"), type: pick("type") || "เครื่องล้างจาน", model: model,
+        serial: serial, province: pick("province"), address: pick("address"),
+        cycle: Number(pick("cycle")) || 45, note: note, lastPM: lastPM
+      });
+    }
+    if (!ok.length) {
+      el.impErr.textContent = "ไม่มีแถวที่นำเข้าได้ (" + (dup ? "ซ้ำกับในระบบ " + dup + " แถว" : "ไม่พบข้อมูล") + ")";
+      return;
+    }
+    impRows = ok;
+    el.impInfo.hidden = false;
+    el.impInfo.textContent = "พบข้อมูล " + (ok.length + dup) + " แถว\n• นำเข้าใหม่ " + ok.length + " เครื่อง" +
+      (dup ? "\n• ข้าม " + dup + " แถวที่มีในระบบแล้ว (ชื่อ+รุ่น หรือ S/N ซ้ำ)" : "") +
+      (blank ? "\n• ข้าม " + blank + " แถวว่าง" : "");
+    el.impOkBtn.disabled = false;
+    el.impOkBtn.textContent = "นำเข้า " + ok.length + " เครื่อง";
+  }
+
+  el.impOkBtn.addEventListener("click", function () {
+    if (!impRows || !impRows.length) return;
+    var rows = impRows.map(function (r) {
+      return {
+        id: newId(), name: r.name, phone: r.phone, type: r.type, model: r.model, serial: r.serial,
+        province: r.province, address: r.address, cycle: r.cycle, note: r.note,
+        last_pm: r.lastPM || null, active: true
+      };
+    });
+    el.impOkBtn.disabled = true;
+    var done = 0;
+    function nextBatch() {
+      if (done >= rows.length) return Promise.resolve();
+      var chunk = rows.slice(done, done + 50);
+      el.impOkBtn.textContent = "⏳ กำลังบันทึก " + Math.min(done + 50, rows.length) + "/" + rows.length + "...";
+      return fetch(SUPABASE_URL + "/rest/v1/pm_stores", {
+        method: "POST",
+        headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
+        body: JSON.stringify(chunk)
+      }).then(function (r) {
+        if (!r.ok) throw new Error("insert " + r.status);
+        done += chunk.length;
+        return nextBatch();
+      });
+    }
+    nextBatch().then(function () {
+      return fetchCustomers().catch(function () {});
+    }).then(function () {
+      renderList();
+      closeImp();
+      flash("📥 นำเข้าแล้ว " + rows.length + " เครื่อง");
+    }).catch(function (e) {
+      el.impErr.textContent = "บันทึกไม่สำเร็จ (" + e.message + ") — บันทึกไปแล้ว " + done + " เครื่อง เช็คเน็ตแล้วลองใหม่";
+      el.impOkBtn.disabled = false;
+      el.impOkBtn.textContent = "นำเข้าที่เหลืออีกครั้ง";
+      impRows = impRows.slice(done);
+    });
+  });
+
   // ==================== แผนที่ลูกค้าภาคอีสาน (#map) ====================
   // เส้นขอบ 20 จังหวัดสร้างจาก GeoJSON (apisit/thailand.json) ย่อจุดแล้วฝังในไฟล์ — เปิดดูได้ไม่ต้องโหลดเพิ่ม
   // d = เส้นขอบจังหวัด (SVG path) · cx,cy = จุดกลางไว้วางตัวเลขจำนวนเครื่อง
