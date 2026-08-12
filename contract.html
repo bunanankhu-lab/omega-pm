@@ -87,6 +87,14 @@
 
   .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   .toolbar .btn { width: auto; flex: 1; margin-top: 0; }
+  /* รายการสัญญาที่เก็บไว้ */
+  .saved-list { font-size: .88rem; }
+  .saved-item { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 11px; margin-bottom: 7px; }
+  .saved-item.current { border-color: var(--primary); background: var(--primary-soft); }
+  .saved-item .info { flex: 1; min-width: 0; cursor: pointer; }
+  .saved-item .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .saved-item .sub { color: var(--muted); font-size: .76rem; }
+  .saved-item button { font-size: .76rem; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-family: inherit; color: var(--red); }
   .edit-note { font-size: .78rem; color: var(--muted); margin: 0 0 10px; text-align: center; }
 
   /* ล็อกอินแบบเดียวกับแอปหลัก */
@@ -209,10 +217,17 @@
       <p class="hintline">วาดด้วยนิ้ว/เมาส์ หรืออัปโหลดรูปลายเซ็นบนพื้นขาว · ช่องที่ไม่ใส่จะเว้นไว้เซ็นด้วยปากกา</p>
 
       <div class="toolbar" style="margin-top:14px">
-        <button type="button" class="btn primary" id="printBtn">🖨️ พิมพ์ / บันทึก PDF</button>
-        <button type="button" class="btn secondary" id="resetBtn">ล้างฟอร์ม</button>
+        <button type="button" class="btn primary" id="pdfBtn">⬇️ ดาวน์โหลด PDF</button>
+        <button type="button" class="btn secondary" id="printBtn">🖨️ พิมพ์</button>
       </div>
-      <p class="hintline" style="margin-top:8px">ข้อมูลที่กรอกจะถูกจำไว้ในเครื่องนี้อัตโนมัติ</p>
+      <div class="toolbar">
+        <button type="button" class="btn primary" id="saveBtn" style="background:var(--green,#2F7D4F)">💾 เก็บสัญญานี้ไว้</button>
+        <button type="button" class="btn secondary" id="resetBtn">✨ เริ่มสัญญาใหม่</button>
+      </div>
+      <p class="hintline" style="margin-top:8px">ข้อมูลที่กรอกจะถูกจำไว้ในเครื่องนี้อัตโนมัติ · กด 💾 เพื่อเก็บขึ้นเว็บ เปิดจากเครื่องไหนก็ได้</p>
+
+      <h3>📚 สัญญาที่เก็บไว้ <button type="button" class="copy-btn" id="listRefresh">🔄 รีเฟรช</button></h3>
+      <div id="savedList" class="saved-list">⏳ กำลังโหลด...</div>
     </div>
 
     <!-- ==================== ตัวสัญญา ==================== -->
@@ -559,14 +574,170 @@
   });
   $("printBtn").addEventListener("click", function () { window.print(); });
   $("resetBtn").addEventListener("click", function () {
-    if (!confirm("ล้างข้อมูลในฟอร์มทั้งหมด?")) return;
-    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    if (!confirm("เริ่มสัญญาใหม่? ข้อมูลในฟอร์มจะถูกล้าง (สัญญาที่เก็บไว้ไม่หาย)")) return;
+    try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(CUR_KEY); } catch (e) {}
     location.reload();
+  });
+
+  // ---------- ดาวน์โหลด PDF ตรง ๆ (ไม่ง้อหน้าต่างพิมพ์ — ใช้ได้ทุกเครื่อง) ----------
+  var HTML2PDF_CDN = "https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js";
+  var LH_RATIO = 0.2226;   // สัดส่วนสูง/กว้างของหัวกระดาษ
+  var lhData = null;
+  function loadPdfLib() {
+    if (window.html2pdf) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = HTML2PDF_CDN;
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error("โหลดตัวสร้าง PDF ไม่สำเร็จ — เช็คสัญญาณเน็ต")); };
+      document.head.appendChild(s);
+    });
+  }
+  function loadLetterhead() {
+    if (lhData) return Promise.resolve(lhData);
+    return fetch("letterhead.jpg").then(function (r) { return r.blob(); }).then(function (b) {
+      return new Promise(function (resolve, reject) {
+        var fr = new FileReader();
+        fr.onload = function () { lhData = fr.result; resolve(lhData); };
+        fr.onerror = reject;
+        fr.readAsDataURL(b);
+      });
+    });
+  }
+  $("pdfBtn").addEventListener("click", function () {
+    var btn = $("pdfBtn");
+    btn.disabled = true;
+    btn.textContent = "⏳ กำลังสร้าง PDF...";
+    var v = values();
+    var fname = "สัญญาเช่า-" + (v.fLessee || "ไม่ระบุชื่อ").replace(/[\\\/:*?"<>|]/g, " ").trim() +
+      (v.fNo ? "-" + v.fNo.replace(/[\\\/:*?"<>|]/g, "-") : "") + ".pdf";
+    Promise.all([loadPdfLib(), loadLetterhead()]).then(function () {
+      return html2pdf().set({
+        margin: [46, 18, 14, 18],            // เว้นหัวกระดาษ 46mm ทุกหน้า
+        filename: fname,
+        image: { type: "jpeg", quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+      }).from($("paper")).toPdf().get("pdf").then(function (pdf) {
+        // แปะหัวกระดาษบนทุกหน้า
+        var pw = pdf.internal.pageSize.getWidth();
+        var lw = pw - 36, lh = lw * LH_RATIO;
+        for (var i = 1; i <= pdf.internal.getNumberOfPages(); i++) {
+          pdf.setPage(i);
+          pdf.addImage(lhData, "JPEG", 18, 5, lw, lh);
+        }
+      }).save();
+    }).then(function () {
+      btn.textContent = "✅ ดาวน์โหลดแล้ว";
+      setTimeout(function () { btn.textContent = "⬇️ ดาวน์โหลด PDF"; btn.disabled = false; }, 1800);
+    }).catch(function (e) {
+      alert("สร้าง PDF ไม่สำเร็จ: " + e.message);
+      btn.textContent = "⬇️ ดาวน์โหลด PDF";
+      btn.disabled = false;
+    });
+  });
+
+  // ---------- ที่เก็บสัญญา (ตาราง contracts บน Supabase — เปิดจากเครื่องไหนก็ได้) ----------
+  var SB_URL = "https://vhrexjmzdcvlojzanvum.supabase.co";
+  var SB_KEY = "sb_publishable_47xRsvJMYfqk1XSlW6qjaQ_8ABKblB5";
+  function sbH() {
+    return { apikey: SB_KEY, Authorization: "Bearer " + SB_KEY, "Content-Type": "application/json" };
+  }
+  var CUR_KEY = "omega_contract_current";
+  var currentContractId = null;
+  try { currentContractId = localStorage.getItem(CUR_KEY) || null; } catch (e) {}
+
+  function fmtWhen(iso) {
+    try {
+      var d = new Date(iso);
+      return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) + " " +
+        d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+    } catch (e) { return ""; }
+  }
+  function loadList() {
+    $("savedList").textContent = "⏳ กำลังโหลด...";
+    fetch(SB_URL + "/rest/v1/contracts?select=id,no,name,model,updated_at&active=eq.true&order=updated_at.desc&limit=100", { headers: sbH() })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (rows) {
+        if (!rows.length) { $("savedList").innerHTML = '<span style="color:var(--muted)">ยังไม่มีสัญญาที่เก็บไว้ — กรอกแล้วกด 💾</span>'; return; }
+        $("savedList").innerHTML = rows.map(function (c) {
+          return '<div class="saved-item' + (c.id === currentContractId ? " current" : "") + '" data-id="' + c.id + '">' +
+            '<div class="info"><div class="nm">📄 ' + esc(c.name || "(ไม่มีชื่อ)") + (c.model ? " · " + esc(c.model) : "") + "</div>" +
+            '<div class="sub">' + (c.no ? "เลขที่ " + esc(c.no) + " · " : "") + fmtWhen(c.updated_at) + "</div></div>" +
+            '<button type="button" data-del="' + c.id + '">🗑</button></div>';
+        }).join("");
+      })
+      .catch(function () { $("savedList").innerHTML = '<span style="color:var(--red)">โหลดไม่สำเร็จ — เช็คเน็ตแล้วกด 🔄</span>'; });
+  }
+  $("listRefresh").addEventListener("click", loadList);
+  $("savedList").addEventListener("click", function (e) {
+    var del = e.target.closest ? e.target.closest("button[data-del]") : null;
+    if (del) {
+      if (!confirm("ลบสัญญาฉบับนี้ออกจากที่เก็บ?")) return;
+      fetch(SB_URL + "/rest/v1/contracts?id=eq." + encodeURIComponent(del.dataset.del), {
+        method: "PATCH", headers: Object.assign(sbH(), { Prefer: "return=minimal" }),
+        body: JSON.stringify({ active: false })
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        if (currentContractId === del.dataset.del) { currentContractId = null; try { localStorage.removeItem(CUR_KEY); } catch (e2) {} }
+        loadList();
+      }).catch(function () { alert("ลบไม่สำเร็จ — เช็คเน็ตแล้วลองใหม่"); });
+      return;
+    }
+    var item = e.target.closest ? e.target.closest(".saved-item") : null;
+    if (!item) return;
+    fetch(SB_URL + "/rest/v1/contracts?id=eq." + encodeURIComponent(item.dataset.id) + "&limit=1", { headers: sbH() })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (rows) {
+        if (!rows.length) throw new Error("ไม่พบ");
+        var c = rows[0];
+        if (c.fields) IDS.forEach(function (id) { if (c.fields[id] !== undefined) $(id).value = c.fields[id]; });
+        saveDraft();
+        render();
+        if (c.paper_html) $("paper").innerHTML = c.paper_html;   // คงการแก้ไข/ลายเซ็น ณ ตอนที่เก็บ
+        currentContractId = c.id;
+        try { localStorage.setItem(CUR_KEY, c.id); } catch (e2) {}
+        loadList();
+        window.scrollTo(0, 0);
+      })
+      .catch(function () { alert("เปิดสัญญาไม่สำเร็จ — เช็คเน็ตแล้วลองใหม่"); });
+  });
+  $("saveBtn").addEventListener("click", function () {
+    var v = values();
+    if (!v.fLessee) { alert("ใส่ชื่อผู้เช่าก่อนเก็บสัญญา"); return; }
+    var id = currentContractId;
+    if (id) {
+      if (!confirm("บันทึกทับฉบับเดิมที่เปิดอยู่?\n\nตกลง = ทับฉบับเดิม\nยกเลิก = เก็บเป็นฉบับใหม่")) id = null;
+    }
+    if (!id) id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    var btn = $("saveBtn");
+    btn.disabled = true; btn.textContent = "⏳ กำลังเก็บ...";
+    fetch(SB_URL + "/rest/v1/contracts", {
+      method: "POST",
+      headers: Object.assign(sbH(), { Prefer: "resolution=merge-duplicates,return=minimal" }),
+      body: JSON.stringify({
+        id: id, no: v.fNo || "", name: v.fLessee, model: v.fModel || "",
+        fields: v, paper_html: $("paper").innerHTML,
+        active: true, updated_at: new Date().toISOString()
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      currentContractId = id;
+      try { localStorage.setItem(CUR_KEY, id); } catch (e2) {}
+      btn.textContent = "✅ เก็บแล้ว";
+      loadList();
+      setTimeout(function () { btn.textContent = "💾 เก็บสัญญานี้ไว้"; btn.disabled = false; }, 1500);
+    }).catch(function (e) {
+      alert("เก็บไม่สำเร็จ (" + e.message + ") — เช็คเน็ตแล้วลองใหม่");
+      btn.textContent = "💾 เก็บสัญญานี้ไว้"; btn.disabled = false;
+    });
   });
 
   loadDraft();
   renderSigRows();
   render();
+  loadList();
 })();
 </script>
 </body>
