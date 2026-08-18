@@ -104,6 +104,21 @@
   .gate-box input { width: 100%; text-align: center; font-size: 1.5rem; letter-spacing: 9px; padding: 11px; border: 2px solid var(--border); border-radius: 13px; }
   .gate-box .err { color: var(--red); font-size: .85rem; min-height: 1.2em; margin-top: 8px; }
 
+  /* ปฏิทินเลือกวันที่แบบ พ.ศ. */
+  #dpPop { position: absolute; z-index: 70; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 34px rgba(23,48,59,.22); padding: 10px; width: 276px; }
+  #dpPop[hidden] { display: none; }
+  .dp-head { display: flex; gap: 4px; align-items: center; margin-bottom: 8px; }
+  .dp-head button { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 1.05rem; color: var(--primary); font-family: inherit; flex: none; }
+  .dp-head select { flex: 1; min-width: 0; padding: 6px 4px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .85rem; background: var(--bg); color: var(--text); }
+  .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .dp-dow { font-size: .72rem; color: var(--muted); padding: 3px 0; }
+  .dp-day { border: 1px solid transparent; background: none; border-radius: 8px; padding: 6px 0; cursor: pointer; font-family: inherit; font-size: .85rem; color: var(--text); }
+  .dp-day:hover { background: var(--primary-soft); }
+  .dp-day.today { border-color: var(--primary); }
+  .dp-day.sel { background: var(--primary); color: #fff; font-weight: 700; }
+  .dp-foot { display: flex; justify-content: space-between; margin-top: 8px; }
+  .dp-foot button { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; padding: 5px 12px; cursor: pointer; font-family: inherit; font-size: .8rem; color: var(--primary); font-weight: 600; }
+
   @media print {
     body { background: #fff; }
     .no-print, header.top, #gate { display: none !important; }
@@ -145,7 +160,7 @@
         <div class="field"><label>อ้างอิง (QT)</label><input id="fRef" placeholder="QT2026060019"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>วันที่ทำสัญญา</label><input id="fDate" type="date"></div>
+        <div class="field"><label>วันที่ทำสัญญา (พ.ศ.)</label><input id="fDate" type="text" class="th-date" placeholder="วว/ดด/ปปปป" autocomplete="off"></div>
         <div class="field"><label>ประเภทเครื่อง</label>
           <select id="fKind">
             <option>เครื่องล้างจาน</option>
@@ -191,12 +206,12 @@
 
       <h3>ระยะเวลาและเงิน</h3>
       <div class="row2">
-        <div class="field"><label>เริ่มเช่าวันที่</label><input id="fStart" type="date"></div>
-        <div class="field"><label>ถึงวันที่ (เว้นว่าง = ครบ 1 ปีอัตโนมัติ)</label><input id="fEnd" type="date"></div>
+        <div class="field"><label>เริ่มเช่าวันที่ (พ.ศ.)</label><input id="fStart" type="text" class="th-date" placeholder="วว/ดด/ปปปป" autocomplete="off"></div>
+        <div class="field"><label>ถึงวันที่ (เว้นว่าง = ครบ 1 ปีอัตโนมัติ)</label><input id="fEnd" type="text" class="th-date" placeholder="วว/ดด/ปปปป" autocomplete="off"></div>
       </div>
       <div class="row2">
         <div class="field"><label>ค่าเช่า/เดือน (ก่อน VAT)</label><input id="fRent" type="number" step="any" placeholder="5000"></div>
-        <div class="field"><label>งวดแรกวันที่</label><input id="fFirstPay" type="date"></div>
+        <div class="field"><label>งวดแรกวันที่ (พ.ศ.)</label><input id="fFirstPay" type="text" class="th-date" placeholder="วว/ดด/ปปปป" autocomplete="off"></div>
       </div>
       <div class="row2">
         <div class="field"><label>เงินประกัน (บาท)</label><input id="fDeposit" type="number" step="any" placeholder="5000"></div>
@@ -327,20 +342,155 @@
   }
   function or(v, dots) { return v ? esc(v) : (dots || ".............................."); }
 
+  // ---------- ช่องวันที่แบบ พ.ศ. (แทน input type=date ที่โชว์ ค.ศ. อย่างเดียว) ----------
+  // โชว์เป็น วว/ดด/ปปปป (พ.ศ.) แต่เก็บค่าจริงเป็น ISO ค.ศ. ใน dataset.iso — ข้อมูลเก่าเปิดได้ปกติ
+  var DATE_IDS = ["fDate", "fStart", "fEnd", "fFirstPay"];
+  function isoOf(id) { return $(id).dataset.iso || ""; }
+  function setDateVal(id, iso) {
+    var el = $(id);
+    if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+      var p = iso.split("-");
+      el.dataset.iso = iso;
+      el.value = p[2] + "/" + p[1] + "/" + (Number(p[0]) + 543);
+    } else {
+      el.dataset.iso = "";
+      el.value = "";
+    }
+  }
+  function parseThaiInput(text) {
+    var m = String(text || "").trim().match(/^(\d{1,2})[\/\-\. ](\d{1,2})[\/\-\. ](\d{2,4})$/);
+    if (!m) return "";
+    var d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
+    if (m[3].length <= 2) y += 2500;      // พิมพ์ 69 → 2569
+    if (y >= 2400) y -= 543;              // พ.ศ. → ค.ศ. ภายใน
+    var dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return "";
+    return y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+  }
+  function fireChange(el) {
+    var ev;
+    try { ev = new Event("change", { bubbles: false }); }
+    catch (e) { ev = document.createEvent("Event"); ev.initEvent("change", false, true); }
+    el.dispatchEvent(ev);
+  }
+
+  // ปฏิทินป๊อปอัป
+  var dpPop = document.createElement("div");
+  dpPop.id = "dpPop";
+  dpPop.className = "no-print";
+  dpPop.hidden = true;
+  document.body.appendChild(dpPop);
+  var dpTarget = null, dpY = 0, dpM = 0;   // ปี ค.ศ. / เดือน 0-11 ที่กำลังเปิดดู
+  var TH_D = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+  function todayIso() {
+    var t = new Date();
+    return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+  }
+  function dpRender() {
+    var beNow = new Date().getFullYear() + 543, beCur = dpY + 543;
+    var yFrom = Math.min(beNow, beCur) - 10, yTo = Math.max(beNow, beCur) + 10;
+    var yOpt = "";
+    for (var by = yFrom; by <= yTo; by++) yOpt += '<option value="' + by + '"' + (by === beCur ? " selected" : "") + ">พ.ศ. " + by + "</option>";
+    var mOpt = TH_M.map(function (nm, i) { return '<option value="' + i + '"' + (i === dpM ? " selected" : "") + ">" + nm + "</option>"; }).join("");
+    var html = '<div class="dp-head">' +
+      '<button type="button" data-nav="-1">‹</button>' +
+      "<select data-mon>" + mOpt + "</select>" +
+      "<select data-year>" + yOpt + "</select>" +
+      '<button type="button" data-nav="1">›</button></div><div class="dp-grid">';
+    html += TH_D.map(function (d) { return '<span class="dp-dow">' + d + "</span>"; }).join("");
+    var first = new Date(dpY, dpM, 1).getDay();
+    var days = new Date(dpY, dpM + 1, 0).getDate();
+    var sel = dpTarget ? isoOf(dpTarget) : "", tIso = todayIso();
+    for (var i = 0; i < first; i++) html += "<span></span>";
+    for (var d2 = 1; d2 <= days; d2++) {
+      var iso = dpY + "-" + String(dpM + 1).padStart(2, "0") + "-" + String(d2).padStart(2, "0");
+      html += '<button type="button" class="dp-day' + (iso === sel ? " sel" : "") + (iso === tIso ? " today" : "") + '" data-iso="' + iso + '">' + d2 + "</button>";
+    }
+    html += '</div><div class="dp-foot"><button type="button" data-today>วันนี้</button><button type="button" data-clear>ล้างวันที่</button></div>';
+    dpPop.innerHTML = html;
+  }
+  function dpOpen(id) {
+    dpTarget = id;
+    var iso = isoOf(id), t = new Date();
+    var base = iso ? iso.split("-") : null;
+    dpY = base ? Number(base[0]) : t.getFullYear();
+    dpM = base ? Number(base[1]) - 1 : t.getMonth();
+    dpRender();
+    dpPop.hidden = false;
+    var r = $(id).getBoundingClientRect();
+    var left = r.left + window.scrollX, top = r.bottom + window.scrollY + 4;
+    var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight;
+    if (left + dpPop.offsetWidth > window.scrollX + vw - 8) left = Math.max(window.scrollX + 8, window.scrollX + vw - dpPop.offsetWidth - 8);
+    if (r.bottom + 4 + dpPop.offsetHeight > vh && r.top - dpPop.offsetHeight - 4 > 0) top = r.top + window.scrollY - dpPop.offsetHeight - 4;
+    dpPop.style.left = left + "px";
+    dpPop.style.top = top + "px";
+  }
+  dpPop.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b || !dpTarget) return;
+    if (b.dataset.nav) {
+      dpM += Number(b.dataset.nav);
+      if (dpM < 0) { dpM = 11; dpY--; }
+      if (dpM > 11) { dpM = 0; dpY++; }
+      dpRender();
+    } else if (b.dataset.iso) {
+      setDateVal(dpTarget, b.dataset.iso);
+      fireChange($(dpTarget));
+      dpPop.hidden = true;
+    } else if (b.hasAttribute("data-today")) {
+      setDateVal(dpTarget, todayIso());
+      fireChange($(dpTarget));
+      dpPop.hidden = true;
+    } else if (b.hasAttribute("data-clear")) {
+      setDateVal(dpTarget, "");
+      fireChange($(dpTarget));
+      dpPop.hidden = true;
+    }
+  });
+  dpPop.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.hasAttribute("data-mon")) { dpM = Number(t.value); dpRender(); }
+    else if (t.hasAttribute("data-year")) { dpY = Number(t.value) - 543; dpRender(); }
+    e.stopPropagation();
+  });
+  document.addEventListener("pointerdown", function (e) {
+    if (dpPop.hidden) return;
+    if (dpPop.contains(e.target)) return;
+    if (e.target && e.target.id && DATE_IDS.indexOf(e.target.id) >= 0) return;
+    dpPop.hidden = true;
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") dpPop.hidden = true; });
+  DATE_IDS.forEach(function (id) {
+    var el = $(id);
+    el.addEventListener("focus", function () { dpOpen(id); });
+    el.addEventListener("click", function () { if (dpPop.hidden || dpTarget !== id) dpOpen(id); });
+    // พิมพ์เองก็ได้ เช่น 18/08/2569 — แปลงตอนออกจากช่อง (ลงทะเบียนก่อน listener render ด้านล่าง)
+    el.addEventListener("change", function () {
+      if (el.value.trim() === "") { setDateVal(id, ""); return; }
+      var iso = parseThaiInput(el.value);
+      setDateVal(id, iso || el.dataset.iso || "");   // พิมพ์ผิดรูปแบบ → คืนค่าเดิม
+    });
+  });
+
   // ---------- ฟิลด์ทั้งหมด ----------
   var IDS = ["fNo","fRef","fDate","fKind","fLessee","fSigner","fRegType","fRegNo","fAddr","fPhone","fSite","fSiteAddr","fSitePhone","fSize","fModel","fSN","fItems","fStart","fEnd","fRent","fFirstPay","fDeposit","fDepVat","fService","fWit1","fWit2"];
   var SAVE_KEY = "omega_contract_draft";
 
   function values() {
     var v = {};
-    IDS.forEach(function (id) { v[id] = $(id).value; });
+    IDS.forEach(function (id) { v[id] = DATE_IDS.indexOf(id) >= 0 ? isoOf(id) : $(id).value; });
     return v;
+  }
+  // ตั้งค่าฟิลด์ — ช่องวันที่รับค่า ISO (ค.ศ.) แล้วโชว์เป็น พ.ศ.
+  function setField(id, val) {
+    if (DATE_IDS.indexOf(id) >= 0) setDateVal(id, val);
+    else $(id).value = val;
   }
   function saveDraft() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(values())); } catch (e) {} }
   function loadDraft() {
     try {
       var d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
-      if (d) IDS.forEach(function (id) { if (d[id] !== undefined) $(id).value = d[id]; });
+      if (d) IDS.forEach(function (id) { if (d[id] !== undefined) setField(id, d[id]); });
     } catch (e) {}
   }
 
@@ -384,7 +534,8 @@
 
       '<p class="noindent"><b>ข้อ 2. รายการอุปกรณ์ประกอบ อันเป็นส่วนหนึ่งของสัญญา</b></p>' +
       '<table class="items">' + itemRows + "</table>" +
-      "<p>หมายเหตุ : ทางบริษัทขอแจ้งการเก็บรักษาถังน้ำยาล้างจานทุกชนิด ที่เป็นรายการเช่า ให้อยู่ในสภาพที่สมบูรณ์ หากเกิดความเสียหายหรือสูญหายแก่อุปกรณ์ของผู้ให้เช่า ทางผู้เช่าจะต้องเป็นผู้รับผิดชอบเป็นจำนวนเงิน 600 บาท (ต่อชิ้น)</p>" +
+      (kind === "เครื่องทำน้ำแข็ง" ? "" :
+        "<p>หมายเหตุ : ทางบริษัทขอแจ้งการเก็บรักษาถังน้ำยาล้างจานทุกชนิด ที่เป็นรายการเช่า ให้อยู่ในสภาพที่สมบูรณ์ หากเกิดความเสียหายหรือสูญหายแก่อุปกรณ์ของผู้ให้เช่า ทางผู้เช่าจะต้องเป็นผู้รับผิดชอบเป็นจำนวนเงิน 600 บาท (ต่อชิ้น)</p>") +
       "<p>หมายเหตุ : อุปกรณ์เสริมที่ผู้ให้เช่าให้ผู้เช่ายืมใช้ตามข้อ 2 หากเกิดความเสียหาย สูญหาย หรือเสียหายอันเนื่องมาจากอัคคีภัยหรือภัยธรรมชาติ ผู้เช่าตกลงรับผิดชอบต่อความเสียหายดังกล่าวทั้งหมดโดยไม่มีเงื่อนไข</p>" +
 
       "<p><b>ข้อ 3. ระยะเวลาการเช่า</b> สัญญานี้มีผลใช้บังคับนับแต่วันที่ลงนามในสัญญา และมีกำหนดระยะเวลาการเช่า 1 ปี โดยเริ่มตั้งแต่วันที่ <span class=\"v\">" + thDateShort(v.fStart) + "</span> ถึงวันที่ <span class=\"v\">" + thDateShort(endIso) + "</span> ทั้งนี้ ให้นับรวมระยะเวลาหลังจากผู้เช่าได้รับมอบ" + kind + "เรียบร้อยแล้ว ตลอดอายุสัญญาเช่าและภายหลังครบกำหนดสัญญา กรรมสิทธิ์ใน" + kind + "และอุปกรณ์ประกอบตามข้อ 1 และข้อ 2 ยังคงเป็นของผู้ให้เช่าแต่เพียงผู้เดียว โดยผู้เช่าไม่มีสิทธิอ้างกรรมสิทธิ์หรือโต้แย้งสิทธิของผู้ให้เช่าแต่ประการใด</p>" +
@@ -741,7 +892,7 @@
       .then(function (rows) {
         if (!rows.length) throw new Error("ไม่พบ");
         var c = rows[0];
-        if (c.fields) IDS.forEach(function (id) { if (c.fields[id] !== undefined) $(id).value = c.fields[id]; });
+        if (c.fields) IDS.forEach(function (id) { if (c.fields[id] !== undefined) setField(id, c.fields[id]); });
         saveDraft();
         render();
         if (c.paper_html) $("paper").innerHTML = c.paper_html;   // คงการแก้ไข/ลายเซ็น ณ ตอนที่เก็บ
