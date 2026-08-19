@@ -321,6 +321,32 @@
   </div>
 </div>
 
+<!-- โมดัลแก้ไข/ลบรายการประวัติ -->
+<div class="modal-bg" id="fixBg" hidden>
+  <div class="modal">
+    <h3 id="fxTitle">แก้ไขประวัติ</h3>
+    <div class="sub" id="fxSub"></div>
+    <div class="fld">
+      <label id="fxQtyLabel">จำนวน</label>
+      <div class="stepper">
+        <button type="button" id="fxMinus">−</button>
+        <input id="fxQty" type="number" inputmode="numeric" min="0" step="1">
+        <button type="button" id="fxPlus">＋</button>
+      </div>
+    </div>
+    <div class="fld"><label>ผู้ทำรายการ</label><input id="fxPerson"></div>
+    <div class="fld"><label>หมายเหตุ</label><input id="fxNote"></div>
+    <div class="err" id="fxErr"></div>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="fxCancel">ยกเลิก</button>
+      <button type="button" class="btn primary" id="fxOk">บันทึกแก้ไข</button>
+    </div>
+    <div class="btn-row2" id="fxDelRow">
+      <button type="button" class="btn danger" id="fxDel">🗑 ลบรายการนี้ (คืนยอดสต๊อกให้อัตโนมัติ)</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -524,7 +550,7 @@
       if (!byDay[k]) { byDay[k] = []; days.push(k); }
       byDay[k].push(m);
     });
-    var html = "";
+    var html = moves.length ? '<div style="text-align:center;color:var(--muted);font-size:.75rem;margin-bottom:8px">💡 ลงข้อมูลผิด? แตะที่รายการเพื่อแก้ไขหรือลบได้</div>' : "";
     days.forEach(function (k) {
       var list = byDay[k];
       var nIn = 0, nOut = 0, nAdj = 0;
@@ -541,7 +567,7 @@
         var un = m.inv_items ? m.inv_items.unit : "";
         var sign = m.type === "in" ? "+" : m.type === "out" ? "−" : "→";
         var lbl = m.type === "in" ? "รับเข้า" : m.type === "out" ? "จ่ายออก" : "ปรับยอด";
-        html += '<div class="mv-card">' +
+        html += '<div class="mv-card" data-mid="' + m.id + '" style="cursor:pointer">' +
           '<div class="t">' + fmtClock(m.created_at) + " · " + lbl + (m.person ? " · " + esc(m.person) : "") + "</div>" +
           '<div class="d"><span>' + esc(nm) + "</span>" +
           '<span class="mv-qty ' + m.type + '">' + sign + " " + fmtQty(m.qty) + " " + esc(un) +
@@ -552,6 +578,60 @@
       });
     });
     $("histList").innerHTML = html || "";
+    $("histList").querySelectorAll(".mv-card[data-mid]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        var m = moves.find(function (x) { return x.id === el.getAttribute("data-mid"); });
+        if (m) openFix(m);
+      });
+    });
+  }
+
+  // ---------- แก้ไข / ลบรายการประวัติ ----------
+  var fxMove = null;
+  function openFix(m) {
+    fxMove = m;
+    var nm = m.inv_items ? m.inv_items.name : "(รายการถูกลบ)";
+    var un = m.inv_items ? m.inv_items.unit : "";
+    var lbl = m.type === "in" ? "รับเข้า" : m.type === "out" ? "จ่ายออก" : "ปรับยอด";
+    var isAdj = m.type === "adjust";
+    $("fxTitle").textContent = "✏️ แก้ไข" + lbl + " — " + nm;
+    $("fxSub").textContent = fmtDay(m.created_at) + " " + fmtClock(m.created_at) +
+      (isAdj ? " · รายการปรับยอดแก้ตัวเลข/ลบไม่ได้ — ถ้ายอดยังผิด ให้ไปกดปรับยอดใหม่ที่หน้ารายการของ" : "");
+    $("fxQtyLabel").textContent = "จำนวน" + (un ? " (" + un + ")" : "");
+    $("fxQty").value = fmtQty(m.qty);
+    $("fxQty").disabled = isAdj;
+    $("fxMinus").disabled = isAdj;
+    $("fxPlus").disabled = isAdj;
+    $("fxPerson").value = m.person || "";
+    $("fxNote").value = m.note || "";
+    $("fxErr").textContent = "";
+    $("fxDelRow").hidden = isAdj;
+    $("fixBg").hidden = false;
+  }
+  function doFix(del) {
+    if (!fxMove) return;
+    var lbl = fxMove.type === "in" ? "รับเข้า" : "จ่ายออก";
+    if (del && !confirm("ลบรายการ" + lbl + " " + fmtQty(fxMove.qty) + " นี้?\nยอดสต๊อกจะถูกคืน/หักกลับให้ถูกต้องอัตโนมัติ")) return;
+    var qty = fxMove.type === "adjust" ? Number(fxMove.qty) : Number($("fxQty").value);
+    if (!del && fxMove.type !== "adjust" && (!isFinite(qty) || qty <= 0)) { $("fxErr").textContent = "ใส่จำนวนให้ถูกต้อง"; return; }
+    $("fxOk").disabled = true; $("fxDel").disabled = true;
+    fetch(SUPABASE_URL + "/rest/v1/rpc/inv_fix_move", {
+      method: "POST", headers: sbHeaders(true),
+      body: JSON.stringify({ p_move: fxMove.id, p_qty: qty, p_person: $("fxPerson").value.trim(), p_note: $("fxNote").value.trim(), p_delete: !!del }),
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error(t); });
+      return r.json();
+    }).then(function () {
+      $("fxOk").disabled = false; $("fxDel").disabled = false;
+      $("fixBg").hidden = true;
+      toast(del ? "🗑 ลบแล้ว — คืนยอดสต๊อกเรียบร้อย" : "✅ แก้ไขแล้ว — ปรับยอดสต๊อกให้ตรงเรียบร้อย");
+      loadAll();
+    }).catch(function (e) {
+      $("fxOk").disabled = false; $("fxDel").disabled = false;
+      $("fxErr").textContent = /insufficient/.test(String(e.message))
+        ? "แก้แบบนี้จะทำให้ยอดคงเหลือติดลบ — เช็คยอดจริงก่อน"
+        : "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง";
+    });
   }
 
   // ---------- รับ / จ่าย / ปรับยอด ----------
@@ -716,12 +796,17 @@
   $("edCancel").addEventListener("click", function () { $("editBg").hidden = true; });
   $("edOk").addEventListener("click", saveEdit);
   $("edDel").addEventListener("click", delItem);
+  $("fxCancel").addEventListener("click", function () { $("fixBg").hidden = true; });
+  $("fxOk").addEventListener("click", function () { doFix(false); });
+  $("fxDel").addEventListener("click", function () { doFix(true); });
+  $("fxMinus").addEventListener("click", function () { $("fxQty").value = Math.max(1, (Number($("fxQty").value) || 1) - 1); });
+  $("fxPlus").addEventListener("click", function () { $("fxQty").value = (Number($("fxQty").value) || 0) + 1; });
   $("logoutBtn").addEventListener("click", function () {
     if (!confirm("ออกจากระบบ?")) return;
     try { localStorage.removeItem(LOGIN_KEY); } catch (e) {}
     location.reload();
   });
-  [$("moveBg"), $("editBg")].forEach(function (bg) {
+  [$("moveBg"), $("editBg"), $("fixBg")].forEach(function (bg) {
     bg.addEventListener("click", function (e) { if (e.target === bg) bg.hidden = true; });
   });
 
