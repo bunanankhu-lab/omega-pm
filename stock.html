@@ -364,11 +364,25 @@
     n = Number(n);
     return (n % 1 === 0) ? String(n) : n.toFixed(1);
   }
-  function fmtTime(iso) {
+  function fmtClock(iso) {
     var d = new Date(iso);
-    var yy = (d.getFullYear() + 543) % 100;
     var mi = d.getMinutes();
-    return d.getDate() + "/" + (d.getMonth() + 1) + "/" + yy + " " + d.getHours() + ":" + (mi < 10 ? "0" : "") + mi;
+    return d.getHours() + ":" + (mi < 10 ? "0" : "") + mi + " น.";
+  }
+  var TH_DOW = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+  var TH_MON = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  function dayKey(iso) {
+    var d = new Date(iso);
+    return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
+  }
+  function fmtDay(iso) {
+    var d = new Date(iso);
+    var now = new Date();
+    var base = TH_DOW[d.getDay()] + " " + d.getDate() + " " + TH_MON[d.getMonth()] + " " + ((d.getFullYear() + 543) % 100);
+    if (dayKey(iso) === dayKey(now.toISOString())) return "วันนี้ · " + base;
+    var yd = new Date(now.getTime() - 86400000);
+    if (dayKey(iso) === dayKey(yd.toISOString())) return "เมื่อวาน · " + base;
+    return base;
   }
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -503,20 +517,39 @@
   function renderHist() {
     $("itemList").hidden = true; $("histList").hidden = false;
     $("listEmpty").hidden = moves.length > 0;
-    var html = "";
+    // จัดกลุ่มเป็นรายวัน (moves เรียงใหม่→เก่าอยู่แล้ว)
+    var days = [], byDay = {};
     moves.forEach(function (m) {
-      var nm = m.inv_items ? m.inv_items.name : "(รายการถูกลบ)";
-      var un = m.inv_items ? m.inv_items.unit : "";
-      var sign = m.type === "in" ? "+" : m.type === "out" ? "−" : "→";
-      var lbl = m.type === "in" ? "รับเข้า" : m.type === "out" ? "จ่ายออก" : "ปรับยอด";
-      html += '<div class="mv-card">' +
-        '<div class="t">' + fmtTime(m.created_at) + " · " + lbl + (m.person ? " · " + esc(m.person) : "") + "</div>" +
-        '<div class="d"><span>' + esc(nm) + "</span>" +
-        '<span class="mv-qty ' + m.type + '">' + sign + " " + fmtQty(m.qty) + " " + esc(un) +
-        (m.balance_after != null ? ' <span style="color:var(--muted);font-weight:500">(เหลือ ' + fmtQty(m.balance_after) + ")</span>" : "") +
-        "</span></div>" +
-        (m.note ? '<div class="t">📝 ' + esc(m.note) + "</div>" : "") +
-        "</div>";
+      var k = dayKey(m.created_at);
+      if (!byDay[k]) { byDay[k] = []; days.push(k); }
+      byDay[k].push(m);
+    });
+    var html = "";
+    days.forEach(function (k) {
+      var list = byDay[k];
+      var nIn = 0, nOut = 0, nAdj = 0;
+      list.forEach(function (m) {
+        if (m.type === "in") nIn++; else if (m.type === "out") nOut++; else nAdj++;
+      });
+      var sum = [];
+      if (nIn) sum.push("รับ " + nIn);
+      if (nOut) sum.push("จ่าย " + nOut);
+      if (nAdj) sum.push("ปรับ " + nAdj);
+      html += '<div class="grp-head"><span>📅 ' + fmtDay(list[0].created_at) + '</span><span class="c">' + sum.join(" · ") + "</span></div>";
+      list.forEach(function (m) {
+        var nm = m.inv_items ? m.inv_items.name : "(รายการถูกลบ)";
+        var un = m.inv_items ? m.inv_items.unit : "";
+        var sign = m.type === "in" ? "+" : m.type === "out" ? "−" : "→";
+        var lbl = m.type === "in" ? "รับเข้า" : m.type === "out" ? "จ่ายออก" : "ปรับยอด";
+        html += '<div class="mv-card">' +
+          '<div class="t">' + fmtClock(m.created_at) + " · " + lbl + (m.person ? " · " + esc(m.person) : "") + "</div>" +
+          '<div class="d"><span>' + esc(nm) + "</span>" +
+          '<span class="mv-qty ' + m.type + '">' + sign + " " + fmtQty(m.qty) + " " + esc(un) +
+          (m.balance_after != null ? ' <span style="color:var(--muted);font-weight:500">(เหลือ ' + fmtQty(m.balance_after) + ")</span>" : "") +
+          "</span></div>" +
+          (m.note ? '<div class="t">📝 ' + esc(m.note) + "</div>" : "") +
+          "</div>";
+      });
     });
     $("histList").innerHTML = html || "";
   }
