@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แผนที่ลูกค้า · โอเมก้าอีสาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; font-family: "Noto Sans Thai", "Segoe UI", Tahoma, sans-serif; }
+  #wrap { position: fixed; inset: 0; display: flex; flex-direction: column; background: #0E2836; }
+  .top { flex: none; padding: 10px 14px 8px; color: #fff; }
+  .top h1 { margin: 0; font-size: 1.02rem; font-weight: 700; }
+  .top .sub { font-size: .74rem; color: rgba(255,255,255,.65); }
+  .bar { flex: none; display: flex; gap: 8px; padding: 0 14px 10px; }
+  .bar select {
+    flex: 1; min-width: 0; padding: 8px 12px; border-radius: 12px; border: none;
+    font-family: inherit; font-size: .9rem; background: rgba(255,255,255,.14); color: #fff;
+  }
+  .bar select option { color: #17303B; }
+  .bar button {
+    flex: none; border: none; border-radius: 12px; padding: 0 16px; cursor: pointer;
+    background: rgba(255,255,255,.14); color: #fff; font-family: inherit; font-size: 1rem;
+  }
+  .bar button:active { background: rgba(255,255,255,.28); }
+  #map { flex: 1; min-height: 0; }
+  .pin-badge {
+    display: flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border-radius: 50%; color: #fff; font-weight: 700; font-size: 12.5px; line-height: 1;
+    border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.45);
+    font-family: "Noto Sans Thai", "Segoe UI", sans-serif;
+  }
+  #sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 1100;
+    max-height: 48%; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: #fff; color: #17303B; border-radius: 18px 18px 0 0;
+    padding: 12px 14px 22px; box-shadow: 0 -6px 24px rgba(0,0,0,.35);
+  }
+  #sheet[hidden] { display: none; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid #DCEAF1; cursor: pointer; }
+  .row:last-child { border-bottom: none; }
+  .row:active { background: #E3F2F8; }
+  .leaflet-popup-content { font-family: "Noto Sans Thai", "Segoe UI", sans-serif; }
+  #err {
+    position: absolute; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: .95rem; text-align: center; padding: 30px; background: rgba(14,40,54,.92);
+  }
+  #err[hidden] { display: none; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="top">
+    <h1>🗺️ แผนที่ลูกค้า โอเมก้าอีสาน</h1>
+    <div class="sub" id="sub">⏳ กำลังโหลดข้อมูล...</div>
+  </div>
+  <div class="bar">
+    <select id="prov"></select>
+    <button type="button" id="listBtn" title="รายชื่อร้าน">📋</button>
+  </div>
+  <div id="map"></div>
+  <div id="sheet" hidden></div>
+  <div id="err" hidden></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var SUPABASE_URL = "https://vhrexjmzdcvlojzanvum.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_47xRsvJMYfqk1XSlW6qjaQ_8ABKblB5";
+
+  // ไม่แสดงเครื่อง 5 รุ่นนี้ (รวมรุ่นย่อย เช่น I60(22), I100(22)) — ตามที่สั่ง 19 ส.ค. 2569
+  var EXCLUDE = ["I60", "I100", "I40", "L600", "L1200"];
+  function isExcluded(model) {
+    var m = String(model || "").toUpperCase().replace(/[\s\-]/g, "");
+    return EXCLUDE.some(function (x) { return m.indexOf(x) === 0; });
+  }
+
+  var PIN_COLORS = ["#C0392B", "#2B7A9E", "#2F7D4F", "#B7791F", "#7B1FA2", "#00838F", "#C2185B", "#5D4037", "#E65100", "#283593", "#33691E", "#00695C", "#8E24AA", "#1565C0", "#AD1457", "#4E342E", "#EF6C00"];
+  var provColorMap = {};
+  function provColor(p) {
+    if (!provColorMap[p]) provColorMap[p] = PIN_COLORS[Object.keys(provColorMap).length % PIN_COLORS.length];
+    return provColorMap[p];
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function $(id) { return document.getElementById(id); }
+
+  var map = L.map("map").setView([16.2, 103.1], 7);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+
+  var shops = [], markers = [], prov = "";
+
+  function load() {
+    fetch(SUPABASE_URL + "/rest/v1/pm_stores?active=eq.true&select=name,province,type,model,phone,address,lat,lng", {
+      headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+    }).then(function (r) {
+      if (!r.ok) throw new Error("fetch " + r.status);
+      return r.json();
+    }).then(function (rows) {
+      // รวมรายเครื่อง → รายร้าน ตัดเครื่องรุ่นที่ไม่เอาออก · ร้านที่เหลือ 0 เครื่องไม่ขึ้นแผนที่
+      var by = {};
+      rows.forEach(function (c) {
+        if (isExcluded(c.model)) return;
+        var key = (c.name || "") + "||" + (c.province || "");
+        var o = by[key] = by[key] || { name: c.name || "(ไม่มีชื่อร้าน)", province: String(c.province || "").trim() || "ไม่ระบุ", machines: [], lat: null, lng: null, phone: "", addr: "" };
+        o.machines.push([c.type, c.model].filter(Boolean).join(" ") || "เครื่อง");
+        if (o.lat == null && c.lat != null && c.lng != null) { o.lat = c.lat; o.lng = c.lng; }
+        if (!o.phone && c.phone) o.phone = c.phone;
+        if (!o.addr && /https?:\/\//.test(c.address || "")) o.addr = String(c.address).match(/https?:\/\/\S+/)[0];
+      });
+      shops = Object.keys(by).map(function (k) { return by[k]; }).filter(function (s) { return s.lat != null; });
+      render();
+    }).catch(function () {
+      $("err").hidden = false;
+      $("err").textContent = "โหลดข้อมูลไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วรีเฟรชหน้านี้ใหม่";
+    });
+  }
+
+  function render() {
+    markers.forEach(function (m) { map.removeLayer(m.marker); });
+    markers = [];
+    var provs = {};
+    shops.forEach(function (s) { provs[s.province] = (provs[s.province] || 0) + 1; });
+    var sel = $("prov");
+    var cur = prov;
+    sel.innerHTML = '<option value="">ทุกจังหวัด (' + shops.length + " ร้าน)</option>" +
+      Object.keys(provs).sort(function (a, b) { return a.localeCompare(b, "th"); }).map(function (p) {
+        return '<option value="' + esc(p) + '">' + esc(p) + " (" + provs[p] + " ร้าน)</option>";
+      }).join("");
+    sel.value = cur;
+    if (sel.value !== cur) { prov = ""; sel.value = ""; }
+
+    var list = shops.filter(function (s) { return !prov || s.province === prov; });
+    list.sort(function (a, b) { return a.province.localeCompare(b.province, "th") || a.name.localeCompare(b.name, "th"); });
+    var group = [];
+    list.forEach(function (s, i) {
+      var num = i + 1;
+      var icon = L.divIcon({
+        className: "",
+        html: '<div class="pin-badge" style="background:' + provColor(s.province) + '">' + num + "</div>",
+        iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -12],
+      });
+      var nav = s.addr || ("https://www.google.com/maps/dir/?api=1&destination=" + s.lat + "," + s.lng);
+      var pop = '<div style="min-width:180px"><b>' + num + ". " + esc(s.name) + "</b><br>" +
+        '<span style="color:#6B8290">' + esc(s.province) + "</span><br>" +
+        '<span style="color:#17303B;font-size:.85em">🔧 ' + esc(s.machines.join(" · ")) + "</span>" +
+        '<div style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;font-weight:600">' +
+        (s.phone ? '<a href="tel:' + esc(s.phone) + '">📞 โทร</a>' : "") +
+        '<a href="' + esc(nav) + '" target="_blank" rel="noopener">🧭 นำทาง</a>' +
+        "</div></div>";
+      var marker = L.marker([s.lat, s.lng], { icon: icon }).addTo(map).bindPopup(pop);
+      markers.push({ marker: marker, shop: s });
+      group.push(marker);
+    });
+    $("sub").textContent = list.length + " ร้าน · " + list.reduce(function (n, s) { return n + s.machines.length; }, 0) + " เครื่อง (ไม่รวมรุ่น " + EXCLUDE.join("/") + ")";
+    if (group.length) map.fitBounds(L.featureGroup(group).getBounds().pad(0.12));
+
+    $("sheet").innerHTML =
+      '<div style="font-weight:700;margin-bottom:4px">📋 รายชื่อร้าน (' + list.length + ' จุด) — แตะเพื่อซูมไปหมุด' +
+      '<button type="button" id="sheetClose" style="float:right;border:none;background:none;font-size:1.05rem;cursor:pointer;color:#6B8290">✕</button></div>' +
+      list.map(function (s, i) {
+        return '<div class="row" data-idx="' + i + '">' +
+          '<span class="pin-badge" style="background:' + provColor(s.province) + ';flex:none">' + (i + 1) + "</span>" +
+          '<span style="flex:1;min-width:0"><b>' + esc(s.name) + "</b><br>" +
+          '<span style="color:#6B8290;font-size:.78rem">' + esc(s.province) + " · " + esc(s.machines.join(" · ")) + "</span></span></div>";
+      }).join("");
+  }
+
+  $("prov").addEventListener("change", function () { prov = this.value; render(); });
+  $("listBtn").addEventListener("click", function () { $("sheet").hidden = !$("sheet").hidden; });
+  $("sheet").addEventListener("click", function (e) {
+    if (e.target.id === "sheetClose") { $("sheet").hidden = true; return; }
+    var row = e.target.closest ? e.target.closest(".row") : null;
+    if (!row) return;
+    var m = markers[Number(row.getAttribute("data-idx"))];
+    if (!m) return;
+    $("sheet").hidden = true;
+    map.setView([m.shop.lat, m.shop.lng], 15);
+    m.marker.openPopup();
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>
