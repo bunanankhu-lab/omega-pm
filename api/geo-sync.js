@@ -33,7 +33,9 @@ async function resolveLink(url) {
     if (loc) { cur = new URL(loc, cur).toString(); continue; }
     if (r.ok) {
       const html = await r.text();
-      const m = html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+      // ลิงก์แบบ q=ชื่อร้าน ไม่มีพิกัดใน URL — จุดกลางแผนที่ (center=) คือตำแหน่งร้านที่ค้นเจอ
+      const m = html.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || html.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) ||
+        html.match(/center=(-?\d+\.\d+)%2C(-?\d+\.\d+)/);
       if (m) return [Number(m[1]), Number(m[2])];
     }
     break;
