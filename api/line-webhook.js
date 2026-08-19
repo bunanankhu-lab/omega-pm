@@ -8,6 +8,8 @@ const APP_URL = "https://omega-pm.vercel.app/";
 
 // คำที่ทำให้บอทตอบ (พิมพ์คำเดียวล้วนๆ กันบอทเด้งตอบตอนคุยเรื่องอื่นที่มีคำว่าสต๊อกปน)
 const KEYWORDS = ["สต๊อก", "สต็อก", "สต๊อค", "สต็อค", "stock"];
+// คำสำหรับสต๊อกวัสดุ-อะไหล่ (ตาราง inv_items — หน้า stock.html)
+const PARTS_KEYWORDS = ["อะไหล่", "วัสดุ", "สต๊อกของ", "สต็อกของ", "สต๊อกอะไหล่", "สต๊อกวัสดุ", "ของใกล้หมด", "ใกล้หมด"];
 
 function readRaw(req) {
   return new Promise(function (resolve, reject) {
@@ -43,6 +45,54 @@ async function stockSummary() {
   return lines.join("\n");
 }
 
+// สรุปสต๊อกวัสดุ-อะไหล่ — เน้นของหมด/ใกล้หมด
+async function partsSummary() {
+  const r = await fetch(SUPABASE_URL + "/rest/v1/inv_items?active=eq.true&order=category,sort_order&select=category,name,qty,min_qty,unit", {
+    headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+  });
+  if (!r.ok) throw new Error("supabase " + r.status);
+  const items = await r.json();
+  if (!items.length) return "ยังไม่มีรายการวัสดุ-อะไหล่\nเพิ่มได้ในแอป: " + APP_URL + "stock.html";
+  const th = new Date(Date.now() + 7 * 3600 * 1000);
+  const yy = (th.getUTCFullYear() + 543) % 100;
+  const lines = ["🧰 สต๊อกวัสดุ-อะไหล่ " + th.getUTCDate() + "/" + (th.getUTCMonth() + 1) + "/" + yy, ""];
+  const byCat = {};
+  for (const it of items) byCat[it.category] = (byCat[it.category] || 0) + 1;
+  for (const c in byCat) lines.push(c + " — " + byCat[c] + " รายการ");
+  lines.push("รวม " + items.length + " รายการ");
+  const out = items.filter((it) => Number(it.qty) <= 0);
+  const near = items.filter((it) => Number(it.qty) > 0 && Number(it.qty) <= Number(it.min_qty));
+  const MAX = 15; // ตอบในแชทเอาแค่หัวๆ พอ ดูเต็มๆ ในแอป
+  function add(list, head) {
+    if (!list.length) return;
+    lines.push("", head + " (" + list.length + ")");
+    list.slice(0, MAX).forEach((it) => lines.push("• " + it.name + " เหลือ " + Number(it.qty) + " " + it.unit));
+    if (list.length > MAX) lines.push("…และอีก " + (list.length - MAX) + " รายการ");
+  }
+  add(out, "⛔ หมด");
+  add(near, "⚠️ ใกล้หมด");
+  if (!out.length && !near.length) lines.push("", "✅ ไม่มีของหมด/ใกล้หมด");
+  lines.push("", "ดู/รับ-จ่ายของ: " + APP_URL + "stock.html");
+  return lines.join("\n");
+}
+
+// จำ group id ของกลุ่มไว้ใน bot_state — เอาไว้ให้ api/stock-alert.js push แจ้งเตือนเข้ากลุ่มได้
+let savedGroupId = null;
+async function rememberGroup(gid) {
+  if (!gid || gid === savedGroupId) return;
+  savedGroupId = gid;
+  try {
+    await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json", Prefer: "resolution=merge-duplicates",
+      },
+      body: JSON.stringify([{ key: "line_group_id", value: gid, updated_at: new Date().toISOString() }]),
+    });
+  } catch (e) { console.error("rememberGroup failed:", e.message); }
+}
+
 module.exports = async function (req, res) {
   // เปิดจากเบราว์เซอร์ (GET) = เช็คว่าบอทออนไลน์อยู่
   if (req.method !== "POST") {
@@ -67,14 +117,20 @@ module.exports = async function (req, res) {
   try { body = JSON.parse(raw.toString("utf8")); } catch (e) { body = {}; }
   let replied = 0;
   for (const ev of body.events || []) {
+    // จำ group id ทุกข้อความที่มาจากกลุ่ม (ใช้ push แจ้งของใกล้หมด)
+    if (ev.source && ev.source.type === "group" && ev.source.groupId) await rememberGroup(ev.source.groupId);
     if (ev.type !== "message" || !ev.message || ev.message.type !== "text" || !ev.replyToken) continue;
     const text = String(ev.message.text || "").trim().toLowerCase();
-    if (KEYWORDS.indexOf(text) === -1) continue;
+    const isMachine = KEYWORDS.indexOf(text) !== -1;
+    const isParts = PARTS_KEYWORDS.indexOf(text) !== -1;
+    if (!isMachine && !isParts) continue;
     let msg;
     try {
-      msg = await stockSummary();
+      msg = isParts ? await partsSummary() : await stockSummary();
     } catch (e) {
-      msg = "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "#stock";
+      msg = isParts
+        ? "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "stock.html"
+        : "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "#stock";
     }
     replied++;
     if (token) {

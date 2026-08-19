@@ -4,5 +4,8 @@
       "maxDuration": 60,
       "memory": 1024
     }
-  }
+  },
+  "crons": [
+    { "path": "/api/stock-alert", "schedule": "0 1 * * *" }
+  ]
 }
