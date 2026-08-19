@@ -281,6 +281,10 @@
         <button type="button" id="mvPlus">＋</button>
       </div>
     </div>
+    <div class="fld" id="mvDateFld">
+      <label>วันที่ทำรายการ <span style="font-weight:400">(เลือกย้อนหลังได้ เผื่อวันนั้นไม่ได้คีย์)</span></label>
+      <select id="mvDate"></select>
+    </div>
     <div class="fld">
       <label>ผู้ทำรายการ</label>
       <input id="mvPerson" placeholder="ชื่อคนรับ/จ่ายของ">
@@ -636,6 +640,20 @@
 
   // ---------- รับ / จ่าย / ปรับยอด ----------
   var mvItem = null, mvType = "in";
+  function fillDateSelect() {
+    var opts = "";
+    var now = new Date();
+    for (var i = 0; i <= 30; i++) {
+      var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      var iso = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+      var lbl = TH_DOW[d.getDay()] + " " + d.getDate() + " " + TH_MON[d.getMonth()] + " " + ((d.getFullYear() + 543) % 100);
+      if (i === 0) lbl = "วันนี้ · " + lbl;
+      if (i === 1) lbl = "เมื่อวาน · " + lbl;
+      opts += '<option value="' + (i === 0 ? "" : iso) + '">' + lbl + "</option>";
+    }
+    $("mvDate").innerHTML = opts;
+    $("mvDate").value = "";
+  }
   function openMove(it, type) {
     mvItem = it; mvType = type;
     $("mvTitle").textContent = (type === "in" ? "🟢 รับเข้า — " : type === "out" ? "🔴 จ่ายออก — " : "🔧 ปรับยอด — ") + it.name;
@@ -643,6 +661,8 @@
       (type === "adjust" ? " · ใส่ตัวเลขที่นับได้จริง" : "");
     $("mvQtyLabel").textContent = type === "adjust" ? "ยอดคงเหลือใหม่ (นับจริง)" : "จำนวน (" + it.unit + ")";
     $("mvQty").value = type === "adjust" ? fmtQty(it.qty) : "1";
+    $("mvDateFld").hidden = type === "adjust"; // ปรับยอดนับจริง = ณ ตอนนี้เท่านั้น
+    fillDateSelect();
     $("mvPerson").value = localStorage.getItem(PERSON_KEY) || "";
     $("mvNote").value = "";
     $("mvErr").textContent = "";
@@ -657,10 +677,18 @@
     }
     var person = $("mvPerson").value.trim();
     try { localStorage.setItem(PERSON_KEY, person); } catch (e) {}
+    var body = { p_item: mvItem.id, p_type: mvType, p_qty: qty, p_person: person, p_note: $("mvNote").value.trim() };
+    var dsel = mvType === "adjust" ? "" : $("mvDate").value;
+    if (dsel) {
+      // ลงย้อนหลัง: ใช้วันที่ที่เลือก + เวลา ณ ตอนนี้
+      var p = dsel.split("-");
+      var now = new Date();
+      body.p_at = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
+    }
     $("mvOk").disabled = true;
     fetch(SUPABASE_URL + "/rest/v1/rpc/inv_move", {
       method: "POST", headers: sbHeaders(true),
-      body: JSON.stringify({ p_item: mvItem.id, p_type: mvType, p_qty: qty, p_person: person, p_note: $("mvNote").value.trim() }),
+      body: JSON.stringify(body),
     }).then(function (r) {
       if (!r.ok) return r.text().then(function (t) { throw new Error(t); });
       return r.json();
