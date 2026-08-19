@@ -2982,23 +2982,44 @@
           }).join("");
       }).join("");
     }
+    // รายชื่อใต้แผนที่ = เฉพาะร้านที่ยังไม่ปักหมุด (เช็กลิสต์รอแปะลิงก์ Google Maps)
+    // แปะลิงก์ในช่องที่อยู่ + อัปเดตพิกัดแล้ว ชื่อจะหายจากรายการนี้ ไปโผล่ในแผนที่ละเอียดแทน
+    function pendingOf(shops) {
+      var out = {};
+      Object.keys(shops).forEach(function (nm) {
+        var pinned = shops[nm].some(function (c) { return c.lat != null && c.lng != null; });
+        if (!pinned) out[nm] = shops[nm];
+      });
+      return out;
+    }
     var order = Object.keys(st.byProv).sort(function (a, b) {
       return machOf(st.byProv[b]) - machOf(st.byProv[a]) || a.localeCompare(b, "th");
     });
-    var listHtml = order.map(function (p) {
-      var shops = st.byProv[p];
-      return '<div class="map-prov" data-prov="' + esc(p) + '">' +
+    var listHtml = "";
+    order.forEach(function (p) {
+      var pending = pendingOf(st.byProv[p]);
+      var n = Object.keys(pending).length;
+      if (!n) return;
+      listHtml += '<div class="map-prov" data-prov="' + esc(p) + '">' +
         '<div class="mp-head"><span class="mp-name">📍 ' + esc(p) + '</span>' +
-        '<span class="mp-cnt">' + Object.keys(shops).length + " ร้าน · " + machOf(shops) + " เครื่อง</span></div>" +
-        shopRowsHtml(shops) + "</div>";
-    }).join("");
+        '<span class="mp-cnt">ยังไม่ปักหมุด ' + n + "/" + Object.keys(st.byProv[p]).length + " ร้าน</span></div>" +
+        shopRowsHtml(pending) + "</div>";
+    });
     if (Object.keys(st.other).length) {
-      listHtml += '<div class="map-prov"><div class="mp-head"><span class="mp-name">❓ ไม่ระบุจังหวัด</span>' +
-        '<span class="mp-cnt">' + Object.keys(st.other).length + " ร้าน · " + machOf(st.other) + " เครื่อง</span></div>" +
-        shopRowsHtml(st.other) + "</div>";
+      var pendingO = pendingOf(st.other);
+      if (Object.keys(pendingO).length) {
+        listHtml += '<div class="map-prov"><div class="mp-head"><span class="mp-name">❓ ไม่ระบุจังหวัด</span>' +
+          '<span class="mp-cnt">ยังไม่ปักหมุด ' + Object.keys(pendingO).length + " ร้าน</span></div>" +
+          shopRowsHtml(pendingO) + "</div>";
+      }
+    }
+    if (listHtml) {
+      listHtml = '<div class="map-hint" style="margin:2px 4px 10px">📌 รายชื่อด้านล่างคือร้านที่<b>ยังไม่มีหมุด</b>ในแผนที่ละเอียด — เปิดร้าน → แก้ไขข้อมูล → วางลิงก์ Google Maps ในช่องที่อยู่ → กด "🔄 อัปเดตพิกัด" แล้วชื่อจะหายจากรายการนี้เอง</div>' + listHtml;
     }
     el.mapProvList.innerHTML = listHtml ||
-      (cloudLoaded ? '<div class="empty">ยังไม่มีลูกค้าในระบบ</div>' : '<div class="empty">⏳ กำลังโหลดข้อมูลจากเว็บ...</div>');
+      (cloudLoaded
+        ? (customers.length ? '<div class="empty"><div class="big">🎉</div>ปักหมุดครบทุกร้านแล้ว</div>' : '<div class="empty">ยังไม่มีลูกค้าในระบบ</div>')
+        : '<div class="empty">⏳ กำลังโหลดข้อมูลจากเว็บ...</div>');
 
     // ยอดร้านที่มีพิกัดแล้ว โชว์บนปุ่มแผนที่ละเอียด
     var geoN = 0, allN = 0;
@@ -3014,7 +3035,10 @@
     mapSelProv = p;
     renderMap();
     var card = el.mapProvList.querySelector('.map-prov[data-prov="' + p + '"]');
-    if (!card) { flash("ยังไม่มีร้านใน จ." + p); return; }
+    if (!card) {
+      flash(mapStats().byProv[p] ? "📍 " + p + " — ปักหมุดครบทุกร้านแล้ว ✅ ดูได้ในแผนที่ละเอียด" : "ยังไม่มีร้านใน จ." + p);
+      return;
+    }
     card.classList.add("hl");
     card.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(function () { card.classList.remove("hl"); }, 1600);
@@ -3177,6 +3201,7 @@
     $("pinMapModal").hidden = true;
     $("pmmSheet").hidden = true;
     document.body.style.overflow = "";
+    renderMap(); // เผื่อเพิ่งอัปเดตพิกัด — เช็กลิสต์ร้านที่ยังไม่ปักหมุดจะได้สดเสมอ
   }
   $("pinMapBar").addEventListener("click", openPinMap);
   $("pmmCloseBtn").addEventListener("click", closePinMap);
@@ -3199,7 +3224,7 @@
     fetch("api/geo-sync").then(function (r) { return r.json(); }).then(function (j) {
       btn.disabled = false; btn.textContent = "🔄 อัปเดตพิกัด";
       flash(j.updated ? "✅ ได้พิกัดเพิ่ม " + j.updated + " ร้าน" : "ไม่มีลิงก์ใหม่ให้ดูดพิกัด — แปะลิงก์ Google Maps ในช่องที่อยู่ของร้านก่อน");
-      if (j.updated) fetchCustomers().then(renderPins).catch(function () {});
+      if (j.updated) fetchCustomers().then(function () { renderPins(); renderMap(); }).catch(function () {});
     }).catch(function () {
       btn.disabled = false; btn.textContent = "🔄 อัปเดตพิกัด";
       flash("อัปเดตพิกัดไม่สำเร็จ ลองใหม่อีกครั้ง");
