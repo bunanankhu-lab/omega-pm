@@ -1504,12 +1504,24 @@
     // บันทึกขึ้นเว็บก่อน (ทุกเครื่องจะเห็นเหมือนกัน) สำเร็จแล้วค่อยอัปเดตหน้าจอ
     var target = editingId ? custById(editingId) : null;
     var obj = Object.assign({}, target || {}, data);
+    // ลิงก์ Google Maps ในที่อยู่เปลี่ยน = ร้านย้ายหมุด → ล้างพิกัดเก่า ให้ปุ่มอัปเดตพิกัดดูดจากลิงก์ใหม่
+    function gmapLink(s) {
+      var m = String(s || "").match(/https?:\/\/\S*(?:maps\.app\.goo\.gl|google\.[a-z.]+\/maps|goo\.gl\/maps)\S*/);
+      return m ? m[0] : "";
+    }
+    if (target && gmapLink(target.address) !== gmapLink(data.address)) {
+      obj.clearGeo = true;
+      obj.lat = null; obj.lng = null;
+    }
     if (!editingId) { obj.id = newId(); obj.history = []; obj.stickerDate = todayStr(); }
     var sbtn = el.custForm.querySelector('button[type="submit"]');
     sbtn.disabled = true;
     el.fErr.textContent = "";
     syncStore(obj).then(function () {
-      if (target) Object.assign(target, data);
+      if (target) {
+        Object.assign(target, data);
+        if (obj.clearGeo) { target.lat = null; target.lng = null; }
+      }
       else customers.push(obj);
       saveCache();
       sbtn.disabled = false;
@@ -1617,6 +1629,8 @@
     };
     // ส่งวันที่ติดสติ๊กเกอร์เฉพาะตอนมีค่า — ไม่มี = ปล่อยให้ฐานข้อมูลตั้ง/คงค่าเดิมไว้
     if (c.stickerDate) body.sticker_date = c.stickerDate;
+    // ลิงก์แผนที่เปลี่ยน → ล้างพิกัดเก่าบนเว็บด้วย (ไม่ตั้ง = merge จะคงค่าเดิม)
+    if (c.clearGeo) { body.lat = null; body.lng = null; body.geo_src = null; }
     return fetch(SUPABASE_URL + "/rest/v1/pm_stores", {
       method: "POST",
       headers: Object.assign(sbHeaders(true), { Prefer: "resolution=merge-duplicates,return=minimal" }),

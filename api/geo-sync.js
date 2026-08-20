@@ -18,6 +18,8 @@ function coordsFromUrl(u) {
   if (m) return [Number(m[1]), Number(m[2])];
   m = u.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
   if (m) return [Number(m[1]), Number(m[2])];
+  m = u.match(/\/maps\/search\/(-?\d+\.\d+)(?:,|%2C)\s*\+?(-?\d+\.\d+)/); // ลิงก์แชร์แบบ search/lat,+lng
+  if (m) return [Number(m[1]), Number(m[2])];
   m = u.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
   if (m) return [Number(m[1]), Number(m[2])];
   return null;
@@ -46,7 +48,8 @@ async function resolveLink(url) {
 module.exports = async function (req, res) {
   let stores;
   try {
-    const r = await fetch(SUPABASE_URL + "/rest/v1/pm_stores?active=eq.true&lat=is.null&select=id,name,address", {
+    // ร้านที่ยังไม่มีพิกัด + ร้านพิกัดจากค้นชื่อ (osm) ที่มีลิงก์แปะแล้ว — ลิงก์แม่นกว่า ให้ทับได้
+    const r = await fetch(SUPABASE_URL + "/rest/v1/pm_stores?active=eq.true&or=(lat.is.null,geo_src.eq.osm)&select=id,name,address", {
       headers: sbHeaders(),
     });
     if (!r.ok) throw new Error("supabase " + r.status);
