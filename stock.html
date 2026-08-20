@@ -197,6 +197,7 @@
   }
   .stepper input { text-align: center; font-size: 1.3rem; font-weight: 700; }
   .btn-row2 { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-row2[hidden] { display: none; }
   .modal .err { color: var(--red); font-size: .82rem; min-height: 1.2em; margin-top: 8px; text-align: center; }
 
   .toast {
@@ -312,6 +313,10 @@
       <span><label>หน่วย</label><input id="edUnit" value="ตัว"></span>
       <span id="edQtyWrap"><label>คงเหลือ</label><input id="edQty" type="number" inputmode="numeric" min="0" value="0"></span>
       <span><label>ขั้นต่ำ (เตือน)</label><input id="edMin" type="number" inputmode="numeric" min="0" value="2"></span>
+    </div>
+    <div class="fld" id="edDateFld">
+      <label>วันที่รับของเข้า <span style="font-weight:400">(เลือกย้อนหลังได้)</span></label>
+      <select id="edDate"></select>
     </div>
     <div class="fld"><label>หมายเหตุ</label><input id="edNote"></div>
     <div class="err" id="edErr"></div>
@@ -640,7 +645,7 @@
 
   // ---------- รับ / จ่าย / ปรับยอด ----------
   var mvItem = null, mvType = "in";
-  function fillDateSelect() {
+  function fillDateSelect(sel) {
     var opts = "";
     var now = new Date();
     for (var i = 0; i <= 30; i++) {
@@ -651,8 +656,16 @@
       if (i === 1) lbl = "เมื่อวาน · " + lbl;
       opts += '<option value="' + (i === 0 ? "" : iso) + '">' + lbl + "</option>";
     }
-    $("mvDate").innerHTML = opts;
-    $("mvDate").value = "";
+    sel.innerHTML = opts;
+    sel.value = "";
+  }
+  // วันที่ที่เลือก (ค่า "ปี-เดือน-วัน") + เวลา ณ ตอนนี้ → ISO สำหรับ p_at · เลือก "วันนี้" = null
+  function pickedAt(sel) {
+    var dsel = sel.value;
+    if (!dsel) return null;
+    var p = dsel.split("-");
+    var now = new Date();
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
   }
   function openMove(it, type) {
     mvItem = it; mvType = type;
@@ -662,7 +675,7 @@
     $("mvQtyLabel").textContent = type === "adjust" ? "ยอดคงเหลือใหม่ (นับจริง)" : "จำนวน (" + it.unit + ")";
     $("mvQty").value = type === "adjust" ? fmtQty(it.qty) : "1";
     $("mvDateFld").hidden = type === "adjust"; // ปรับยอดนับจริง = ณ ตอนนี้เท่านั้น
-    fillDateSelect();
+    fillDateSelect($("mvDate"));
     $("mvPerson").value = localStorage.getItem(PERSON_KEY) || "";
     $("mvNote").value = "";
     $("mvErr").textContent = "";
@@ -678,13 +691,8 @@
     var person = $("mvPerson").value.trim();
     try { localStorage.setItem(PERSON_KEY, person); } catch (e) {}
     var body = { p_item: mvItem.id, p_type: mvType, p_qty: qty, p_person: person, p_note: $("mvNote").value.trim() };
-    var dsel = mvType === "adjust" ? "" : $("mvDate").value;
-    if (dsel) {
-      // ลงย้อนหลัง: ใช้วันที่ที่เลือก + เวลา ณ ตอนนี้
-      var p = dsel.split("-");
-      var now = new Date();
-      body.p_at = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), now.getHours(), now.getMinutes(), now.getSeconds()).toISOString();
-    }
+    var at = mvType === "adjust" ? null : pickedAt($("mvDate"));
+    if (at) body.p_at = at; // ลงย้อนหลัง: ใช้วันที่ที่เลือก + เวลา ณ ตอนนี้
     $("mvOk").disabled = true;
     fetch(SUPABASE_URL + "/rest/v1/rpc/inv_move", {
       method: "POST", headers: sbHeaders(true),
@@ -723,7 +731,10 @@
     edItem = it || null;
     fillCatSelect();
     $("edTitle").textContent = it ? "✏️ แก้ไขรายการ" : "＋ เพิ่มรายการใหม่";
-    $("edSub").textContent = it ? "แตะปรับข้อมูล · เปลี่ยนยอดคงเหลือจะบันทึกเป็น “ปรับยอด” ในประวัติ" : "";
+    $("edSub").textContent = it ? "แตะปรับข้อมูล · เปลี่ยนยอดคงเหลือจะบันทึกเป็น “ปรับยอด” ในประวัติ"
+      : "ถ้าใส่ยอดคงเหลือ จะบันทึกเป็น “รับเข้า” ในประวัติตามวันที่ที่เลือก";
+    $("edDateFld").hidden = !!it; // เลือกวันที่ได้เฉพาะตอนเพิ่มใหม่ (แก้ยอดทีหลัง = ปรับยอด ณ ตอนนี้)
+    if (!it) fillDateSelect($("edDate"));
     $("edName").value = it ? it.name : "";
     $("edCat").value = it ? it.category : (cat || CATS[0]);
     $("edUnit").value = it ? it.unit : "ตัว";
@@ -754,10 +765,32 @@
     };
     var fail = function () { $("edOk").disabled = false; $("edErr").textContent = "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง"; };
     if (!edItem) {
-      body.qty = newQty;
+      // สร้างรายการด้วยยอด 0 ก่อน แล้วลงยอดเริ่มต้นเป็น "รับเข้า" ผ่าน inv_move — จะได้มีประวัติ + ระบุวันที่ย้อนหลังได้
+      body.qty = 0;
       body.sort_order = 99999; // ต่อท้ายหมวด
-      fetch(SUPABASE_URL + "/rest/v1/inv_items", { method: "POST", headers: sbHeaders(true), body: JSON.stringify(body) })
-        .then(function (r) { if (!r.ok) throw 0; done(); }).catch(fail);
+      var at = pickedAt($("edDate"));
+      var h = sbHeaders(true);
+      h.Prefer = "return=representation";
+      fetch(SUPABASE_URL + "/rest/v1/inv_items", { method: "POST", headers: h, body: JSON.stringify(body) })
+        .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+        .then(function (rows) {
+          var created = rows && rows[0];
+          if (!created || newQty <= 0) return;
+          var mbody = { p_item: created.id, p_type: "in", p_qty: newQty, p_person: localStorage.getItem(PERSON_KEY) || "", p_note: "ยอดเริ่มต้นตอนเพิ่มรายการ" };
+          if (at) mbody.p_at = at;
+          return fetch(SUPABASE_URL + "/rest/v1/rpc/inv_move", { method: "POST", headers: sbHeaders(true), body: JSON.stringify(mbody) })
+            .then(function (r) { if (!r.ok) throw "move"; });
+        })
+        .then(done)
+        .catch(function (e) {
+          if (e === "move") {
+            // รายการถูกสร้างแล้วแต่ลงยอดไม่สำเร็จ — อย่าให้กดบันทึกซ้ำจนได้รายการซ้ำ
+            $("edOk").disabled = false;
+            $("editBg").hidden = true;
+            toast("⚠️ เพิ่มรายการแล้ว แต่ลงยอดรับเข้าไม่สำเร็จ — กดปุ่ม + รับ ที่รายการนั้นอีกครั้ง");
+            loadAll();
+          } else fail();
+        });
     } else {
       fetch(SUPABASE_URL + "/rest/v1/inv_items?id=eq." + edItem.id, { method: "PATCH", headers: sbHeaders(true), body: JSON.stringify(body) })
         .then(function (r) {
