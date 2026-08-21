@@ -318,6 +318,7 @@
       <label>วันที่รับของเข้า <span style="font-weight:400">(เลือกย้อนหลังได้)</span></label>
       <select id="edDate"></select>
     </div>
+    <div class="fld"><label>ผู้ทำรายการ</label><input id="edPerson" placeholder="ชื่อคนเพิ่ม/รับของเข้า"></div>
     <div class="fld"><label>หมายเหตุ</label><input id="edNote"></div>
     <div class="err" id="edErr"></div>
     <div class="btn-row2">
@@ -740,6 +741,7 @@
     $("edUnit").value = it ? it.unit : "ตัว";
     $("edQty").value = it ? fmtQty(it.qty) : "0";
     $("edMin").value = it ? fmtQty(it.min_qty) : "2";
+    $("edPerson").value = localStorage.getItem(PERSON_KEY) || "";
     $("edNote").value = it ? (it.note || "") : "";
     $("edErr").textContent = "";
     $("edDelRow").hidden = !(it && role === "boss");
@@ -756,6 +758,8 @@
       note: $("edNote").value.trim(),
     };
     var newQty = Number($("edQty").value) || 0;
+    var person = $("edPerson").value.trim();
+    try { localStorage.setItem(PERSON_KEY, person); } catch (e) {}
     $("edOk").disabled = true;
     var done = function () {
       $("edOk").disabled = false;
@@ -776,7 +780,7 @@
         .then(function (rows) {
           var created = rows && rows[0];
           if (!created || newQty <= 0) return;
-          var mbody = { p_item: created.id, p_type: "in", p_qty: newQty, p_person: localStorage.getItem(PERSON_KEY) || "", p_note: "ยอดเริ่มต้นตอนเพิ่มรายการ" };
+          var mbody = { p_item: created.id, p_type: "in", p_qty: newQty, p_person: person, p_note: "ยอดเริ่มต้นตอนเพิ่มรายการ" };
           if (at) mbody.p_at = at;
           return fetch(SUPABASE_URL + "/rest/v1/rpc/inv_move", { method: "POST", headers: sbHeaders(true), body: JSON.stringify(mbody) })
             .then(function (r) { if (!r.ok) throw "move"; });
@@ -799,7 +803,7 @@
           if (newQty !== Number(edItem.qty)) {
             return fetch(SUPABASE_URL + "/rest/v1/rpc/inv_move", {
               method: "POST", headers: sbHeaders(true),
-              body: JSON.stringify({ p_item: edItem.id, p_type: "adjust", p_qty: newQty, p_person: localStorage.getItem(PERSON_KEY) || "", p_note: "แก้ยอดจากหน้าแก้ไข" }),
+              body: JSON.stringify({ p_item: edItem.id, p_type: "adjust", p_qty: newQty, p_person: person, p_note: "แก้ยอดจากหน้าแก้ไข" }),
             });
           }
         }).then(done).catch(fail);
