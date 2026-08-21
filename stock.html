@@ -100,11 +100,10 @@
   .search-wrap input:focus { outline: none; border-color: var(--primary); }
   .search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
 
-  .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; -webkit-overflow-scrolling: touch; }
-  .chips::-webkit-scrollbar { display: none; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; padding-bottom: 2px; margin-bottom: 8px; }
   .chip {
-    flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--muted);
-    border-radius: 999px; padding: 6px 14px; font-family: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--muted);
+    border-radius: 999px; padding: 5px 11px; font-family: inherit; font-size: .78rem; font-weight: 600; cursor: pointer;
   }
   .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 
