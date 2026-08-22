@@ -247,7 +247,7 @@
 
   <div class="search-wrap">
     <span class="ico">🔍</span>
-    <input id="searchInput" placeholder="ค้นหาชื่อวัสดุ-อะไหล่...">
+    <input id="searchInput" placeholder="ค้นหาชื่อวัสดุ-อะไหล่ / S/N...">
   </div>
 
   <div class="chips" id="catChips"></div>
@@ -308,6 +308,7 @@
     <div class="sub" id="edSub"></div>
     <div class="fld"><label>ชื่อรายการ</label><input id="edName"></div>
     <div class="fld"><label>หมวด</label><select id="edCat"></select></div>
+    <div class="fld" id="edSnFld" hidden><label>S/N (หมายเลขเครื่อง)</label><input id="edSn" placeholder="มีหลายเครื่อง คั่นด้วย , เช่น A123, B456"></div>
     <div class="fld" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
       <span><label>หน่วย</label><input id="edUnit" value="ตัว"></span>
       <span id="edQtyWrap"><label>คงเหลือ</label><input id="edQty" type="number" inputmode="numeric" min="0" value="0"></span>
@@ -370,6 +371,7 @@
 
   var CATS = ["อุปกรณ์ท่อ PVC", "อุปกรณ์ท่อไฟฟ้า", "วัสดุ-อุปกรณ์เครื่องล้างจาน", "วัสดุ-อุปกรณ์เครื่องทำน้ำแข็ง", "วัสดุ-อุปกรณ์กรองน้ำ", "เครื่องล้างจาน", "เครื่องทำน้ำแข็ง"];
   var CAT_SHORT = { "อุปกรณ์ท่อ PVC": "ท่อ PVC", "อุปกรณ์ท่อไฟฟ้า": "ท่อไฟฟ้า", "วัสดุ-อุปกรณ์เครื่องล้างจาน": "อุปกรณ์ล้างจาน", "วัสดุ-อุปกรณ์เครื่องทำน้ำแข็ง": "อุปกรณ์น้ำแข็ง", "วัสดุ-อุปกรณ์กรองน้ำ": "กรองน้ำ" };
+  var SN_CATS = ["เครื่องล้างจาน", "เครื่องทำน้ำแข็ง"]; // หมวดที่มีช่อง S/N (หมายเลขเครื่อง)
 
   var items = [];
   var moves = [];
@@ -508,7 +510,7 @@
     return items.filter(function (it) {
       if (cat && it.category !== cat) return false;
       if (statusF && statusOf(it) !== statusF) return false;
-      if (qq && (it.name + " " + (it.note || "")).toLowerCase().indexOf(qq) === -1) return false;
+      if (qq && (it.name + " " + (it.note || "") + " " + (it.sn || "")).toLowerCase().indexOf(qq) === -1) return false;
       return true;
     });
   }
@@ -529,6 +531,7 @@
       html += '<div class="item-card ' + s + '" data-id="' + it.id + '">' +
         '<div class="item-main" data-act="edit">' +
           '<div class="nm">' + esc(it.name) + "</div>" +
+          (it.sn ? '<div class="nt">S/N: ' + esc(it.sn) + "</div>" : "") +
           (it.note ? '<div class="nt">' + esc(it.note) + "</div>" : "") +
           (stTxt ? '<div class="st">' + stTxt + "</div>" : "") +
         "</div>" +
@@ -737,6 +740,8 @@
     if (!it) fillDateSelect($("edDate"));
     $("edName").value = it ? it.name : "";
     $("edCat").value = it ? it.category : (cat || CATS[0]);
+    $("edSn").value = it ? (it.sn || "") : "";
+    syncSnFld();
     $("edUnit").value = it ? it.unit : "ตัว";
     $("edQty").value = it ? fmtQty(it.qty) : "0";
     $("edMin").value = it ? fmtQty(it.min_qty) : "2";
@@ -745,6 +750,9 @@
     $("edErr").textContent = "";
     $("edDelRow").hidden = !(it && role === "boss");
     $("editBg").hidden = false;
+  }
+  function syncSnFld() {
+    $("edSnFld").hidden = SN_CATS.indexOf($("edCat").value) === -1;
   }
   function saveEdit() {
     var name = $("edName").value.trim();
@@ -755,6 +763,7 @@
       unit: $("edUnit").value.trim() || "ตัว",
       min_qty: Number($("edMin").value) || 0,
       note: $("edNote").value.trim(),
+      sn: $("edSn").value.trim(),
     };
     var newQty = Number($("edQty").value) || 0;
     var person = $("edPerson").value.trim();
@@ -858,6 +867,7 @@
   $("mvMinus").addEventListener("click", function () { $("mvQty").value = Math.max(0, (Number($("mvQty").value) || 0) - 1); });
   $("mvPlus").addEventListener("click", function () { $("mvQty").value = (Number($("mvQty").value) || 0) + 1; });
   $("edCancel").addEventListener("click", function () { $("editBg").hidden = true; });
+  $("edCat").addEventListener("change", syncSnFld);
   $("edOk").addEventListener("click", saveEdit);
   $("edDel").addEventListener("click", delItem);
   $("fxCancel").addEventListener("click", function () { $("fixBg").hidden = true; });
