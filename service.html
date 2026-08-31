@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ใบงานซ่อม · บริษัทโอเมก้าอีสาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F8FB;
+    --card: #ffffff;
+    --text: #17303B;
+    --muted: #6B8290;
+    --border: #DCEAF1;
+    --primary: #2B7A9E;
+    --primary-soft: #E3F2F8;
+    --red: #C0392B;
+    --red-bg: #FBEAE8;
+    --yellow: #B7791F;
+    --yellow-bg: #FBF3E2;
+    --green: #2F7D4F;
+    --green-bg: #E8F5EE;
+    --radius: 16px;
+    --shadow: 0 1px 3px rgba(23,48,59,.06), 0 6px 20px rgba(43,122,158,.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; font-family: "Noto Sans Thai", "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh;
+  }
+  .app { max-width: 520px; margin: 0 auto; padding: 16px 14px 110px; }
+
+  #loginPage {
+    position: fixed; inset: 0; z-index: 999; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+  }
+  #loginPage[hidden] { display: none; }
+  .login-box { width: 100%; max-width: 320px; text-align: center; }
+  .login-box .big-icon { font-size: 46px; margin-bottom: 6px; }
+  .login-box h2 { margin: 0 0 4px; color: var(--primary); }
+  .login-box .sub { color: var(--muted); font-size: .88rem; margin: 0 0 18px; }
+  .login-box input {
+    width: 100%; text-align: center; font-size: 1.6rem; letter-spacing: 10px;
+    padding: 12px 10px; border: 2px solid var(--border); border-radius: 14px;
+    background: var(--card); color: var(--text); outline: none;
+  }
+  .login-box input:focus { border-color: var(--primary); }
+  .login-box .err { color: var(--red); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  header.top h1 { font-size: 1.2rem; margin: 0; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  .pill-link {
+    font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border);
+    background: var(--card); padding: 6px 12px; border-radius: 999px; font-family: inherit; cursor: pointer;
+  }
+
+  .cloud-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-size: .78rem; color: var(--muted); margin: 0 0 10px; padding: 0 4px;
+  }
+  .cloud-bar .st.ok { color: var(--green); }
+  .cloud-bar .st.err { color: var(--red); }
+  .cloud-bar button {
+    flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--primary);
+    border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: .76rem; font-weight: 600; cursor: pointer;
+  }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .tab-btn {
+    border: 1px solid var(--border); background: var(--card); color: var(--muted); border-radius: 12px;
+    padding: 9px 4px; font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+  }
+  .tab-btn.active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+
+  .search-wrap { position: relative; margin-bottom: 10px; }
+  .search-wrap input {
+    width: 100%; padding: 11px 14px 11px 40px; border: 1px solid var(--border); border-radius: 999px;
+    font-family: inherit; font-size: .95rem; background: var(--card); color: var(--text); box-shadow: var(--shadow);
+  }
+  .search-wrap input:focus { outline: none; border-color: var(--primary); }
+  .search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .search-wrap.big input { padding: 14px 16px 14px 44px; font-size: 1.02rem; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; padding-bottom: 2px; margin-bottom: 8px; }
+  .chip {
+    border: 1px solid var(--border); background: var(--card); color: var(--muted);
+    border-radius: 999px; padding: 5px 11px; font-family: inherit; font-size: .78rem; font-weight: 600; cursor: pointer;
+  }
+  .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  .job-card {
+    background: var(--card); border-radius: 14px; padding: 11px 13px; margin-bottom: 8px;
+    box-shadow: var(--shadow); border-left: 5px solid var(--primary); cursor: pointer;
+  }
+  .job-card.s-กำลังซ่อม { border-left-color: var(--yellow); }
+  .job-card.s-รออะไหล่ { border-left-color: var(--red); }
+  .job-card.s-เสร็จแล้ว { border-left-color: var(--green); }
+  .job-card .r1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .job-card .cust { font-weight: 700; font-size: .93rem; }
+  .job-card .when { font-size: .72rem; color: var(--muted); flex-shrink: 0; }
+  .job-card .mach { font-size: .78rem; color: var(--muted); }
+  .job-card .sym { font-size: .86rem; margin-top: 3px; }
+  .job-card .r2 { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; align-items: center; }
+  .job-card .cost { font-size: .8rem; color: var(--muted); }
+  .badge { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+  .badge.s-รับเรื่อง { background: var(--primary-soft); color: var(--primary); }
+  .badge.s-กำลังซ่อม { background: var(--yellow-bg); color: var(--yellow); }
+  .badge.s-รออะไหล่ { background: var(--red-bg); color: var(--red); }
+  .badge.s-เสร็จแล้ว { background: var(--green-bg); color: var(--green); }
+  .badge.kind { background: var(--primary-soft); color: var(--primary); }
+
+  .plain-card {
+    background: var(--card); border-radius: 14px; padding: 11px 13px; margin-bottom: 8px;
+    box-shadow: var(--shadow); cursor: pointer;
+  }
+  .plain-card .nm { font-weight: 700; font-size: .93rem; }
+  .plain-card .nt { font-size: .78rem; color: var(--muted); }
+  .plain-card .r1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; font-size: .9rem; }
+  .empty .big { font-size: 40px; margin-bottom: 6px; }
+
+  .fab-row {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    background: linear-gradient(180deg, rgba(242,248,251,0) 0%, var(--bg) 40%);
+    padding: 18px 14px 16px;
+  }
+  .fab-row .inner { max-width: 520px; margin: 0 auto; display: flex; gap: 8px; }
+  .btn {
+    flex: 1; border: none; border-radius: 14px; padding: 13px 10px; font-family: inherit;
+    font-size: .95rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+  }
+  .btn.primary { background: var(--primary); color: #fff; }
+  .btn.secondary { background: var(--card); color: var(--primary); border: 1px solid var(--border); }
+  .btn.danger { background: var(--red-bg); color: var(--red); }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .55; }
+
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(23,48,59,.45); z-index: 100;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-bg[hidden] { display: none; }
+  .modal {
+    background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 520px;
+    max-height: 88vh; overflow-y: auto; padding: 18px 16px 22px;
+  }
+  .modal h3 { margin: 0 0 2px; font-size: 1.05rem; color: var(--primary); }
+  .modal .sub { color: var(--muted); font-size: .82rem; margin-bottom: 12px; }
+  .fld { margin-bottom: 11px; }
+  .fld label { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
+  .fld input, .fld select, .fld textarea {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 12px;
+    font-family: inherit; font-size: .95rem; background: #fff; color: var(--text);
+  }
+  .fld textarea { resize: vertical; min-height: 58px; }
+  .fld input:focus, .fld select:focus, .fld textarea:focus { outline: none; border-color: var(--primary); }
+  .fld .hint { font-size: .72rem; color: var(--muted); margin-top: 3px; }
+  .btn-row2 { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-row2[hidden] { display: none; }
+  .modal .err { color: var(--red); font-size: .82rem; min-height: 1.2em; margin-top: 8px; text-align: center; }
+
+  .picker-btn {
+    width: 100%; text-align: left; border: 1.5px solid var(--border); background: #fff;
+    border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: .92rem;
+    color: var(--text); cursor: pointer; display: flex; justify-content: space-between; gap: 8px; align-items: center;
+  }
+  .picker-btn .ph { color: var(--muted); }
+  .picker-btn .arr { color: var(--muted); flex-shrink: 0; }
+
+  .seg { display: flex; flex-wrap: wrap; gap: 5px; }
+  .seg .sg {
+    border: 1.5px solid var(--border); background: #fff; color: var(--muted);
+    border-radius: 999px; padding: 7px 13px; font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+  }
+  .seg .sg.active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+
+  .kb-help {
+    background: var(--primary-soft); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 11px; font-size: .84rem;
+  }
+  .kb-help .h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-weight: 700; color: var(--primary); }
+  .kb-help .h button { border: none; background: none; color: var(--muted); font-family: inherit; font-size: .74rem; cursor: pointer; }
+  .kb-help .sec-t { font-weight: 700; font-size: .76rem; color: var(--muted); margin: 8px 0 3px; }
+  .kb-help ol { margin: 0; padding-left: 20px; }
+  .kb-help ol li { margin-bottom: 2px; }
+  .kb-help .mini-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .kb-help .mc {
+    border: 1px solid var(--border); background: #fff; color: var(--text);
+    border-radius: 999px; padding: 3px 10px; font-family: inherit; font-size: .78rem; cursor: pointer;
+  }
+  .kb-help .mc:active { background: var(--primary-soft); }
+
+  .part-row { display: grid; grid-template-columns: 1fr 58px 84px 34px; gap: 6px; margin-bottom: 6px; }
+  .part-row input {
+    padding: 8px 10px; border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: inherit; font-size: .88rem; background: #fff; color: var(--text); width: 100%;
+  }
+  .part-row input:focus { outline: none; border-color: var(--primary); }
+  .part-row .rm { border: none; background: var(--red-bg); color: var(--red); border-radius: 10px; font-size: 1rem; cursor: pointer; }
+  .add-part {
+    width: 100%; border: 1.5px dashed var(--border); background: none; color: var(--primary);
+    border-radius: 10px; padding: 8px; font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+  }
+  .parts-total { text-align: right; font-size: .82rem; color: var(--muted); margin-top: 5px; }
+
+  .pick-row {
+    width: 100%; text-align: left; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 12px; margin-bottom: 7px; font-family: inherit;
+    font-size: .9rem; color: var(--text); cursor: pointer;
+  }
+  .pick-row .nt { font-size: .76rem; color: var(--muted); }
+  .pick-row:active { background: var(--primary-soft); }
+
+  .kv { font-size: .88rem; margin-bottom: 4px; }
+  .kv b { color: var(--muted); font-weight: 600; font-size: .78rem; display: inline-block; min-width: 74px; }
+
+  .kb-detail ul, .kb-detail ol { margin: 4px 0 10px; padding-left: 20px; font-size: .88rem; }
+  .kb-detail .sec-t { font-weight: 700; font-size: .8rem; color: var(--primary); margin-top: 8px; }
+
+  .ck-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; font-size: .88rem; }
+  .ck-row input[type=checkbox] { width: 18px; height: 18px; margin-top: 3px; flex-shrink: 0; accent-color: var(--primary); }
+  .ck-row .tag { font-size: .7rem; font-weight: 700; color: var(--muted); display: block; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 200;
+    background: var(--text); color: #fff; border-radius: 999px; padding: 9px 18px;
+    font-size: .85rem; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 90vw;
+  }
+  .toast.show { opacity: .95; }
+</style>
+</head>
+<body>
+
+<div id="loginPage" hidden>
+  <div class="login-box">
+    <div class="big-icon">🔧</div>
+    <h2>ใบงานซ่อม</h2>
+    <p class="sub">บริษัทโอเมก้าอีสาน · ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+    <button type="button" class="btn primary" id="pinBtn" style="width:100%">เข้าใช้งาน</button>
+    <div class="err" id="pinErr"></div>
+  </div>
+</div>
+
+<div class="app" id="appMain" hidden>
+  <header class="top">
+    <h1>🔧 ใบงานซ่อม</h1>
+    <span style="display:flex;gap:6px">
+      <a class="pill-link" href="index.html">← แอป PM</a>
+      <button type="button" class="pill-link" id="logoutBtn" title="ออกจากระบบ">🔒</button>
+    </span>
+  </header>
+
+  <div class="cloud-bar">
+    <span class="st" id="cloudSt">⏳ กำลังโหลด...</span>
+    <button type="button" id="refreshBtn">🔄 รีเฟรช</button>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab-btn active" id="tabJobs">📋 ใบงาน</button>
+    <button type="button" class="tab-btn" id="tabCust">🏪 ลูกค้า/เครื่อง</button>
+    <button type="button" class="tab-btn" id="tabKb">📚 คลังอาการ</button>
+  </div>
+
+  <section id="secJobs">
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input id="jobsSearch" placeholder="ค้นหาร้าน / อาการ / ช่าง...">
+    </div>
+    <div class="chips" id="statusChips"></div>
+    <div id="jobsList"></div>
+  </section>
+
+  <section id="secCust" hidden>
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input id="custSearch" placeholder="ค้นหาชื่อร้าน / เบอร์ / รุ่นเครื่อง / S/N...">
+    </div>
+    <div id="custList"></div>
+  </section>
+
+  <section id="secKb" hidden>
+    <div class="search-wrap big">
+      <span class="ico">🔍</span>
+      <input id="kbSearch" placeholder="พิมพ์อาการ เช่น ไม่ร่วง, รั่ว, ไม่เย็น...">
+    </div>
+    <div class="chips" id="kindChips"></div>
+    <div id="kbList"></div>
+  </section>
+</div>
+
+<div class="fab-row" id="fabRow" hidden>
+  <div class="inner">
+    <button type="button" class="btn primary" id="fabBtn">＋ เปิดงานใหม่</button>
+  </div>
+</div>
+
+<!-- ใบงาน: ฟอร์มเปิด/แก้ไข -->
+<div class="modal-bg" id="jobModal" hidden>
+  <div class="modal">
+    <h3 id="jobTitle">เปิดงานใหม่</h3>
+    <p class="sub" id="jobSub">กรอกเท่าที่รู้ก่อนได้ มาเติมทีหลังได้</p>
+
+    <div class="fld">
+      <label>ร้าน / เครื่อง</label>
+      <button type="button" class="picker-btn" id="pickMachBtn">
+        <span class="ph" id="pickMachLabel">แตะเพื่อเลือกร้านและเครื่อง</span><span class="arr">›</span>
+      </button>
+    </div>
+
+    <div class="fld">
+      <label>วันที่รับเรื่อง</label>
+      <select id="jobDate"></select>
+    </div>
+
+    <div class="fld">
+      <label>อาการที่ลูกค้าแจ้ง</label>
+      <textarea id="jobSymptom" placeholder="เช่น ล้างไม่สะอาด มีคราบ"></textarea>
+      <button type="button" class="add-part" id="kbPickBtn" style="margin-top:6px">📚 เลือกอาการจากคลัง → ได้ขั้นตอนตรวจ + อะไหล่ที่น่าจะใช้</button>
+    </div>
+
+    <div class="kb-help" id="kbHelp" hidden>
+      <div class="h"><span id="kbHelpTitle"></span><button type="button" id="kbHelpClear">✕ เลิกใช้</button></div>
+      <div class="sec-t">🔍 ขั้นตอนตรวจ</div>
+      <ol id="kbHelpChecks"></ol>
+      <div class="sec-t">สาเหตุที่พบบ่อย (แตะเพื่อใส่ช่องสาเหตุ)</div>
+      <div class="mini-chips" id="kbHelpCauses"></div>
+      <div class="sec-t">อะไหล่ที่น่าจะใช้ (แตะเพื่อเพิ่มลงรายการ)</div>
+      <div class="mini-chips" id="kbHelpParts"></div>
+    </div>
+
+    <div class="fld">
+      <label>สาเหตุที่พบ</label>
+      <textarea id="jobCause" placeholder="ตรวจแล้วเจออะไร"></textarea>
+    </div>
+    <div class="fld">
+      <label>วิธีแก้</label>
+      <textarea id="jobFix" placeholder="ทำอะไรถึงหาย"></textarea>
+    </div>
+
+    <div class="fld">
+      <label>อะไหล่ที่ใช้</label>
+      <div id="partsRows"></div>
+      <button type="button" class="add-part" id="addPartBtn">＋ เพิ่มอะไหล่ (ชื่อ · จำนวน · ราคา)</button>
+      <div class="parts-total" id="partsTotal"></div>
+    </div>
+
+    <div class="fld" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <span><label>ค่าแรง (บาท)</label><input id="jobLabor" type="number" inputmode="decimal" placeholder="0"></span>
+      <span><label>ช่างผู้รับผิดชอบ</label><input id="jobTech" placeholder="ชื่อช่าง"></span>
+    </div>
+
+    <div class="fld">
+      <label>สถานะงาน</label>
+      <div class="seg" id="statusSeg"></div>
+    </div>
+
+    <div class="fld">
+      <label>นัดครั้งถัดไป</label>
+      <select id="jobNext"></select>
+    </div>
+
+    <div class="fld">
+      <label>หมายเหตุ</label>
+      <input id="jobNote" placeholder="เช่น รออะไหล่จากกรุงเทพ">
+    </div>
+
+    <div class="err" id="jobErr"></div>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="jobCancel">ยกเลิก</button>
+      <button type="button" class="btn primary" id="jobSave">บันทึกใบงาน</button>
+    </div>
+    <div class="btn-row2" id="jobDelRow" hidden>
+      <button type="button" class="btn danger" id="jobDelBtn">🗑 ลบใบงานนี้</button>
+    </div>
+  </div>
+</div>
+
+<!-- เลือกร้าน → เลือกเครื่อง -->
+<div class="modal-bg" id="pickerModal" hidden>
+  <div class="modal">
+    <div id="pickStep1">
+      <h3>เลือกร้าน / ลูกค้า</h3>
+      <p class="sub">แตะร้านเพื่อดูเครื่อง หรือเพิ่มลูกค้าใหม่</p>
+      <div class="search-wrap"><span class="ico">🔍</span><input id="pickCustSearch" placeholder="ค้นหาชื่อร้าน / เบอร์..."></div>
+      <button type="button" class="add-part" id="pickAddCust" style="margin-bottom:8px">＋ เพิ่มลูกค้าใหม่</button>
+      <div id="pickCustList"></div>
+    </div>
+    <div id="pickStep2" hidden>
+      <h3 id="pickStep2Title">เลือกเครื่อง</h3>
+      <p class="sub">เครื่องของร้านนี้ — งานซ่อมผูกกับเครื่อง ไม่ใช่ร้าน</p>
+      <button type="button" class="add-part" id="pickAddMach" style="margin-bottom:8px">＋ เพิ่มเครื่องใหม่ให้ร้านนี้</button>
+      <div id="pickMachList"></div>
+      <div class="btn-row2"><button type="button" class="btn secondary" id="pickBack">‹ กลับไปเลือกร้าน</button></div>
+    </div>
+    <div class="btn-row2"><button type="button" class="btn secondary" id="pickClose">ปิด</button></div>
+  </div>
+</div>
+
+<!-- เลือกอาการจากคลัง -->
+<div class="modal-bg" id="kbPickModal" hidden>
+  <div class="modal">
+    <h3>📚 เลือกอาการจากคลัง</h3>
+    <p class="sub" id="kbPickSub">แตะอาการ → ระบบเติมขั้นตอนตรวจ + อะไหล่ให้</p>
+    <div class="search-wrap"><span class="ico">🔍</span><input id="kbPickSearch" placeholder="พิมพ์คำเดียวก็เจอ..."></div>
+    <div id="kbPickList"></div>
+    <div class="btn-row2"><button type="button" class="btn secondary" id="kbPickClose">ปิด</button></div>
+  </div>
+</div>
+
+<!-- ยืนยันเพิ่มเข้าคลัง (ลูปที่ทำให้คลังฉลาดขึ้น) -->
+<div class="modal-bg" id="kbSaveModal" hidden>
+  <div class="modal">
+    <h3>📚 เพิ่มเข้าคลังอาการ?</h3>
+    <p class="sub" id="kbSaveSub"></p>
+    <div id="kbSaveRows"></div>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="kbSaveSkip">ไม่เพิ่ม</button>
+      <button type="button" class="btn primary" id="kbSaveOk">เพิ่มเข้าคลัง</button>
+    </div>
+  </div>
+</div>
+
+<!-- เพิ่ม/แก้ไขลูกค้า -->
+<div class="modal-bg" id="custModal" hidden>
+  <div class="modal">
+    <h3 id="custTitle">เพิ่มลูกค้าใหม่</h3>
+    <p class="sub">&nbsp;</p>
+    <div class="fld"><label>ชื่อร้าน / ลูกค้า *</label><input id="custName" placeholder="เช่น ครัวคุณย่า ขอนแก่น"></div>
+    <div class="fld"><label>ชื่อผู้ติดต่อ</label><input id="custContact" placeholder="เช่น พี่หน่อย"></div>
+    <div class="fld"><label>เบอร์โทร</label><input id="custPhone" inputmode="tel" placeholder="08x-xxx-xxxx"></div>
+    <div class="fld"><label>ที่อยู่ / พิกัด</label><input id="custAddress" placeholder="ที่อยู่ หรือลิงก์ Google Maps"></div>
+    <div class="fld"><label>หมายเหตุ</label><input id="custNote"></div>
+    <div class="err" id="custErr"></div>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="custCancel">ยกเลิก</button>
+      <button type="button" class="btn primary" id="custSave">บันทึก</button>
+    </div>
+    <div class="btn-row2" id="custDelRow" hidden>
+      <button type="button" class="btn danger" id="custDelBtn">🗑 ลบลูกค้า (ลบเครื่องและใบงานทั้งหมดด้วย)</button>
+    </div>
+  </div>
+</div>
+
+<!-- เพิ่ม/แก้ไขเครื่อง -->
+<div class="modal-bg" id="machModal" hidden>
+  <div class="modal">
+    <h3 id="machTitle">เพิ่มเครื่องใหม่</h3>
+    <p class="sub" id="machSub"></p>
+    <div class="fld"><label>ประเภทเครื่อง *</label>
+      <div class="seg" id="machKindSeg">
+        <button type="button" class="sg" data-kind="dish">🍽️ เครื่องล้างจาน</button>
+        <button type="button" class="sg" data-kind="ice">🧊 เครื่องทำน้ำแข็ง</button>
+      </div>
+    </div>
+    <div class="fld" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <span><label>ยี่ห้อ</label><input id="machBrand" placeholder="เช่น Omega"></span>
+      <span><label>รุ่น</label><input id="machModel" placeholder="เช่น ODT-200, I60"></span>
+    </div>
+    <div class="fld"><label>หมายเลขเครื่อง (S/N)</label><input id="machSerial"></div>
+    <div class="fld"><label>ติดตั้งเมื่อ</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <select id="machInstMonth"></select>
+        <select id="machInstYear"></select>
+      </div>
+    </div>
+    <div class="fld"><label>หมายเหตุ</label><input id="machNote" placeholder="เช่น จุดวางหลังร้าน"></div>
+    <div class="err" id="machErr"></div>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="machCancel">ยกเลิก</button>
+      <button type="button" class="btn primary" id="machSave">บันทึก</button>
+    </div>
+    <div class="btn-row2" id="machDelRow" hidden>
+      <button type="button" class="btn danger" id="machDelBtn">🗑 ลบเครื่อง (ลบใบงานของเครื่องนี้ด้วย)</button>
+    </div>
+  </div>
+</div>
+
+<!-- รายละเอียดลูกค้า -->
+<div class="modal-bg" id="custDetailModal" hidden>
+  <div class="modal">
+    <h3 id="cdName"></h3>
+    <p class="sub" id="cdSub"></p>
+    <div id="cdInfo"></div>
+    <div class="btn-row2" style="margin-top:10px">
+      <button type="button" class="btn secondary" id="cdEdit">✏️ แก้ไขข้อมูล</button>
+      <button type="button" class="btn primary" id="cdAddMach">＋ เพิ่มเครื่อง</button>
+    </div>
+    <div class="sec-t" style="font-weight:700;font-size:.85rem;color:var(--primary);margin:14px 0 6px">เครื่องของร้านนี้ (แตะดูประวัติซ่อม)</div>
+    <div id="cdMachList"></div>
+    <div class="btn-row2"><button type="button" class="btn secondary" id="cdClose">ปิด</button></div>
+  </div>
+</div>
+
+<!-- รายละเอียดเครื่อง + ประวัติซ่อม -->
+<div class="modal-bg" id="machDetailModal" hidden>
+  <div class="modal">
+    <h3 id="mdName"></h3>
+    <p class="sub" id="mdSub"></p>
+    <div id="mdInfo"></div>
+    <div class="btn-row2" style="margin-top:10px">
+      <button type="button" class="btn secondary" id="mdEdit">✏️ แก้ไขเครื่อง</button>
+      <button type="button" class="btn primary" id="mdNewJob">＋ เปิดงานเครื่องนี้</button>
+    </div>
+    <div class="sec-t" style="font-weight:700;font-size:.85rem;color:var(--primary);margin:14px 0 6px">ประวัติซ่อมทั้งหมด</div>
+    <div id="mdJobs"></div>
+    <div class="btn-row2"><button type="button" class="btn secondary" id="mdClose">ปิด</button></div>
+  </div>
+</div>
+
+<!-- รายละเอียดคลังอาการ -->
+<div class="modal-bg" id="kbDetailModal" hidden>
+  <div class="modal kb-detail">
+    <h3 id="kdSymptom"></h3>
+    <p class="sub" id="kdSub"></p>
+    <div class="sec-t">สาเหตุที่เป็นไปได้</div>
+    <ul id="kdCauses"></ul>
+    <div class="sec-t">🔍 ขั้นตอนตรวจ</div>
+    <ol id="kdChecks"></ol>
+    <div class="sec-t">อะไหล่ที่ใช้บ่อย</div>
+    <ul id="kdParts"></ul>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="kdClose">ปิด</button>
+      <button type="button" class="btn primary" id="kdEdit">✏️ แก้ไข</button>
+    </div>
+  </div>
+</div>
+
+<!-- เพิ่ม/แก้ไขคลังอาการ -->
+<div class="modal-bg" id="kbEditModal" hidden>
+  <div class="modal">
+    <h3 id="keTitle">เพิ่มอาการเข้าคลัง</h3>
+    <p class="sub">หนึ่งบรรทัด = หนึ่งรายการ</p>
+    <div class="fld"><label>ประเภทเครื่อง *</label>
+      <div class="seg" id="keKindSeg">
+        <button type="button" class="sg" data-kind="dish">🍽️ เครื่องล้างจาน</button>
+        <button type="button" class="sg" data-kind="ice">🧊 เครื่องทำน้ำแข็ง</button>
+      </div>
+    </div>
+    <div class="fld"><label>อาการ *</label><input id="keSymptom" placeholder="เช่น น้ำแข็งไม่ร่วง"></div>
+    <div class="fld"><label>สาเหตุที่เป็นไปได้ (บรรทัดละข้อ)</label><textarea id="keCauses" rows="4"></textarea></div>
+    <div class="fld"><label>ขั้นตอนตรวจ (บรรทัดละข้อ เรียงลำดับ)</label><textarea id="keChecks" rows="4"></textarea></div>
+    <div class="fld"><label>อะไหล่ที่ใช้บ่อย (บรรทัดละชิ้น)</label><textarea id="keParts" rows="3"></textarea></div>
+    <div class="err" id="keErr"></div>
+    <div class="btn-row2">
+      <button type="button" class="btn secondary" id="keCancel">ยกเลิก</button>
+      <button type="button" class="btn primary" id="keSave">บันทึก</button>
+    </div>
+    <div class="btn-row2" id="keDelRow" hidden>
+      <button type="button" class="btn danger" id="keDelBtn">🗑 ลบอาการนี้ออกจากคลัง</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var SUPABASE_URL = "https://vhrexjmzdcvlojzanvum.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_47xRsvJMYfqk1XSlW6qjaQ_8ABKblB5";
+  var TECH_PIN = "2569";
+  var BOSS_PIN = "4768";
+  var LOGIN_KEY = "omega_pm_login";   // คีย์เดียวกับแอป PM/สต๊อก — ล็อกอินที่เดียวใช้ได้หมด
+  var TECH_KEY = "omega_sv_tech";
+
+  var KIND = {
+    dish: { icon: "🍽️", label: "เครื่องล้างจาน", short: "ล้างจาน" },
+    ice:  { icon: "🧊", label: "เครื่องทำน้ำแข็ง", short: "น้ำแข็ง" }
+  };
+  var STATUSES = ["รับเรื่อง", "กำลังซ่อม", "รออะไหล่", "เสร็จแล้ว"];
+
+  var customers = [], machines = [], jobs = [], kb = [];
+  var tab = "jobs", statusF = "", qJobs = "", qCust = "", qKb = "", kindF = "";
+  var role = null;
+
+  function $(id) { return document.getElementById(id); }
+  function sbHeaders(json) {
+    var h = { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY };
+    if (json) h["Content-Type"] = "application/json";
+    return h;
+  }
+  function sbGet(path) {
+    return fetch(SUPABASE_URL + "/rest/v1/" + path, { headers: sbHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error(path.split("?")[0] + " " + r.status); return r.json(); });
+  }
+  function sbSend(method, path, body, wantRows) {
+    var h = sbHeaders(true);
+    if (wantRows) h["Prefer"] = "return=representation";
+    return fetch(SUPABASE_URL + "/rest/v1/" + path, { method: method, headers: h, body: body == null ? undefined : JSON.stringify(body) })
+      .then(function (r) {
+        if (!r.ok) return r.text().then(function (t) { throw new Error(method + " " + path.split("?")[0] + " " + r.status + " " + t.slice(0, 120)); });
+        return wantRows ? r.json() : null;
+      });
+  }
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._tm);
+    t._tm = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function norm(s) { return String(s || "").trim().replace(/\s+/g, " "); }
+  function normKey(s) { return norm(s).toLowerCase(); }
+  function money(n) { return Number(n || 0).toLocaleString("th-TH"); }
+
+  var TH_DOW = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+  var TH_MON = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  var TH_MON_FULL = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  function isoOf(d) {
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (day < 10 ? "0" : "") + day;
+  }
+  function parseISO(s) {
+    var p = String(s).split("-");
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2] || 1));
+  }
+  function beShort(isoStr) {
+    if (!isoStr) return "";
+    var d = parseISO(isoStr);
+    return d.getDate() + " " + TH_MON[d.getMonth()] + " " + ((d.getFullYear() + 543) % 100);
+  }
+  function beDow(isoStr) {
+    var d = parseISO(isoStr);
+    return TH_DOW[d.getDay()] + " " + beShort(isoStr);
+  }
+  function beMonthYear(isoStr) {
+    if (!isoStr) return "";
+    var d = parseISO(isoStr);
+    return TH_MON[d.getMonth()] + " " + (d.getFullYear() + 543);
+  }
+  function todayISO() { return isoOf(new Date()); }
+
+  function custById(id) { return customers.find(function (c) { return c.id === id; }) || null; }
+  function machById(id) { return machines.find(function (m) { return m.id === id; }) || null; }
+  function kbById(id) { return kb.find(function (k) { return k.id === id; }) || null; }
+  function machLabel(m) {
+    if (!m) return "";
+    var k = KIND[m.kind] || { icon: "❓", short: m.kind };
+    var name = [m.brand, m.model].filter(Boolean).join(" ") || k.short;
+    return k.icon + " " + name + (m.serial ? " · S/N " + m.serial : "");
+  }
+  function jobTotal(j) {
+    var p = (j.sv_job_parts || []).reduce(function (s, x) { return s + Number(x.qty || 0) * Number(x.price || 0); }, 0);
+    return p + Number(j.labor_cost || 0);
+  }
+
+  // ---------- ล็อกอิน ----------
+  function initLogin() {
+    var saved = localStorage.getItem(LOGIN_KEY);
+    if (saved === "tech" || saved === "boss") { role = saved; showApp(); return; }
+    $("loginPage").hidden = false;
+    $("pinBtn").addEventListener("click", tryPin);
+    $("pinInput").addEventListener("keydown", function (e) { if (e.key === "Enter") tryPin(); });
+  }
+  function tryPin() {
+    var v = $("pinInput").value.trim();
+    var r = v === BOSS_PIN ? "boss" : v === TECH_PIN ? "tech" : null;
+    if (!r) { $("pinErr").textContent = "รหัสไม่ถูกต้อง"; $("pinInput").value = ""; return; }
+    role = r;
+    try { localStorage.setItem(LOGIN_KEY, r); } catch (e) {}
+    $("loginPage").hidden = true;
+    showApp();
+  }
+  function showApp() {
+    $("loginPage").hidden = true;
+    $("appMain").hidden = false;
+    $("fabRow").hidden = false;
+    loadAll();
+  }
+
+  // ---------- โหลดข้อมูล ----------
+  function loadAll() {
+    $("cloudSt").textContent = "⏳ กำลังโหลด...";
+    $("cloudSt").className = "st";
+    Promise.all([
+      sbGet("sv_customers?order=name&select=*"),
+      sbGet("sv_machines?order=id&select=*"),
+      sbGet("sv_jobs?select=*,sv_job_parts(*)&order=date.desc,id.desc"),
+      sbGet("sv_kb?order=kind,symptom&select=*")
+    ]).then(function (res) {
+      customers = res[0]; machines = res[1]; jobs = res[2]; kb = res[3];
+      $("cloudSt").textContent = "☁️ ซิงก์แล้ว · ใบงาน " + jobs.length + " · ร้าน " + customers.length + " · คลัง " + kb.length + " อาการ";
+      $("cloudSt").className = "st ok";
+      renderAll();
+    }).catch(function (e) {
+      $("cloudSt").textContent = "⚠️ ต่อข้อมูลกลางไม่ได้ — " + e.message;
+      $("cloudSt").className = "st err";
+    });
+  }
+
+  // ---------- แท็บ ----------
+  var FAB_LABEL = { jobs: "＋ เปิดงานใหม่", cust: "＋ เพิ่มลูกค้า", kb: "＋ เพิ่มอาการเข้าคลัง" };
+  function setTab(t) {
+    tab = t;
+    $("tabJobs").classList.toggle("active", t === "jobs");
+    $("tabCust").classList.toggle("active", t === "cust");
+    $("tabKb").classList.toggle("active", t === "kb");
+    $("secJobs").hidden = t !== "jobs";
+    $("secCust").hidden = t !== "cust";
+    $("secKb").hidden = t !== "kb";
+    $("fabBtn").textContent = FAB_LABEL[t];
+  }
+
+  // ---------- render: ใบงาน ----------
+  function renderStatusChips() {
+    var counts = { "": jobs.length };
+    STATUSES.forEach(function (s) { counts[s] = jobs.filter(function (j) { return j.status === s; }).length; });
+    var open = jobs.length - counts["เสร็จแล้ว"];
+    var html = '<button type="button" class="chip' + (statusF === "" ? " active" : "") + '" data-s="">ทั้งหมด ' + jobs.length + "</button>";
+    html += '<button type="button" class="chip' + (statusF === "open" ? " active" : "") + '" data-s="open">ค้างอยู่ ' + open + "</button>";
+    STATUSES.forEach(function (s) {
+      html += '<button type="button" class="chip' + (statusF === s ? " active" : "") + '" data-s="' + s + '">' + s + " " + counts[s] + "</button>";
+    });
+    $("statusChips").innerHTML = html;
+  }
+  function renderJobs() {
+    renderStatusChips();
+    var q = normKey(qJobs);
+    var list = jobs.filter(function (j) {
+      if (statusF === "open" && j.status === "เสร็จแล้ว") return false;
+      if (statusF && statusF !== "open" && j.status !== statusF) return false;
+      if (!q) return true;
+      var m = machById(j.machine_id), c = m ? custById(m.customer_id) : null;
+      var hay = normKey([c && c.name, m && m.brand, m && m.model, m && m.serial, j.symptom, j.cause, j.fix, j.tech, j.note].filter(Boolean).join(" "));
+      return hay.indexOf(q) !== -1;
+    });
+    if (!list.length) {
+      $("jobsList").innerHTML = '<div class="empty"><div class="big">📋</div>ยังไม่มีใบงาน' + (q || statusF ? "ที่ตรงเงื่อนไข" : " — กดปุ่มด้านล่างเพื่อเปิดงานแรก") + "</div>";
+      return;
+    }
+    $("jobsList").innerHTML = list.map(function (j) {
+      var m = machById(j.machine_id), c = m ? custById(m.customer_id) : null;
+      var total = jobTotal(j);
+      return '<div class="job-card s-' + esc(j.status) + '" data-id="' + j.id + '">' +
+        '<div class="r1"><span class="cust">' + esc(c ? c.name : "(ไม่พบร้าน)") + '</span><span class="when">' + beDow(j.date) + "</span></div>" +
+        '<div class="mach">' + esc(machLabel(m)) + "</div>" +
+        (j.symptom ? '<div class="sym">' + esc(j.symptom) + "</div>" : "") +
+        '<div class="r2"><span class="badge s-' + esc(j.status) + '">' + esc(j.status) + "</span>" +
+        '<span class="cost">' + (j.tech ? "ช่าง" + esc(j.tech) + " · " : "") + (total > 0 ? money(total) + " บ." : "") +
+        (j.status !== "เสร็จแล้ว" && j.next_visit ? " นัด " + beShort(j.next_visit) : "") + "</span></div></div>";
+    }).join("");
+  }
+
+  // ---------- render: ลูกค้า ----------
+  function renderCust() {
+    var q = normKey(qCust);
+    var list = customers.filter(function (c) {
+      if (!q) return true;
+      var ms = machines.filter(function (m) { return m.customer_id === c.id; });
+      var hay = normKey([c.name, c.contact, c.phone, c.address].concat(ms.map(function (m) { return [m.brand, m.model, m.serial].join(" "); })).filter(Boolean).join(" "));
+      return hay.indexOf(q) !== -1;
+    });
+    if (!list.length) {
+      $("custList").innerHTML = '<div class="empty"><div class="big">🏪</div>' + (q ? "ไม่พบร้านที่ค้นหา" : "ยังไม่มีลูกค้า — กดปุ่มด้านล่างเพื่อเพิ่ม") + "</div>";
+      return;
+    }
+    $("custList").innerHTML = list.map(function (c) {
+      var ms = machines.filter(function (m) { return m.customer_id === c.id; });
+      var nJobs = jobs.filter(function (j) { var m = machById(j.machine_id); return m && m.customer_id === c.id; }).length;
+      var icons = ms.map(function (m) { return (KIND[m.kind] || {}).icon || "❓"; }).join("");
+      return '<div class="plain-card" data-id="' + c.id + '">' +
+        '<div class="r1"><span class="nm">' + esc(c.name) + '</span><span class="nt">' + icons + "</span></div>" +
+        '<div class="nt">' + [c.contact, c.phone].filter(Boolean).map(esc).join(" · ") +
+        (ms.length ? (c.contact || c.phone ? " · " : "") + ms.length + " เครื่อง" : " · ยังไม่มีเครื่อง") +
+        (nJobs ? " · ซ่อม " + nJobs + " ครั้ง" : "") + "</div></div>";
+    }).join("");
+  }
+
+  // ---------- render: คลังอาการ ----------
+  function kbMatches(k, q) {
+    if (!q) return true;
+    var hay = normKey([k.symptom].concat(k.causes || [], k.checks || [], k.common_parts || []).join(" "));
+    return hay.indexOf(q) !== -1;
+  }
+  function renderKb() {
+    var counts = { "": kb.length, dish: 0, ice: 0 };
+    kb.forEach(function (k) { counts[k.kind] = (counts[k.kind] || 0) + 1; });
+    $("kindChips").innerHTML =
+      '<button type="button" class="chip' + (kindF === "" ? " active" : "") + '" data-k="">ทั้งหมด ' + counts[""] + "</button>" +
+      '<button type="button" class="chip' + (kindF === "dish" ? " active" : "") + '" data-k="dish">🍽️ ล้างจาน ' + counts.dish + "</button>" +
+      '<button type="button" class="chip' + (kindF === "ice" ? " active" : "") + '" data-k="ice">🧊 น้ำแข็ง ' + counts.ice + "</button>";
+    var q = normKey(qKb);
+    var list = kb.filter(function (k) { return (!kindF || k.kind === kindF) && kbMatches(k, q); });
+    if (!list.length) {
+      $("kbList").innerHTML = '<div class="empty"><div class="big">📚</div>ไม่พบอาการนี้ในคลัง<br><span style="font-size:.8rem">เจอวิธีแก้แล้วอย่าลืมเพิ่มเข้าคลัง</span></div>';
+      return;
+    }
+    $("kbList").innerHTML = list.map(function (k) {
+      var kd = KIND[k.kind] || {};
+      return '<div class="plain-card" data-id="' + k.id + '">' +
+        '<div class="r1"><span class="nm">' + esc(k.symptom) + '</span><span class="badge kind">' + (kd.icon || "") + " " + esc(kd.short || k.kind) + "</span></div>" +
+        '<div class="nt">สาเหตุ ' + (k.causes || []).length + " · ขั้นตอนตรวจ " + (k.checks || []).length + " · อะไหล่ " + (k.common_parts || []).length + "</div></div>";
+    }).join("");
+  }
+
+  function renderAll() { renderJobs(); renderCust(); renderKb(); }
+
+  // ---------- โมดัลทั่วไป ----------
+  function openM(id) { $(id).hidden = false; }
+  function closeM(id) { $(id).hidden = true; }
+  ["jobModal", "pickerModal", "kbPickModal", "kbSaveModal", "custModal", "machModal", "custDetailModal", "machDetailModal", "kbDetailModal", "kbEditModal"].forEach(function (id) {
+    $(id).addEventListener("click", function (e) { if (e.target === this) this.hidden = true; });
+  });
+
+  // ---------- ฟอร์มใบงาน ----------
+  var jf = null; // { id, machine_id, kb_id, parts: [{part_name, qty, price}] }
+
+  function fillDateSelect(sel, backDays, fwdDays, current, allowEmpty) {
+    var opts = [];
+    if (allowEmpty) opts.push('<option value="">— ไม่นัด —</option>');
+    var seen = {};
+    var now = new Date();
+    for (var i = -backDays; i <= fwdDays; i++) {
+      var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+      var v = isoOf(d);
+      seen[v] = 1;
+      opts.push('<option value="' + v + '">' + beDow(v) + (i === 0 ? " (วันนี้)" : "") + "</option>");
+    }
+    if (current && !seen[current]) opts.push('<option value="' + esc(current) + '">' + beDow(current) + "</option>");
+    sel.innerHTML = opts.join("");
+    sel.value = current || (allowEmpty ? "" : todayISO());
+  }
+
+  function openJobForm(job, presetMachineId) {
+    jf = job
+      ? { id: job.id, machine_id: job.machine_id, kb_id: job.kb_id || null, parts: (job.sv_job_parts || []).map(function (p) { return { part_name: p.part_name, qty: p.qty, price: p.price }; }) }
+      : { id: null, machine_id: presetMachineId || null, kb_id: null, parts: [] };
+    $("jobTitle").textContent = job ? "ใบงาน #" + job.id : "เปิดงานใหม่";
+    $("jobSub").textContent = job ? "เปิดเมื่อ " + beDow(job.date) : "กรอกเท่าที่รู้ก่อนได้ มาเติมทีหลังได้";
+    fillDateSelect($("jobDate"), 60, 0, job ? job.date : todayISO(), false);
+    fillDateSelect($("jobNext"), 0, 120, job ? job.next_visit : "", true);
+    $("jobSymptom").value = job ? job.symptom || "" : "";
+    $("jobCause").value = job ? job.cause || "" : "";
+    $("jobFix").value = job ? job.fix || "" : "";
+    $("jobLabor").value = job && Number(job.labor_cost) ? job.labor_cost : "";
+    $("jobTech").value = job ? job.tech || "" : (localStorage.getItem(TECH_KEY) || "");
+    $("jobNote").value = job ? job.note || "" : "";
+    jf.status = job ? job.status : "รับเรื่อง";
+    renderStatusSeg();
+    renderMachLabel();
+    renderKbHelp();
+    renderParts();
+    $("jobErr").textContent = "";
+    $("jobDelRow").hidden = !(job && role === "boss");
+    openM("jobModal");
+  }
+  function renderStatusSeg() {
+    $("statusSeg").innerHTML = STATUSES.map(function (s) {
+      return '<button type="button" class="sg' + (jf.status === s ? " active" : "") + '" data-s="' + s + '">' + s + "</button>";
+    }).join("");
+  }
+  function renderMachLabel() {
+    var m = machById(jf.machine_id);
+    var c = m ? custById(m.customer_id) : null;
+    var el = $("pickMachLabel");
+    if (m && c) { el.textContent = c.name + " — " + machLabel(m); el.className = ""; }
+    else { el.textContent = "แตะเพื่อเลือกร้านและเครื่อง"; el.className = "ph"; }
+  }
+  function renderKbHelp() {
+    var k = jf.kb_id ? kbById(jf.kb_id) : null;
+    $("kbHelp").hidden = !k;
+    if (!k) return;
+    $("kbHelpTitle").textContent = "📚 " + k.symptom;
+    $("kbHelpChecks").innerHTML = (k.checks || []).map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") || "<li>—</li>";
+    $("kbHelpCauses").innerHTML = (k.causes || []).map(function (s, i) { return '<button type="button" class="mc" data-i="' + i + '">' + esc(s) + "</button>"; }).join("") || "—";
+    $("kbHelpParts").innerHTML = (k.common_parts || []).map(function (s, i) { return '<button type="button" class="mc" data-i="' + i + '">＋ ' + esc(s) + "</button>"; }).join("") || "—";
+  }
+  function renderParts() {
+    $("partsRows").innerHTML = jf.parts.map(function (p, i) {
+      return '<div class="part-row" data-i="' + i + '">' +
+        '<input class="p-name" placeholder="ชื่ออะไหล่" value="' + esc(p.part_name) + '">' +
+        '<input class="p-qty" type="number" inputmode="decimal" min="0" placeholder="จำนวน" value="' + esc(p.qty) + '">' +
+        '<input class="p-price" type="number" inputmode="decimal" min="0" placeholder="ราคา/ชิ้น" value="' + (Number(p.price) ? esc(p.price) : "") + '">' +
+        '<button type="button" class="rm" title="ลบแถวนี้">✕</button></div>';
+    }).join("");
+    var sum = jf.parts.reduce(function (s, p) { return s + Number(p.qty || 0) * Number(p.price || 0); }, 0);
+    $("partsTotal").textContent = jf.parts.length ? "รวมค่าอะไหล่ " + money(sum) + " บาท" : "";
+  }
+  function syncPartsFromDOM() {
+    var rows = $("partsRows").querySelectorAll(".part-row");
+    jf.parts = Array.prototype.map.call(rows, function (r) {
+      return {
+        part_name: norm(r.querySelector(".p-name").value),
+        qty: Number(r.querySelector(".p-qty").value || 1),
+        price: Number(r.querySelector(".p-price").value || 0)
+      };
+    }).filter(function (p) { return p.part_name; });
+  }
+
+  function saveJob() {
+    syncPartsFromDOM();
+    if (!jf.machine_id) { $("jobErr").textContent = "ยังไม่ได้เลือกร้าน/เครื่อง"; return; }
+    var payload = {
+      machine_id: jf.machine_id,
+      date: $("jobDate").value,
+      symptom: norm($("jobSymptom").value) || null,
+      cause: norm($("jobCause").value) || null,
+      fix: norm($("jobFix").value) || null,
+      labor_cost: Number($("jobLabor").value || 0),
+      tech: norm($("jobTech").value) || null,
+      status: jf.status,
+      next_visit: $("jobNext").value || null,
+      note: norm($("jobNote").value) || null,
+      kb_id: jf.kb_id
+    };
+    if (payload.tech) { try { localStorage.setItem(TECH_KEY, payload.tech); } catch (e) {} }
+    $("jobSave").disabled = true;
+    var p = jf.id
+      ? sbSend("PATCH", "sv_jobs?id=eq." + jf.id, payload).then(function () { return jf.id; })
+      : sbSend("POST", "sv_jobs", payload, true).then(function (rows) { return rows[0].id; });
+    p.then(function (jobId) {
+      return sbSend("DELETE", "sv_job_parts?job_id=eq." + jobId).then(function () {
+        if (!jf.parts.length) return null;
+        return sbSend("POST", "sv_job_parts", jf.parts.map(function (x) {
+          return { job_id: jobId, part_name: x.part_name, qty: x.qty, price: x.price };
+        }));
+      }).then(function () { return jobId; });
+    }).then(function (jobId) {
+      $("jobSave").disabled = false;
+      closeM("jobModal");
+      toast(jf.id ? "บันทึกใบงาน #" + jobId + " แล้ว" : "เปิดใบงาน #" + jobId + " แล้ว");
+      var done = payload.status === "เสร็จแล้ว";
+      var snapshot = { machine_id: jf.machine_id, kb_id: jf.kb_id, cause: payload.cause, fix: payload.fix, symptom: payload.symptom, parts: jf.parts.map(function (x) { return x.part_name; }), jobId: jobId };
+      loadAll();
+      if (done && (snapshot.cause || snapshot.fix)) offerKbSave(snapshot);
+    }).catch(function (e) {
+      $("jobSave").disabled = false;
+      $("jobErr").textContent = "บันทึกไม่สำเร็จ: " + e.message;
+    });
+  }
+
+  function deleteJob() {
+    if (!jf.id) return;
+    if (!confirm("ลบใบงาน #" + jf.id + " ถาวร?")) return;
+    sbSend("DELETE", "sv_jobs?id=eq." + jf.id).then(function () {
+      closeM("jobModal");
+      toast("ลบใบงานแล้ว");
+      loadAll();
+    }).catch(function (e) { $("jobErr").textContent = e.message; });
+  }
+
+  // ---------- ลูปเพิ่มเข้าคลัง ----------
+  var kbProposal = null;
+
+  function offerKbSave(s) {
+    var m = machById(s.machine_id);
+    if (!m) return;
+    var target = s.kb_id ? kbById(s.kb_id) : null;
+    if (!target && s.symptom) {
+      var key = normKey(s.symptom);
+      target = kb.find(function (k) {
+        if (k.kind !== m.kind) return false;
+        var kk = normKey(k.symptom);
+        return kk === key || kk.indexOf(key) !== -1 || key.indexOf(kk) !== -1;
+      }) || null;
+    }
+    var items = [];
+    if (target) {
+      var causes = (target.causes || []).map(normKey);
+      var checks = (target.checks || []).map(normKey);
+      var parts = (target.common_parts || []).map(normKey);
+      if (s.cause && causes.indexOf(normKey(s.cause)) === -1) items.push({ field: "causes", tag: "สาเหตุใหม่", text: s.cause });
+      if (s.fix && checks.indexOf(normKey(s.fix)) === -1) items.push({ field: "checks", tag: "วิธีแก้/ขั้นตอนใหม่", text: s.fix });
+      s.parts.forEach(function (p) {
+        if (p && parts.indexOf(normKey(p)) === -1) items.push({ field: "common_parts", tag: "อะไหล่", text: p });
+      });
+      if (!items.length) return; // คลังมีครบแล้ว ไม่ต้องถาม
+      $("kbSaveSub").textContent = "งานนี้มีของใหม่ที่คลังยังไม่รู้ — เพิ่มเข้า “" + target.symptom + "” (" + (KIND[m.kind] || {}).short + ")";
+    } else {
+      if (!s.symptom) return;
+      if (s.cause) items.push({ field: "causes", tag: "สาเหตุ", text: s.cause });
+      if (s.fix) items.push({ field: "checks", tag: "วิธีแก้/ขั้นตอน", text: s.fix });
+      s.parts.forEach(function (p) { if (p) items.push({ field: "common_parts", tag: "อะไหล่", text: p }); });
+      if (!items.length) return;
+      $("kbSaveSub").textContent = "ยังไม่มีอาการนี้ในคลัง — สร้างรายการใหม่ “" + s.symptom + "” (" + (KIND[m.kind] || {}).short + ")";
+    }
+    kbProposal = { target: target, kind: m.kind, symptom: s.symptom, items: items, jobId: s.jobId };
+    $("kbSaveRows").innerHTML = items.map(function (it, i) {
+      return '<label class="ck-row"><input type="checkbox" checked data-i="' + i + '"><span><span class="tag">' + esc(it.tag) + "</span>" + esc(it.text) + "</span></label>";
+    }).join("");
+    openM("kbSaveModal");
+  }
+
+  function commitKbSave() {
+    if (!kbProposal) return;
+    var boxes = $("kbSaveRows").querySelectorAll("input[type=checkbox]");
+    var chosen = kbProposal.items.filter(function (_, i) { return boxes[i] && boxes[i].checked; });
+    if (!chosen.length) { closeM("kbSaveModal"); kbProposal = null; return; }
+    var t = kbProposal.target;
+    var p;
+    if (t) {
+      var body = { updated_at: new Date().toISOString() };
+      var next = { causes: (t.causes || []).slice(), checks: (t.checks || []).slice(), common_parts: (t.common_parts || []).slice() };
+      chosen.forEach(function (it) { next[it.field].push(it.text); });
+      body.causes = next.causes; body.checks = next.checks; body.common_parts = next.common_parts;
+      p = sbSend("PATCH", "sv_kb?id=eq." + t.id, body).then(function () { return t.id; });
+    } else {
+      var entry = { kind: kbProposal.kind, symptom: kbProposal.symptom, causes: [], checks: [], common_parts: [] };
+      chosen.forEach(function (it) { entry[it.field].push(it.text); });
+      p = sbSend("POST", "sv_kb", entry, true).then(function (rows) { return rows[0].id; });
+    }
+    var jobId = kbProposal.jobId;
+    p.then(function (kbId) {
+      // ผูกใบงานกับรายการคลัง เพื่อรอบหน้าลูปรู้ว่าจะรวมที่ไหน
+      return sbSend("PATCH", "sv_jobs?id=eq." + jobId, { kb_id: kbId });
+    }).then(function () {
+      closeM("kbSaveModal");
+      kbProposal = null;
+      toast("📚 คลังอาการฉลาดขึ้นแล้ว");
+      loadAll();
+    }).catch(function (e) { toast("เพิ่มเข้าคลังไม่สำเร็จ: " + e.message); });
+  }
+
+  // ---------- เลือกร้าน/เครื่อง ----------
+  var pickCustId = null, pickQ = "";
+  function openPicker() {
+    pickQ = ""; $("pickCustSearch").value = "";
+    showPickStep(1);
+    renderPickCust();
+    openM("pickerModal");
+  }
+  function showPickStep(n) {
+    $("pickStep1").hidden = n !== 1;
+    $("pickStep2").hidden = n !== 2;
+  }
+  function renderPickCust() {
+    var q = normKey(pickQ);
+    var list = customers.filter(function (c) {
+      return !q || normKey([c.name, c.contact, c.phone].filter(Boolean).join(" ")).indexOf(q) !== -1;
+    });
+    $("pickCustList").innerHTML = list.length ? list.map(function (c) {
+      var n = machines.filter(function (m) { return m.customer_id === c.id; }).length;
+      return '<button type="button" class="pick-row" data-id="' + c.id + '"><b>' + esc(c.name) + '</b><div class="nt">' +
+        [c.phone, n ? n + " เครื่อง" : "ยังไม่มีเครื่อง"].filter(Boolean).map(esc).join(" · ") + "</div></button>";
+    }).join("") : '<div class="empty">ไม่พบร้าน — กดเพิ่มลูกค้าใหม่ด้านบน</div>';
+  }
+  function openPickStep2(custId) {
+    pickCustId = custId;
+    var c = custById(custId);
+    $("pickStep2Title").textContent = "เลือกเครื่องของ " + (c ? c.name : "");
+    var ms = machines.filter(function (m) { return m.customer_id === custId; });
+    $("pickMachList").innerHTML = ms.length ? ms.map(function (m) {
+      var n = jobs.filter(function (j) { return j.machine_id === m.id; }).length;
+      return '<button type="button" class="pick-row" data-id="' + m.id + '"><b>' + esc(machLabel(m)) + '</b><div class="nt">' +
+        (m.installed_at ? "ติดตั้ง " + beMonthYear(m.installed_at) + " · " : "") + (n ? "ซ่อมมาแล้ว " + n + " ครั้ง" : "ยังไม่เคยซ่อม") + "</div></button>";
+    }).join("") : '<div class="empty">ร้านนี้ยังไม่มีเครื่อง — กดเพิ่มเครื่องด้านบน</div>';
+    showPickStep(2);
+  }
+  function chooseMachine(machId) {
+    jf.machine_id = machId;
+    var m = machById(machId);
+    var k = jf.kb_id ? kbById(jf.kb_id) : null;
+    if (k && m && k.kind !== m.kind) { jf.kb_id = null; renderKbHelp(); } // เปลี่ยนประเภทเครื่อง คลังเดิมใช้ไม่ได้
+    renderMachLabel();
+    closeM("pickerModal");
+  }
+
+  // ---------- เลือกอาการจากคลัง ----------
+  var kbPickQ = "";
+  function openKbPick() {
+    var m = machById(jf.machine_id);
+    if (!m) { $("jobErr").textContent = "เลือกร้าน/เครื่องก่อน จะได้กรองคลังให้ตรงประเภทเครื่อง"; return; }
+    kbPickQ = ""; $("kbPickSearch").value = "";
+    $("kbPickSub").textContent = "คลังของ" + (KIND[m.kind] || {}).label + " — แตะเพื่อใช้";
+    renderKbPick();
+    openM("kbPickModal");
+  }
+  function renderKbPick() {
+    var m = machById(jf.machine_id);
+    var q = normKey(kbPickQ);
+    var list = kb.filter(function (k) { return m && k.kind === m.kind && kbMatches(k, q); });
+    $("kbPickList").innerHTML = list.length ? list.map(function (k) {
+      return '<button type="button" class="pick-row" data-id="' + k.id + '"><b>' + esc(k.symptom) + '</b><div class="nt">สาเหตุ ' +
+        (k.causes || []).length + " · ขั้นตอน " + (k.checks || []).length + " · อะไหล่ " + (k.common_parts || []).length + "</div></button>";
+    }).join("") : '<div class="empty">ไม่พบในคลัง — พิมพ์อาการเองในใบงานได้เลย<br>ปิดงานแล้วระบบจะชวนเพิ่มเข้าคลัง</div>';
+  }
+  function chooseKb(kbId) {
+    var k = kbById(kbId);
+    if (!k) return;
+    jf.kb_id = kbId;
+    if (!norm($("jobSymptom").value)) $("jobSymptom").value = k.symptom;
+    renderKbHelp();
+    closeM("kbPickModal");
+  }
+
+  // ---------- ลูกค้า: เพิ่ม/แก้ไข ----------
+  var custEdit = null, custThen = null;
+  function openCustForm(c, then) {
+    custEdit = c || null; custThen = then || null;
+    $("custTitle").textContent = c ? "แก้ไขลูกค้า" : "เพิ่มลูกค้าใหม่";
+    $("custName").value = c ? c.name : "";
+    $("custContact").value = c ? c.contact || "" : "";
+    $("custPhone").value = c ? c.phone || "" : "";
+    $("custAddress").value = c ? c.address || "" : "";
+    $("custNote").value = c ? c.note || "" : "";
+    $("custErr").textContent = "";
+    $("custDelRow").hidden = !(c && role === "boss");
+    openM("custModal");
+  }
+  function saveCust() {
+    var payload = {
+      name: norm($("custName").value),
+      contact: norm($("custContact").value) || null,
+      phone: norm($("custPhone").value) || null,
+      address: norm($("custAddress").value) || null,
+      note: norm($("custNote").value) || null
+    };
+    if (!payload.name) { $("custErr").textContent = "ใส่ชื่อร้านก่อน"; return; }
+    var p = custEdit
+      ? sbSend("PATCH", "sv_customers?id=eq." + custEdit.id, payload, true).then(function (rows) { return rows[0]; })
+      : sbSend("POST", "sv_customers", payload, true).then(function (rows) { return rows[0]; });
+    p.then(function (row) {
+      var i = customers.findIndex(function (x) { return x.id === row.id; });
+      if (i === -1) customers.push(row); else customers[i] = row;
+      customers.sort(function (a, b) { return a.name.localeCompare(b.name, "th"); });
+      closeM("custModal");
+      toast("บันทึกลูกค้าแล้ว");
+      renderAll();
+      if (custThen) { var f = custThen; custThen = null; f(row); }
+    }).catch(function (e) { $("custErr").textContent = e.message; });
+  }
+  function deleteCust() {
+    if (!custEdit) return;
+    if (!confirm("ลบ “" + custEdit.name + "” พร้อมเครื่องและใบงานทั้งหมด?")) return;
+    sbSend("DELETE", "sv_customers?id=eq." + custEdit.id).then(function () {
+      closeM("custModal"); closeM("custDetailModal");
+      toast("ลบลูกค้าแล้ว");
+      loadAll();
+    }).catch(function (e) { $("custErr").textContent = e.message; });
+  }
+
+  // ---------- เครื่อง: เพิ่ม/แก้ไข ----------
+  var machEdit = null, machCustId = null, machThen = null, machKind = null;
+  function fillInstSelects(current) {
+    var mSel = $("machInstMonth"), ySel = $("machInstYear");
+    var mo = ['<option value="">— เดือน —</option>'];
+    for (var i = 0; i < 12; i++) mo.push('<option value="' + (i + 1) + '">' + TH_MON_FULL[i] + "</option>");
+    mSel.innerHTML = mo.join("");
+    var thisYear = new Date().getFullYear();
+    var yo = ['<option value="">— ปี พ.ศ. —</option>'];
+    for (var y = thisYear; y >= thisYear - 15; y--) yo.push('<option value="' + y + '">' + (y + 543) + "</option>");
+    ySel.innerHTML = yo.join("");
+    if (current) {
+      var d = parseISO(current);
+      mSel.value = String(d.getMonth() + 1);
+      ySel.value = String(d.getFullYear());
+    }
+  }
+  function openMachForm(m, custId, then) {
+    machEdit = m || null;
+    machCustId = m ? m.customer_id : custId;
+    machThen = then || null;
+    machKind = m ? m.kind : null;
+    var c = custById(machCustId);
+    $("machTitle").textContent = m ? "แก้ไขเครื่อง" : "เพิ่มเครื่องใหม่";
+    $("machSub").textContent = c ? "ร้าน: " + c.name : "";
+    $("machBrand").value = m ? m.brand || "" : "";
+    $("machModel").value = m ? m.model || "" : "";
+    $("machSerial").value = m ? m.serial || "" : "";
+    $("machNote").value = m ? m.note || "" : "";
+    fillInstSelects(m ? m.installed_at : null);
+    renderMachKindSeg();
+    $("machErr").textContent = "";
+    $("machDelRow").hidden = !(m && role === "boss");
+    openM("machModal");
+  }
+  function renderMachKindSeg() {
+    Array.prototype.forEach.call($("machKindSeg").querySelectorAll(".sg"), function (b) {
+      b.classList.toggle("active", b.dataset.kind === machKind);
+    });
+  }
+  function saveMach() {
+    if (!machKind) { $("machErr").textContent = "เลือกประเภทเครื่องก่อน"; return; }
+    var mm = $("machInstMonth").value, yy = $("machInstYear").value;
+    var inst = (mm && yy) ? yy + "-" + (Number(mm) < 10 ? "0" : "") + mm + "-01" : null;
+    var payload = {
+      customer_id: machCustId,
+      kind: machKind,
+      brand: norm($("machBrand").value) || null,
+      model: norm($("machModel").value) || null,
+      serial: norm($("machSerial").value) || null,
+      installed_at: inst,
+      note: norm($("machNote").value) || null
+    };
+    var p = machEdit
+      ? sbSend("PATCH", "sv_machines?id=eq." + machEdit.id, payload, true).then(function (rows) { return rows[0]; })
+      : sbSend("POST", "sv_machines", payload, true).then(function (rows) { return rows[0]; });
+    p.then(function (row) {
+      var i = machines.findIndex(function (x) { return x.id === row.id; });
+      if (i === -1) machines.push(row); else machines[i] = row;
+      closeM("machModal");
+      toast("บันทึกเครื่องแล้ว");
+      renderAll();
+      if (machThen) { var f = machThen; machThen = null; f(row); }
+    }).catch(function (e) { $("machErr").textContent = e.message; });
+  }
+  function deleteMach() {
+    if (!machEdit) return;
+    if (!confirm("ลบเครื่องนี้พร้อมใบงานทั้งหมดของเครื่อง?")) return;
+    sbSend("DELETE", "sv_machines?id=eq." + machEdit.id).then(function () {
+      closeM("machModal"); closeM("machDetailModal");
+      toast("ลบเครื่องแล้ว");
+      loadAll();
+    }).catch(function (e) { $("machErr").textContent = e.message; });
+  }
+
+  // ---------- รายละเอียดลูกค้า / เครื่อง ----------
+  var cdId = null, mdId = null;
+  function openCustDetail(id) {
+    cdId = id;
+    var c = custById(id);
+    if (!c) return;
+    var ms = machines.filter(function (m) { return m.customer_id === id; });
+    $("cdName").textContent = c.name;
+    $("cdSub").textContent = ms.length + " เครื่อง";
+    $("cdInfo").innerHTML =
+      (c.contact ? '<div class="kv"><b>ผู้ติดต่อ</b>' + esc(c.contact) + "</div>" : "") +
+      (c.phone ? '<div class="kv"><b>โทร</b><a href="tel:' + esc(c.phone) + '">' + esc(c.phone) + "</a></div>" : "") +
+      (c.address ? '<div class="kv"><b>ที่อยู่</b>' + esc(c.address) + "</div>" : "") +
+      (c.note ? '<div class="kv"><b>หมายเหตุ</b>' + esc(c.note) + "</div>" : "");
+    $("cdMachList").innerHTML = ms.length ? ms.map(function (m) {
+      var n = jobs.filter(function (j) { return j.machine_id === m.id; });
+      var last = n.length ? "ซ่อมล่าสุด " + beShort(n[0].date) : "ยังไม่เคยซ่อม";
+      return '<button type="button" class="pick-row" data-id="' + m.id + '"><b>' + esc(machLabel(m)) + '</b><div class="nt">' + last + (n.length ? " · รวม " + n.length + " ครั้ง" : "") + "</div></button>";
+    }).join("") : '<div class="empty">ยังไม่มีเครื่อง</div>';
+    openM("custDetailModal");
+  }
+  function openMachDetail(id) {
+    mdId = id;
+    var m = machById(id);
+    if (!m) return;
+    var c = custById(m.customer_id);
+    var hist = jobs.filter(function (j) { return j.machine_id === id; }); // jobs โหลดมาเรียง date desc แล้ว
+    $("mdName").textContent = machLabel(m);
+    $("mdSub").textContent = c ? "ร้าน: " + c.name : "";
+    $("mdInfo").innerHTML =
+      '<div class="kv"><b>ประเภท</b>' + esc((KIND[m.kind] || {}).label || m.kind) + "</div>" +
+      (m.installed_at ? '<div class="kv"><b>ติดตั้ง</b>' + beMonthYear(m.installed_at) + "</div>" : "") +
+      (m.note ? '<div class="kv"><b>หมายเหตุ</b>' + esc(m.note) + "</div>" : "");
+    $("mdJobs").innerHTML = hist.length ? hist.map(function (j) {
+      var total = jobTotal(j);
+      return '<button type="button" class="pick-row" data-id="' + j.id + '"><b>' + beDow(j.date) + ' · <span class="badge s-' + esc(j.status) + '">' + esc(j.status) + "</span></b>" +
+        '<div class="nt">' + esc(j.symptom || "-") + (j.fix ? " → " + esc(j.fix) : "") + (total > 0 ? " · " + money(total) + " บ." : "") + "</div></button>";
+    }).join("") : '<div class="empty">ยังไม่มีประวัติซ่อม</div>';
+    openM("machDetailModal");
+  }
+
+  // ---------- คลังอาการ: ดู/แก้ไข ----------
+  var kdIdCur = null, keEdit = null, keKind = null;
+  function openKbDetail(id) {
+    var k = kbById(id);
+    if (!k) return;
+    kdIdCur = id;
+    var kd = KIND[k.kind] || {};
+    $("kdSymptom").textContent = (kd.icon || "") + " " + k.symptom;
+    $("kdSub").textContent = kd.label || k.kind;
+    $("kdCauses").innerHTML = (k.causes || []).map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") || "<li>—</li>";
+    $("kdChecks").innerHTML = (k.checks || []).map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") || "<li>—</li>";
+    $("kdParts").innerHTML = (k.common_parts || []).map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") || "<li>—</li>";
+    openM("kbDetailModal");
+  }
+  function openKbEdit(k) {
+    keEdit = k || null;
+    keKind = k ? k.kind : (kindF || null);
+    $("keTitle").textContent = k ? "แก้ไขคลังอาการ" : "เพิ่มอาการเข้าคลัง";
+    $("keSymptom").value = k ? k.symptom : "";
+    $("keCauses").value = k ? (k.causes || []).join("\n") : "";
+    $("keChecks").value = k ? (k.checks || []).join("\n") : "";
+    $("keParts").value = k ? (k.common_parts || []).join("\n") : "";
+    renderKeKindSeg();
+    $("keErr").textContent = "";
+    $("keDelRow").hidden = !(k && role === "boss");
+    openM("kbEditModal");
+  }
+  function renderKeKindSeg() {
+    Array.prototype.forEach.call($("keKindSeg").querySelectorAll(".sg"), function (b) {
+      b.classList.toggle("active", b.dataset.kind === keKind);
+    });
+  }
+  function linesOf(v) {
+    return v.split("\n").map(norm).filter(Boolean);
+  }
+  function saveKe() {
+    if (!keKind) { $("keErr").textContent = "เลือกประเภทเครื่องก่อน"; return; }
+    var payload = {
+      kind: keKind,
+      symptom: norm($("keSymptom").value),
+      causes: linesOf($("keCauses").value),
+      checks: linesOf($("keChecks").value),
+      common_parts: linesOf($("keParts").value)
+    };
+    if (!payload.symptom) { $("keErr").textContent = "ใส่อาการก่อน"; return; }
+    if (keEdit) payload.updated_at = new Date().toISOString();
+    var p = keEdit
+      ? sbSend("PATCH", "sv_kb?id=eq." + keEdit.id, payload)
+      : sbSend("POST", "sv_kb", payload);
+    p.then(function () {
+      closeM("kbEditModal"); closeM("kbDetailModal");
+      toast("บันทึกคลังอาการแล้ว");
+      loadAll();
+    }).catch(function (e) { $("keErr").textContent = e.message; });
+  }
+  function deleteKe() {
+    if (!keEdit) return;
+    if (!confirm("ลบ “" + keEdit.symptom + "” ออกจากคลัง?")) return;
+    sbSend("DELETE", "sv_kb?id=eq." + keEdit.id).then(function () {
+      closeM("kbEditModal"); closeM("kbDetailModal");
+      toast("ลบออกจากคลังแล้ว");
+      loadAll();
+    }).catch(function (e) { $("keErr").textContent = e.message; });
+  }
+
+  // ---------- events ----------
+  $("logoutBtn").addEventListener("click", function () {
+    localStorage.removeItem(LOGIN_KEY);
+    location.reload();
+  });
+  $("refreshBtn").addEventListener("click", loadAll);
+  $("tabJobs").addEventListener("click", function () { setTab("jobs"); });
+  $("tabCust").addEventListener("click", function () { setTab("cust"); });
+  $("tabKb").addEventListener("click", function () { setTab("kb"); });
+  $("fabBtn").addEventListener("click", function () {
+    if (tab === "jobs") openJobForm(null);
+    else if (tab === "cust") openCustForm(null);
+    else openKbEdit(null);
+  });
+
+  $("jobsSearch").addEventListener("input", function () { qJobs = this.value; renderJobs(); });
+  $("custSearch").addEventListener("input", function () { qCust = this.value; renderCust(); });
+  $("kbSearch").addEventListener("input", function () { qKb = this.value; renderKb(); });
+
+  $("statusChips").addEventListener("click", function (e) {
+    var b = e.target.closest(".chip");
+    if (!b) return;
+    statusF = b.dataset.s;
+    renderJobs();
+  });
+  $("kindChips").addEventListener("click", function (e) {
+    var b = e.target.closest(".chip");
+    if (!b) return;
+    kindF = b.dataset.k;
+    renderKb();
+  });
+
+  $("jobsList").addEventListener("click", function (e) {
+    var card = e.target.closest(".job-card");
+    if (!card) return;
+    var j = jobs.find(function (x) { return x.id === Number(card.dataset.id); });
+    if (j) openJobForm(j);
+  });
+  $("custList").addEventListener("click", function (e) {
+    var card = e.target.closest(".plain-card");
+    if (card) openCustDetail(Number(card.dataset.id));
+  });
+  $("kbList").addEventListener("click", function (e) {
+    var card = e.target.closest(".plain-card");
+    if (card) openKbDetail(Number(card.dataset.id));
+  });
+
+  // ฟอร์มใบงาน
+  $("jobCancel").addEventListener("click", function () { closeM("jobModal"); });
+  $("jobSave").addEventListener("click", saveJob);
+  $("jobDelBtn").addEventListener("click", deleteJob);
+  $("pickMachBtn").addEventListener("click", openPicker);
+  $("kbPickBtn").addEventListener("click", openKbPick);
+  $("statusSeg").addEventListener("click", function (e) {
+    var b = e.target.closest(".sg");
+    if (!b) return;
+    jf.status = b.dataset.s;
+    renderStatusSeg();
+  });
+  $("addPartBtn").addEventListener("click", function () {
+    syncPartsFromDOM();
+    jf.parts.push({ part_name: "", qty: 1, price: 0 });
+    renderPartsKeepEmpty();
+  });
+  function renderPartsKeepEmpty() {
+    // renderParts + คงแถวว่างแถวสุดท้ายไว้ให้พิมพ์ (syncPartsFromDOM ตัดแถวชื่อว่างทิ้ง)
+    var rows = jf.parts;
+    $("partsRows").innerHTML = rows.map(function (p, i) {
+      return '<div class="part-row" data-i="' + i + '">' +
+        '<input class="p-name" placeholder="ชื่ออะไหล่" value="' + esc(p.part_name) + '">' +
+        '<input class="p-qty" type="number" inputmode="decimal" min="0" placeholder="จำนวน" value="' + esc(p.qty) + '">' +
+        '<input class="p-price" type="number" inputmode="decimal" min="0" placeholder="ราคา/ชิ้น" value="' + (Number(p.price) ? esc(p.price) : "") + '">' +
+        '<button type="button" class="rm" title="ลบแถวนี้">✕</button></div>';
+    }).join("");
+    var last = $("partsRows").querySelector(".part-row:last-child .p-name");
+    if (last) last.focus();
+  }
+  $("partsRows").addEventListener("click", function (e) {
+    var rm = e.target.closest(".rm");
+    if (!rm) return;
+    rm.closest(".part-row").remove();
+    syncPartsFromDOM();
+    renderParts();
+  });
+  $("partsRows").addEventListener("input", function () {
+    var rows = $("partsRows").querySelectorAll(".part-row");
+    var sum = 0;
+    Array.prototype.forEach.call(rows, function (r) {
+      sum += Number(r.querySelector(".p-qty").value || 0) * Number(r.querySelector(".p-price").value || 0);
+    });
+    $("partsTotal").textContent = sum > 0 ? "รวมค่าอะไหล่ " + money(sum) + " บาท" : "";
+  });
+  $("kbHelpClear").addEventListener("click", function () {
+    jf.kb_id = null;
+    renderKbHelp();
+  });
+  $("kbHelpCauses").addEventListener("click", function (e) {
+    var b = e.target.closest(".mc");
+    if (!b) return;
+    var k = kbById(jf.kb_id);
+    if (!k) return;
+    var txt = (k.causes || [])[Number(b.dataset.i)];
+    if (!txt) return;
+    var cur = norm($("jobCause").value);
+    $("jobCause").value = cur ? cur + "\n" + txt : txt;
+  });
+  $("kbHelpParts").addEventListener("click", function (e) {
+    var b = e.target.closest(".mc");
+    if (!b) return;
+    var k = kbById(jf.kb_id);
+    if (!k) return;
+    var txt = (k.common_parts || [])[Number(b.dataset.i)];
+    if (!txt) return;
+    syncPartsFromDOM();
+    if (!jf.parts.some(function (p) { return normKey(p.part_name) === normKey(txt); })) {
+      jf.parts.push({ part_name: txt, qty: 1, price: 0 });
+    }
+    renderParts();
+    toast("เพิ่ม " + txt + " แล้ว — ใส่ราคาด้วย");
+  });
+
+  // picker
+  $("pickClose").addEventListener("click", function () { closeM("pickerModal"); });
+  $("pickBack").addEventListener("click", function () { showPickStep(1); renderPickCust(); });
+  $("pickCustSearch").addEventListener("input", function () { pickQ = this.value; renderPickCust(); });
+  $("pickCustList").addEventListener("click", function (e) {
+    var b = e.target.closest(".pick-row");
+    if (b) openPickStep2(Number(b.dataset.id));
+  });
+  $("pickMachList").addEventListener("click", function (e) {
+    var b = e.target.closest(".pick-row");
+    if (b) chooseMachine(Number(b.dataset.id));
+  });
+  $("pickAddCust").addEventListener("click", function () {
+    openCustForm(null, function (row) { openPickStep2(row.id); });
+  });
+  $("pickAddMach").addEventListener("click", function () {
+    openMachForm(null, pickCustId, function (row) { chooseMachine(row.id); });
+  });
+
+  // kb pick
+  $("kbPickClose").addEventListener("click", function () { closeM("kbPickModal"); });
+  $("kbPickSearch").addEventListener("input", function () { kbPickQ = this.value; renderKbPick(); });
+  $("kbPickList").addEventListener("click", function (e) {
+    var b = e.target.closest(".pick-row");
+    if (b) chooseKb(Number(b.dataset.id));
+  });
+
+  // kb save loop
+  $("kbSaveSkip").addEventListener("click", function () { closeM("kbSaveModal"); kbProposal = null; });
+  $("kbSaveOk").addEventListener("click", commitKbSave);
+
+  // customer form
+  $("custCancel").addEventListener("click", function () { closeM("custModal"); custThen = null; });
+  $("custSave").addEventListener("click", saveCust);
+  $("custDelBtn").addEventListener("click", deleteCust);
+
+  // machine form
+  $("machCancel").addEventListener("click", function () { closeM("machModal"); machThen = null; });
+  $("machSave").addEventListener("click", saveMach);
+  $("machDelBtn").addEventListener("click", deleteMach);
+  $("machKindSeg").addEventListener("click", function (e) {
+    var b = e.target.closest(".sg");
+    if (!b) return;
+    machKind = b.dataset.kind;
+    renderMachKindSeg();
+  });
+
+  // customer detail
+  $("cdClose").addEventListener("click", function () { closeM("custDetailModal"); });
+  $("cdEdit").addEventListener("click", function () { openCustForm(custById(cdId)); });
+  $("cdAddMach").addEventListener("click", function () {
+    openMachForm(null, cdId, function () { openCustDetail(cdId); });
+  });
+  $("cdMachList").addEventListener("click", function (e) {
+    var b = e.target.closest(".pick-row");
+    if (!b) return;
+    closeM("custDetailModal");
+    openMachDetail(Number(b.dataset.id));
+  });
+
+  // machine detail
+  $("mdClose").addEventListener("click", function () { closeM("machDetailModal"); });
+  $("mdEdit").addEventListener("click", function () { openMachForm(machById(mdId)); });
+  $("mdNewJob").addEventListener("click", function () {
+    closeM("machDetailModal");
+    openJobForm(null, mdId);
+  });
+  $("mdJobs").addEventListener("click", function (e) {
+    var b = e.target.closest(".pick-row");
+    if (!b) return;
+    var j = jobs.find(function (x) { return x.id === Number(b.dataset.id); });
+    if (j) { closeM("machDetailModal"); openJobForm(j); }
+  });
+
+  // kb detail / edit
+  $("kdClose").addEventListener("click", function () { closeM("kbDetailModal"); });
+  $("kdEdit").addEventListener("click", function () { openKbEdit(kbById(kdIdCur)); });
+  $("keCancel").addEventListener("click", function () { closeM("kbEditModal"); });
+  $("keSave").addEventListener("click", saveKe);
+  $("keDelBtn").addEventListener("click", deleteKe);
+  $("keKindSeg").addEventListener("click", function (e) {
+    var b = e.target.closest(".sg");
+    if (!b) return;
+    keKind = b.dataset.kind;
+    renderKeKindSeg();
+  });
+
+  setTab("jobs");
+  initLogin();
+})();
+</script>
+</body>
+</html>
