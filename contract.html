@@ -6,47 +6,74 @@
 <title>ทำสัญญาเช่าเครื่อง · บริษัทโอเมก้าอีสาน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ============ โทเคนดีไซน์ — ชุดเดียวกับแอปหลัก "แผงควบคุมเครื่อง + ป้ายตรวจเช็ค" ============ */
   :root {
-    --bg: #F2F8FB; --card: #fff; --text: #17303B; --muted: #6B8290; --border: #DCEAF1;
-    --primary: #2B7A9E; --primary-soft: #E3F2F8; --red: #C0392B;
-    --radius: 16px; --shadow: 0 1px 3px rgba(23,48,59,.06), 0 6px 20px rgba(43,122,158,.08);
+    --bg: #EEF3F5;            /* ขาวพอร์ซเลน */
+    --card: #ffffff;
+    --text: #142833;          /* น้ำเงินหมึก */
+    --muted: #5D7480;
+    --border: #D7E1E6;
+    --panel: #0E2C3A;         /* แผงเข้ม */
+    --panel-2: #123647;
+    --ice: #8FD4EA;           /* ฟ้าน้ำแข็ง — สีเน้นบนพื้นเข้ม */
+    --primary: #1D6786;
+    --primary-soft: #E2EEF3;
+    --red: #B93A2B;
+    --red-b: #FF9282;         /* แดงบนพื้นเข้ม */
+    --green: #2E7D4F;
+    --radius: 16px; --shadow: 0 10px 30px rgba(14,44,58,.16);
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: "Noto Sans Thai", Tahoma, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 16px 14px 60px; }
-  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; flex-wrap: wrap; margin-bottom: 14px; }
-  header.top h1 { font-size: 1.25rem; margin: 0; color: var(--primary); }
-  .motto { display: inline-block; font-size: .95rem; font-weight: 700; color: var(--primary); background: var(--primary-soft); border: 1px solid var(--border); border-radius: 999px; padding: 7px 16px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; font-family: "IBM Plex Sans Thai", "Segoe UI", Tahoma, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .top-panel :focus-visible, #gate :focus-visible { outline-color: var(--ice); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 14px 60px; }
+
+  /* แผงหัวเข้มแบบแอปหลัก */
+  .top-panel {
+    margin: 0 0 16px; padding: 16px 18px;
+    background: linear-gradient(178deg, #0C2530 0%, var(--panel) 55%, var(--panel-2) 100%);
+    border-radius: 0 0 22px 22px; color: #fff;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .top-panel { animation: panelIn .45s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes panelIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; flex-wrap: wrap; max-width: 1172px; margin: 0 auto; }
+  header.top h1 { font-size: 1.25rem; margin: 0; color: #fff; font-weight: 600; }
+  .motto { display: inline-block; font-size: .85rem; font-weight: 500; color: var(--ice); opacity: .9; }
   .cols { display: grid; grid-template-columns: 400px 1fr; gap: 16px; align-items: start; }
   @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
 
-  .panel { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
-  .panel h2 { font-size: 1rem; margin: 0 0 12px; color: var(--primary); }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .panel h2 { font-size: 1.05rem; margin: 0 0 12px; color: var(--text); font-weight: 600; }
   .panel h3 { font-size: .88rem; margin: 16px 0 8px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 12px; }
   .field { margin-bottom: 10px; }
   .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
   .field input, .field select, .field textarea {
-    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px;
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
     font-family: inherit; font-size: .92rem; background: var(--bg); color: var(--text);
   }
-  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); background: #fff; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(29,103,134,.12); }
+  #fSN, #fNo { font-family: "IBM Plex Mono", Consolas, monospace; font-size: .88rem; letter-spacing: .02em; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .hintline { font-size: .76rem; color: var(--muted); margin-top: -6px; margin-bottom: 10px; }
-  .btn { border: none; border-radius: 12px; padding: 12px 16px; font-size: .98rem; font-weight: 700; font-family: inherit; cursor: pointer; width: 100%; margin-top: 8px; }
-  .btn.primary { background: var(--primary); color: #fff; }
+  .btn { border: none; border-radius: 12px; padding: 13px 16px; font-size: .98rem; font-weight: 600; font-family: inherit; cursor: pointer; width: 100%; margin-top: 8px; transition: transform .1s; }
+  .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(29,103,134,.25); }
   .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn:active { opacity: .85; }
-  .copy-btn { font-size: .78rem; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-family: inherit; color: var(--primary); font-weight: 600; }
+  .btn:active { opacity: .85; transform: scale(.985); }
+  .copy-btn { font-size: .78rem; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-family: inherit; color: var(--primary); font-weight: 600; }
+  .copy-btn:active { background: var(--primary-soft); }
 
   /* ตัวสัญญา (พรีวิว = หน้ากระดาษ) */
   .paper-holder { overflow: auto; }
   .paper {
     background: #fff; box-shadow: var(--shadow); border-radius: 6px;
     max-width: 794px; margin: 0 auto; padding: 60px 68px;
-    font-family: "Sarabun", "Noto Sans Thai", serif; font-size: 15px; line-height: 1.7; color: #000;
+    font-family: "Sarabun", "IBM Plex Sans Thai", serif; font-size: 15px; line-height: 1.7; color: #000;
   }
   .paper h1 { text-align: center; font-size: 20px; margin: 0 0 2px; }
   .paper .cond { margin: 0 0 4px; text-align: center; }
@@ -76,14 +103,14 @@
   .sig-row button { font-size: .78rem; padding: 6px 10px; border-radius: 9px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-family: inherit; font-weight: 600; color: var(--primary); }
   .sig-row button.del { color: var(--red); }
   /* กล่องวาดลายเซ็น */
-  #sigModal { position: fixed; inset: 0; z-index: 80; background: rgba(23,48,59,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #sigModal { position: fixed; inset: 0; z-index: 80; background: rgba(14,44,58,.55); display: flex; align-items: center; justify-content: center; padding: 16px; }
   #sigModal[hidden] { display: none; }
   .sig-box { background: #fff; border-radius: 16px; padding: 16px; width: 100%; max-width: 700px; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
   #sigCanvas { width: 100%; height: auto; border: 2px dashed var(--border); border-radius: 12px; background: #fff; touch-action: none; display: block; }
   .sig-btns { display: flex; gap: 8px; margin-top: 10px; }
   .sig-btns .btn { margin-top: 0; }
   .v { font-weight: 600; }
-  [contenteditable="true"]:focus { outline: 2px dashed rgba(43,122,158,.4); outline-offset: 2px; }
+  [contenteditable="true"]:focus { outline: 2px dashed rgba(29,103,134,.4); outline-offset: 2px; }
 
   .toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   .toolbar .btn { width: auto; flex: 1; margin-top: 0; }
@@ -97,22 +124,40 @@
   .saved-item button { font-size: .76rem; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-family: inherit; color: var(--red); }
   .edit-note { font-size: .78rem; color: var(--muted); margin: 0 0 10px; text-align: center; }
 
-  /* ล็อกอินแบบเดียวกับแอปหลัก */
-  #gate { position: fixed; inset: 0; background: var(--bg); z-index: 99; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  /* ล็อกอินแบบเดียวกับแอปหลัก — พื้นแผงเข้ม + ฟ้าน้ำแข็ง */
+  #gate {
+    position: fixed; inset: 0; z-index: 99;
+    background: radial-gradient(120% 90% at 50% 0%, var(--panel-2) 0%, #0B222D 72%);
+    display: flex; align-items: center; justify-content: center; padding: 24px; color: #fff;
+  }
   #gate[hidden] { display: none; }
-  .gate-box { width: 100%; max-width: 320px; text-align: center; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 26px 22px; }
-  .gate-box input { width: 100%; text-align: center; font-size: 1.5rem; letter-spacing: 9px; padding: 11px; border: 2px solid var(--border); border-radius: 13px; }
-  .gate-box .err { color: var(--red); font-size: .85rem; min-height: 1.2em; margin-top: 8px; }
+  .gate-box { width: 100%; max-width: 320px; text-align: center; }
+  .gate-box .big-icon {
+    width: 76px; height: 76px; margin: 0 auto 16px; font-size: 34px;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: rgba(143,212,234,.08); border: 1px solid rgba(143,212,234,.35);
+  }
+  .gate-box h2 { margin: 0 0 4px; color: #fff; font-size: 1.4rem; font-weight: 600; }
+  .gate-box .sub { color: rgba(255,255,255,.55); font-size: .88rem; margin: 0 0 18px; }
+  .gate-box input {
+    width: 100%; text-align: center; font-size: 1.6rem; letter-spacing: 10px;
+    padding: 12px 10px; border: 1.5px solid rgba(255,255,255,.2); border-radius: 12px;
+    background: rgba(255,255,255,.07); color: #fff; outline: none;
+    font-family: inherit; font-variant-numeric: tabular-nums;
+  }
+  .gate-box input:focus { border-color: var(--ice); }
+  .gate-box .btn.primary { background: var(--ice); color: #0B222D; font-weight: 700; box-shadow: none; margin-top: 14px; }
+  .gate-box .err { color: var(--red-b); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
 
   /* ปฏิทินเลือกวันที่แบบ พ.ศ. */
-  #dpPop { position: absolute; z-index: 70; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 34px rgba(23,48,59,.22); padding: 10px; width: 276px; }
+  #dpPop { position: absolute; z-index: 70; background: #fff; border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 34px rgba(14,44,58,.22); padding: 10px; width: 276px; }
   #dpPop[hidden] { display: none; }
   .dp-head { display: flex; gap: 4px; align-items: center; margin-bottom: 8px; }
-  .dp-head button { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 1.05rem; color: var(--primary); font-family: inherit; flex: none; }
+  .dp-head button { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; width: 36px; height: 36px; cursor: pointer; font-size: 1.05rem; color: var(--primary); font-family: inherit; flex: none; }
   .dp-head select { flex: 1; min-width: 0; padding: 6px 4px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: .85rem; background: var(--bg); color: var(--text); }
-  .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; }
   .dp-dow { font-size: .72rem; color: var(--muted); padding: 3px 0; }
-  .dp-day { border: 1px solid transparent; background: none; border-radius: 8px; padding: 6px 0; cursor: pointer; font-family: inherit; font-size: .85rem; color: var(--text); }
+  .dp-day { border: 1px solid transparent; background: none; border-radius: 8px; padding: 8px 0; cursor: pointer; font-family: inherit; font-size: .85rem; color: var(--text); font-variant-numeric: tabular-nums; }
   .dp-day:hover { background: var(--primary-soft); }
   .dp-day.today { border-color: var(--primary); }
   .dp-day.sel { background: var(--primary); color: #fff; font-weight: 700; }
@@ -135,20 +180,22 @@
 <body>
 <div id="gate" hidden>
   <div class="gate-box">
-    <div style="font-size:42px">📑</div>
-    <h2 style="color:var(--primary);margin:6px 0 2px">ทำสัญญาเช่าเครื่อง</h2>
-    <p style="color:var(--muted);font-size:.85rem;margin:0 0 14px">บริษัทโอเมก้าอีสาน — ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
-    <input id="gatePin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">
+    <div class="big-icon" aria-hidden="true">📑</div>
+    <h2>ทำสัญญาเช่าเครื่อง</h2>
+    <p class="sub">บริษัทโอเมก้าอีสาน — ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
+    <input id="gatePin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" aria-label="รหัสผ่านเข้าใช้งาน">
     <button type="button" class="btn primary" id="gateBtn">เข้าใช้งาน</button>
-    <div class="err" id="gateErr"></div>
+    <div class="err" id="gateErr" role="alert"></div>
   </div>
 </div>
 
-<div class="wrap">
+<div class="top-panel no-print">
   <header class="top">
     <h1>📑 ทำสัญญาเช่าเครื่อง</h1>
     <span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span>
   </header>
+</div>
+<div class="wrap">
 
   <div class="cols">
     <!-- ==================== ฟอร์มกรอก ==================== -->
@@ -236,7 +283,7 @@
         <button type="button" class="btn secondary" id="printBtn">🖨️ พิมพ์</button>
       </div>
       <div class="toolbar">
-        <button type="button" class="btn primary" id="saveBtn" style="background:var(--green,#2F7D4F)">💾 เก็บสัญญานี้ไว้</button>
+        <button type="button" class="btn primary" id="saveBtn" style="background:var(--green);box-shadow:0 6px 16px rgba(46,125,79,.22)">💾 เก็บสัญญานี้ไว้</button>
         <button type="button" class="btn secondary" id="resetBtn">✨ เริ่มสัญญาใหม่</button>
       </div>
       <p class="hintline" style="margin-top:8px">ข้อมูลที่กรอกจะถูกจำไว้ในเครื่องนี้อัตโนมัติ · กด 💾 เพื่อเก็บขึ้นเว็บ เปิดจากเครื่องไหนก็ได้</p>

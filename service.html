@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -6,80 +6,112 @@
 <title>ใบงานซ่อม · บริษัทโอเมก้าอีสาน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
+  /* ============ โทเคนดีไซน์ — ชุดเดียวกับแอปหลัก "แผงควบคุมเครื่อง + ป้ายตรวจเช็ค" ============ */
   :root {
-    --bg: #F2F8FB;
+    --bg: #EEF3F5;            /* ขาวพอร์ซเลน */
     --card: #ffffff;
-    --text: #17303B;
-    --muted: #6B8290;
-    --border: #DCEAF1;
-    --primary: #2B7A9E;
-    --primary-soft: #E3F2F8;
-    --red: #C0392B;
-    --red-bg: #FBEAE8;
-    --yellow: #B7791F;
-    --yellow-bg: #FBF3E2;
-    --green: #2F7D4F;
-    --green-bg: #E8F5EE;
+    --text: #142833;          /* น้ำเงินหมึก */
+    --muted: #5D7480;
+    --border: #D7E1E6;
+    --panel: #0E2C3A;         /* แผงเข้ม */
+    --panel-2: #123647;
+    --ice: #8FD4EA;           /* ฟ้าน้ำแข็ง — สีเน้นบนพื้นเข้ม */
+    --primary: #1D6786;
+    --primary-soft: #E2EEF3;
+    --red: #B93A2B;
+    --red-bg: #F9E9E6;
+    --red-b: #FF9282;
+    --yellow: #92600C;
+    --yellow-bg: #F9F0DB;
+    --yellow-b: #FFC670;
+    --green: #2E7D4F;
+    --green-bg: #E6F3EC;
+    --green-b: #7BD6A1;
     --radius: 16px;
-    --shadow: 0 1px 3px rgba(23,48,59,.06), 0 6px 20px rgba(43,122,158,.08);
+    --shadow: 0 10px 30px rgba(14,44,58,.16);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    margin: 0; font-family: "Noto Sans Thai", "Segoe UI", Tahoma, sans-serif;
-    background: var(--bg); color: var(--text); line-height: 1.5; min-height: 100vh;
+    margin: 0; font-family: "IBM Plex Sans Thai", "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55; min-height: 100vh;
   }
-  .app { max-width: 520px; margin: 0 auto; padding: 16px 14px 110px; }
+  .app { max-width: 520px; margin: 0 auto; padding: 0 14px 110px; }
+
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .top-panel :focus-visible, #loginPage :focus-visible { outline-color: var(--ice); }
 
   #loginPage {
-    position: fixed; inset: 0; z-index: 999; background: var(--bg);
-    display: flex; align-items: center; justify-content: center; padding: 24px;
+    position: fixed; inset: 0; z-index: 999;
+    background: radial-gradient(120% 90% at 50% 0%, var(--panel-2) 0%, #0B222D 72%);
+    display: flex; align-items: center; justify-content: center; padding: 24px; color: #fff;
   }
   #loginPage[hidden] { display: none; }
   .login-box { width: 100%; max-width: 320px; text-align: center; }
-  .login-box .big-icon { font-size: 46px; margin-bottom: 6px; }
-  .login-box h2 { margin: 0 0 4px; color: var(--primary); }
-  .login-box .sub { color: var(--muted); font-size: .88rem; margin: 0 0 18px; }
+  .login-box .big-icon {
+    width: 76px; height: 76px; margin: 0 auto 16px; font-size: 34px;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: rgba(143,212,234,.08); border: 1px solid rgba(143,212,234,.35);
+  }
+  .login-box h2 { margin: 0 0 4px; color: #fff; font-size: 1.4rem; font-weight: 600; }
+  .login-box .sub { color: rgba(255,255,255,.55); font-size: .88rem; margin: 0 0 18px; }
   .login-box input {
     width: 100%; text-align: center; font-size: 1.6rem; letter-spacing: 10px;
-    padding: 12px 10px; border: 2px solid var(--border); border-radius: 14px;
-    background: var(--card); color: var(--text); outline: none;
+    padding: 12px 10px; border: 1.5px solid rgba(255,255,255,.2); border-radius: 12px;
+    background: rgba(255,255,255,.07); color: #fff; outline: none;
+    font-family: inherit; font-variant-numeric: tabular-nums;
   }
-  .login-box input:focus { border-color: var(--primary); }
-  .login-box .err { color: var(--red); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
+  .login-box input:focus { border-color: var(--ice); }
+  #loginPage .btn.primary { background: var(--ice); color: #0B222D; font-weight: 700; box-shadow: none; margin-top: 14px; }
+  .login-box .err { color: var(--red-b); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
 
-  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; margin-bottom: 12px; flex-wrap: wrap; }
-  header.top h1 { font-size: 1.2rem; margin: 0; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-  .pill-link {
-    font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border);
-    background: var(--card); padding: 6px 12px; border-radius: 999px; font-family: inherit; cursor: pointer;
+  /* ============ แผงหัวเข้มแบบแอปหลัก ============ */
+  .top-panel {
+    margin: 0 -14px 14px; padding: 18px 18px 16px;
+    background: linear-gradient(178deg, #0C2530 0%, var(--panel) 55%, var(--panel-2) 100%);
+    border-radius: 0 0 22px 22px; color: #fff;
   }
+  @media (prefers-reduced-motion: no-preference) {
+    .top-panel { animation: panelIn .45s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes panelIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  header.top h1 { font-size: 1.28rem; margin: 0; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+  .pill-link {
+    font-size: .8rem; color: #fff; text-decoration: none; border: 1px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.1); padding: 7px 13px; border-radius: 999px; font-family: inherit; cursor: pointer;
+  }
+  .pill-link:active { background: rgba(255,255,255,.24); }
 
   .cloud-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    font-size: .78rem; color: var(--muted); margin: 0 0 10px; padding: 0 4px;
+    font-size: .78rem; color: rgba(255,255,255,.55); margin: 0 0 12px; padding: 0 2px;
   }
-  .cloud-bar .st.ok { color: var(--green); }
-  .cloud-bar .st.err { color: var(--red); }
+  .cloud-bar .st.ok { color: var(--green-b); }
+  .cloud-bar .st.err { color: var(--red-b); }
   .cloud-bar button {
-    flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--primary);
-    border-radius: 999px; padding: 5px 12px; font-family: inherit; font-size: .76rem; font-weight: 600; cursor: pointer;
+    flex-shrink: 0; border: none; background: rgba(255,255,255,.12); color: #fff;
+    border-radius: 999px; padding: 6px 12px; font-family: inherit; font-size: .76rem; font-weight: 600; cursor: pointer;
   }
+  .cloud-bar button:active { background: rgba(255,255,255,.26); }
 
-  .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
   .tab-btn {
-    border: 1px solid var(--border); background: var(--card); color: var(--muted); border-radius: 12px;
-    padding: 9px 4px; font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); color: rgba(255,255,255,.7);
+    border-radius: 12px; padding: 10px 4px; font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+    transition: transform .1s, border-color .15s, background-color .15s;
   }
-  .tab-btn.active { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+  .tab-btn:active { transform: scale(.97); }
+  .tab-btn.active { background: rgba(143,212,234,.14); border-color: var(--ice); color: var(--ice); }
 
   .search-wrap { position: relative; margin-bottom: 10px; }
   .search-wrap input {
-    width: 100%; padding: 11px 14px 11px 40px; border: 1px solid var(--border); border-radius: 999px;
-    font-family: inherit; font-size: .95rem; background: var(--card); color: var(--text); box-shadow: var(--shadow);
+    width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border); border-radius: 12px;
+    font-family: inherit; font-size: .95rem; background: var(--card); color: var(--text);
   }
-  .search-wrap input:focus { outline: none; border-color: var(--primary); }
+  .search-wrap input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,103,134,.12); }
   .search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
   .search-wrap.big input { padding: 14px 16px 14px 44px; font-size: 1.02rem; }
 
@@ -91,9 +123,10 @@
   .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 
   .job-card {
-    background: var(--card); border-radius: 14px; padding: 11px 13px; margin-bottom: 8px;
-    box-shadow: var(--shadow); border-left: 5px solid var(--primary); cursor: pointer;
+    background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--primary);
+    border-radius: 12px; padding: 11px 13px; margin-bottom: 8px; cursor: pointer; transition: transform .1s;
   }
+  .job-card:active { transform: scale(.985); }
   .job-card.s-กำลังซ่อม { border-left-color: var(--yellow); }
   .job-card.s-รออะไหล่ { border-left-color: var(--red); }
   .job-card.s-เสร็จแล้ว { border-left-color: var(--green); }
@@ -112,9 +145,10 @@
   .badge.kind { background: var(--primary-soft); color: var(--primary); }
 
   .plain-card {
-    background: var(--card); border-radius: 14px; padding: 11px 13px; margin-bottom: 8px;
-    box-shadow: var(--shadow); cursor: pointer;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 11px 13px; margin-bottom: 8px; cursor: pointer; transition: transform .1s;
   }
+  .plain-card:active { transform: scale(.985); }
   .plain-card .nm { font-weight: 700; font-size: .93rem; }
   .plain-card .nt { font-size: .78rem; color: var(--muted); }
   .plain-card .r1 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
@@ -124,22 +158,27 @@
 
   .fab-row {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-    background: linear-gradient(180deg, rgba(242,248,251,0) 0%, var(--bg) 40%);
+    background: linear-gradient(180deg, rgba(238,243,245,0) 0%, var(--bg) 40%);
     padding: 18px 14px 16px;
   }
   .fab-row .inner { max-width: 520px; margin: 0 auto; display: flex; gap: 8px; }
   .btn {
-    flex: 1; border: none; border-radius: 14px; padding: 13px 10px; font-family: inherit;
-    font-size: .95rem; font-weight: 700; cursor: pointer; box-shadow: var(--shadow);
+    flex: 1; border: none; border-radius: 12px; padding: 13px 10px; font-family: inherit;
+    font-size: .95rem; font-weight: 600; cursor: pointer;
   }
-  .btn.primary { background: var(--primary); color: #fff; }
-  .btn.secondary { background: var(--card); color: var(--primary); border: 1px solid var(--border); }
-  .btn.danger { background: var(--red-bg); color: var(--red); }
+  .btn.primary { background: var(--green); color: #fff; box-shadow: 0 6px 16px rgba(46,125,79,.22); }
+  #loginPage .btn.primary { border-radius: 12px; }
+  .fab-row .btn.primary {
+    background: var(--panel); color: #fff; border: 1px solid rgba(143,212,234,.35); border-radius: 999px;
+    font-size: 1rem; padding: 15px 10px; box-shadow: 0 10px 24px rgba(14,44,58,.35);
+  }
+  .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: var(--card); color: var(--red); border: 1px solid var(--red-bg); }
   .btn:active { transform: scale(.98); }
   .btn:disabled { opacity: .55; }
 
   .modal-bg {
-    position: fixed; inset: 0; background: rgba(23,48,59,.45); z-index: 100;
+    position: fixed; inset: 0; background: rgba(14,44,58,.55); z-index: 100;
     display: flex; align-items: flex-end; justify-content: center;
   }
   .modal-bg[hidden] { display: none; }
@@ -147,7 +186,7 @@
     background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 520px;
     max-height: 88vh; overflow-y: auto; padding: 18px 16px 22px;
   }
-  .modal h3 { margin: 0 0 2px; font-size: 1.05rem; color: var(--primary); }
+  .modal h3 { margin: 0 0 2px; font-size: 1.1rem; font-weight: 600; color: var(--text); }
   .modal .sub { color: var(--muted); font-size: .82rem; margin-bottom: 12px; }
   .fld { margin-bottom: 11px; }
   .fld label { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; }
@@ -225,11 +264,12 @@
   .ck-row .tag { font-size: .7rem; font-weight: 700; color: var(--muted); display: block; }
 
   .toast {
-    position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 200;
-    background: var(--text); color: #fff; border-radius: 999px; padding: 9px 18px;
-    font-size: .85rem; opacity: 0; transition: opacity .25s; pointer-events: none; max-width: 90vw;
+    position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(16px); z-index: 200;
+    background: var(--panel); color: #fff; border-radius: 999px; padding: 11px 20px;
+    font-size: .88rem; font-weight: 600; box-shadow: 0 8px 24px rgba(11,34,45,.35);
+    opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; max-width: 90vw;
   }
-  .toast.show { opacity: .95; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -241,28 +281,30 @@
     <p class="sub">บริษัทโอเมก้าอีสาน · ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
     <input id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
     <button type="button" class="btn primary" id="pinBtn" style="width:100%">เข้าใช้งาน</button>
-    <div class="err" id="pinErr"></div>
+    <div class="err" id="pinErr" role="alert"></div>
   </div>
 </div>
 
 <div class="app" id="appMain" hidden>
-  <header class="top">
-    <h1>🔧 ใบงานซ่อม</h1>
-    <span style="display:flex;gap:6px">
-      <a class="pill-link" href="index.html">← แอป PM</a>
-      <button type="button" class="pill-link" id="logoutBtn" title="ออกจากระบบ">🔒</button>
-    </span>
-  </header>
+  <div class="top-panel">
+    <header class="top">
+      <h1>🔧 ใบงานซ่อม</h1>
+      <span style="display:flex;gap:6px">
+        <a class="pill-link" href="index.html">← แอป PM</a>
+        <button type="button" class="pill-link" id="logoutBtn" title="ออกจากระบบ" aria-label="ออกจากระบบ">🔒</button>
+      </span>
+    </header>
 
-  <div class="cloud-bar">
-    <span class="st" id="cloudSt">⏳ กำลังโหลด...</span>
-    <button type="button" id="refreshBtn">🔄 รีเฟรช</button>
-  </div>
+    <div class="cloud-bar">
+      <span class="st" id="cloudSt">⏳ กำลังโหลด...</span>
+      <button type="button" id="refreshBtn">🔄 รีเฟรช</button>
+    </div>
 
-  <div class="tabs">
-    <button type="button" class="tab-btn active" id="tabJobs">📋 ใบงาน</button>
-    <button type="button" class="tab-btn" id="tabCust">🏪 ลูกค้า/เครื่อง</button>
-    <button type="button" class="tab-btn" id="tabKb">📚 คลังอาการ</button>
+    <div class="tabs">
+      <button type="button" class="tab-btn active" id="tabJobs">📋 ใบงาน</button>
+      <button type="button" class="tab-btn" id="tabCust">🏪 ลูกค้า/เครื่อง</button>
+      <button type="button" class="tab-btn" id="tabKb">📚 คลังอาการ</button>
+    </div>
   </div>
 
   <section id="secJobs">
