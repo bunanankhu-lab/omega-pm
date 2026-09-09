@@ -56,6 +56,20 @@
     color: #fff; font-size: .95rem; text-align: center; padding: 30px; background: rgba(14,44,58,.92);
   }
   #err[hidden] { display: none; }
+
+  /* เดสก์ท็อป: รายชื่อร้านเป็นแผงลอยมุมขวาแทนแผ่นล่าง + จำกัดความกว้างแถบเลือกจังหวัด */
+  @media (min-width: 960px) {
+    .bar { max-width: 480px; }
+    #sheet {
+      left: auto; right: 16px; bottom: 16px; width: 420px;
+      max-height: min(560px, calc(100% - 120px)); border-radius: 20px;
+      box-shadow: 0 18px 48px rgba(11,34,45,.4);
+    }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .row:hover { background: var(--primary-soft); }
+    .bar button:hover, .bar select:hover { background: rgba(255,255,255,.2); }
+  }
 </style>
 </head>
 <body>

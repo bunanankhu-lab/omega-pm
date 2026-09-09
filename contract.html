@@ -164,6 +164,14 @@
   .dp-foot { display: flex; justify-content: space-between; margin-top: 8px; }
   .dp-foot button { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; padding: 5px 12px; cursor: pointer; font-family: inherit; font-size: .8rem; color: var(--primary); font-weight: 600; }
 
+  /* hover สำหรับเมาส์ (ไม่แตะมือถือ) */
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover { filter: brightness(1.06); }
+    .copy-btn:hover, .sig-row button:hover, .dp-head button:hover, .dp-foot button:hover { background: var(--primary-soft); }
+    .saved-item:hover { border-color: var(--primary); }
+    .saved-item button:hover { background: var(--red-bg); }
+  }
+
   @media print {
     body { background: #fff; }
     .no-print, header.top, #gate { display: none !important; }

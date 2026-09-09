@@ -482,6 +482,56 @@
   .stk-preview { background: var(--primary-soft); border-radius: 10px; padding: 10px 14px; font-size: .95rem; font-weight: 600; margin-bottom: 12px; }
   .stk-preview.bad { background: var(--red-bg); color: var(--red); }
 
+  /* ============ เดสก์ท็อป (≥960px) — ใช้งานในคอมเป็นหลัก ============ */
+  @media (min-width: 960px) {
+    .app { max-width: 1100px; padding: 0 28px 120px; }
+    .top-panel { margin: 0 -28px 18px; padding: 22px 30px 20px; border-radius: 0 0 26px 26px; }
+    header.top h1 { font-size: 1.45rem; }
+    .sum-box { padding: 14px 8px 12px; }
+    .sum-box .n { font-size: 2rem; }
+    .sum-box .l { font-size: .78rem; }
+
+    /* เมนูรวมเรียง 2 คอลัมน์ */
+    .menu-group { display: grid; grid-template-columns: 1fr 1fr; }
+    .menu-group .stock-bar { border-bottom: 1px solid var(--border); }
+    .menu-group .stock-bar:nth-child(odd) { border-right: 1px solid var(--border); }
+    .menu-group .stock-bar:nth-last-child(-n+2) { border-bottom: none; }
+
+    /* รายชื่อลูกค้าเป็นกริดหลายคอลัมน์ */
+    #custList { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
+    #custList .cust-card { margin-bottom: 0; }
+    #custList .empty { grid-column: 1 / -1; }
+
+    /* หน้ารายละเอียดอ่านเป็นคอลัมน์กลางจอ */
+    #pageDetail, #pageQrView { max-width: 660px; margin: 0 auto; }
+    #pageStock { max-width: 760px; margin: 0 auto; }
+    #pageMap { max-width: 900px; margin: 0 auto; }
+
+    /* ชีตเด้งกลางจอแทนแผ่นล่าง */
+    .sheet {
+      left: 50%; right: auto; bottom: auto; top: 50%; width: min(600px, calc(100vw - 48px));
+      border-radius: 20px; max-height: 86vh; padding: 22px 24px 26px;
+      transform: translate(-50%, -50%) translateY(14px); opacity: 0; pointer-events: none; visibility: hidden;
+      transition: transform .22s cubic-bezier(.22,1,.36,1), opacity .18s, visibility .18s;
+      box-shadow: 0 24px 64px rgba(11,34,45,.35);
+    }
+    .sheet.show { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; visibility: visible; }
+    .sheet .grip { display: none; }
+  }
+
+  /* hover สำหรับเมาส์ (ไม่แตะมือถือ) */
+  @media (hover: hover) and (pointer: fine) {
+    .cust-card { transition: transform .1s, box-shadow .15s; }
+    .cust-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14,44,58,.1); }
+    .stock-bar:hover { background: var(--bg); }
+    .menu-group .stock-bar:hover { background: var(--bg); }
+    .sum-box:hover { background: rgba(255,255,255,.12); }
+    .btn:hover, .fab:hover, .call-btn:hover { filter: brightness(1.06); }
+    .back-btn:hover, .qr-btn:hover, .cycle-quick:not(.active):hover { background: var(--primary-soft); }
+    .cloud-bar button:hover { background: rgba(255,255,255,.22); }
+    .mp-shop:hover { background: var(--primary-soft); }
+  }
+
   [hidden] { display: none !important; }
 </style>
 </head>

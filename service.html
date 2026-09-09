@@ -270,6 +270,34 @@
     opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; max-width: 90vw;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ============ เดสก์ท็อป (≥960px) — ใช้งานในคอมเป็นหลัก ============ */
+  @media (min-width: 960px) {
+    .app { max-width: 1100px; padding: 0 28px 110px; }
+    .top-panel { margin: 0 -28px 14px; padding: 22px 30px 18px; border-radius: 0 0 26px 26px; }
+    header.top h1 { font-size: 1.45rem; }
+    .tab-btn { padding: 12px 4px; font-size: .92rem; }
+
+    #jobsList, #custList, #kbList { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-items: start; }
+    #jobsList .job-card, #custList .plain-card, #kbList .plain-card { margin-bottom: 0; }
+    #jobsList .empty, #custList .empty, #kbList .empty { grid-column: 1 / -1; }
+
+    .modal-bg { align-items: center; padding: 24px; }
+    .modal { border-radius: 20px; width: min(600px, 100%); max-height: 86vh; padding: 22px 24px 26px; box-shadow: 0 24px 64px rgba(11,34,45,.35); }
+    .fab-row .inner { max-width: 360px; }
+  }
+
+  /* hover สำหรับเมาส์ (ไม่แตะมือถือ) */
+  @media (hover: hover) and (pointer: fine) {
+    .job-card, .plain-card { transition: transform .1s, box-shadow .15s; }
+    .job-card:hover, .plain-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14,44,58,.1); }
+    .tab-btn:not(.active):hover { background: rgba(255,255,255,.12); color: #fff; }
+    .chip:not(.active):hover, .seg .sg:not(.active):hover { background: var(--primary-soft); color: var(--primary); }
+    .btn:hover { filter: brightness(1.06); }
+    .pill-link:hover, .cloud-bar button:hover { background: rgba(255,255,255,.22); }
+    .pick-row:hover, .picker-btn:hover { background: var(--primary-soft); }
+    .kb-help .mc:hover { background: var(--primary-soft); }
+  }
 </style>
 </head>
 <body>
