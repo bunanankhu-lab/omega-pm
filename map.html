@@ -201,6 +201,7 @@
       markers.push({ marker: marker, shop: s });
       group.push(marker);
     });
+    spreadOverlaps();
     $("sub").textContent = list.length + " ร้าน · " + list.reduce(function (n, s) { return n + s.machines.length; }, 0) + " เครื่อง";
     if (group.length) map.fitBounds(L.featureGroup(group).getBounds().pad(0.12));
 
@@ -214,6 +215,25 @@
           '<span style="color:#5D7480;font-size:.78rem">' + esc(s.province) + (s.district ? " อ." + esc(s.district) : "") + " · " + esc(s.machines.join(" · ")) + "</span></span></div>";
       }).join("");
   }
+
+  // ร้านพิกัดเดียวกันหมุดจะซ้อนทับจนเห็นตัวเดียว — กางออกเป็นวงรอบจุดจริง (ระยะคงที่เป็นพิกเซล คำนวณใหม่ทุกครั้งที่ซูม)
+  function spreadOverlaps() {
+    var groups = {};
+    markers.forEach(function (m) {
+      var k = m.shop.lat + "," + m.shop.lng;
+      (groups[k] = groups[k] || []).push(m);
+    });
+    Object.keys(groups).forEach(function (k) {
+      var g = groups[k];
+      if (g.length === 1) { g[0].marker.setLatLng([g[0].shop.lat, g[0].shop.lng]); return; }
+      var c = map.latLngToLayerPoint([g[0].shop.lat, g[0].shop.lng]);
+      g.forEach(function (m, i) {
+        var a = (2 * Math.PI * i) / g.length - Math.PI / 2;
+        m.marker.setLatLng(map.layerPointToLatLng(L.point(c.x + 20 * Math.cos(a), c.y + 20 * Math.sin(a))));
+      });
+    });
+  }
+  map.on("zoomend", spreadOverlaps);
 
   $("prov").addEventListener("change", function () { prov = this.value; render(); });
   $("listBtn").addEventListener("click", function () { $("sheet").hidden = !$("sheet").hidden; });
