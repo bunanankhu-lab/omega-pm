@@ -180,7 +180,7 @@
       markers.push({ marker: marker, shop: s });
       group.push(marker);
     });
-    $("sub").textContent = list.length + " ร้าน · " + list.reduce(function (n, s) { return n + s.machines.length; }, 0) + " เครื่อง (ไม่รวมรุ่น " + EXCLUDE.join("/") + ")";
+    $("sub").textContent = list.length + " ร้าน · " + list.reduce(function (n, s) { return n + s.machines.length; }, 0) + " เครื่อง";
     if (group.length) map.fitBounds(L.featureGroup(group).getBounds().pad(0.12));
 
     $("sheet").innerHTML =
