@@ -34,7 +34,8 @@ async function districtFromCoords(lat, lng) {
     );
     if (!r.ok) return "";
     const a = (await r.json()).address || {};
-    return (a.county || a.state_district || "").replace(/^(กิ่งอำเภอ|อำเภอ|เขต)\s*/, "").trim();
+    // บางพื้นที่ Nominatim ตอบชื่ออำเภอในช่อง district แทน county
+    return (a.county || a.district || a.state_district || "").replace(/^(กิ่งอำเภอ|อำเภอ|เขต)\s*/, "").trim();
   } catch (e) {
     return "";
   }
