@@ -25,6 +25,21 @@ function coordsFromUrl(u) {
   return null;
 }
 
+// หาอำเภอจากพิกัดด้วย Nominatim — ใช้เติมช่อง district ให้ตัวกรองอำเภอในแผนที่
+async function districtFromCoords(lat, lng) {
+  try {
+    const r = await fetch(
+      "https://nominatim.openstreetmap.org/reverse?lat=" + lat + "&lon=" + lng + "&format=jsonv2&accept-language=th&zoom=10",
+      { headers: { "User-Agent": "omega-pm-geo-sync/1.0 (omegae.sarn999@gmail.com)" } }
+    );
+    if (!r.ok) return "";
+    const a = (await r.json()).address || {};
+    return (a.county || a.state_district || "").replace(/^(กิ่งอำเภอ|อำเภอ|เขต)\s*/, "").trim();
+  } catch (e) {
+    return "";
+  }
+}
+
 async function resolveLink(url) {
   let cur = url;
   for (let hop = 0; hop < 6; hop++) {
@@ -73,9 +88,12 @@ module.exports = async function (req, res) {
       failed.push(s.name);
       continue;
     }
+    const patch = { lat: c[0], lng: c[1], geo_src: "gmap" };
+    const dist = await districtFromCoords(c[0], c[1]);
+    if (dist) patch.district = dist;
     const up = await fetch(SUPABASE_URL + "/rest/v1/pm_stores?id=eq." + encodeURIComponent(s.id), {
       method: "PATCH", headers: sbHeaders(true),
-      body: JSON.stringify({ lat: c[0], lng: c[1], geo_src: "gmap" }),
+      body: JSON.stringify(patch),
     });
     if (up.ok) { updated++; done.push(s.name); } else failed.push(s.name);
   }
