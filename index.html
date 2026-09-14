@@ -33,6 +33,8 @@
     --green-b: #a8acba;
     --radius: 20px;
     --shadow: 0 10px 30px rgba(46,41,41,.14);
+    --shadow-sm: 0 1px 2px rgba(46,41,41,.12);
+    --shadow-md: 0 3px 10px rgba(46,41,41,.14);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
@@ -42,6 +44,12 @@
   }
   h1, h2, h3, .btn, .fab, .sum-box .n, .cust-card .avi, .count-badge, .back-btn {
     font-family: "Kanit", "IBM Plex Sans Thai", sans-serif; letter-spacing: 0;
+  }
+  /* ไอคอน Lucide (stroke 2.75) — แทน emoji ตาม OMEGA-STYLE.md */
+  .ic {
+    width: 1.05em; height: 1.05em; stroke: currentColor; fill: none;
+    stroke-width: 2.75; stroke-linecap: round; stroke-linejoin: round;
+    vertical-align: -0.14em; display: inline-block; flex: none;
   }
   .app { max-width: 520px; margin: 0 auto; padding: 0 14px 110px; }
   #pageDetail, #pageStock, #pageMap, #pageQrView { padding-top: 16px; }
@@ -95,16 +103,29 @@
   .brand .b-name { font-family: "Kanit", sans-serif; font-weight: 600; font-size: 1.05rem; }
   .brand .b-sub { font-size: .72rem; color: var(--muted); }
   header.top .home-link { font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); background: var(--card); padding: 6px 12px; border-radius: 999px; }
+  .top-nav { display: none; gap: 18px; margin-left: auto; }
+  .top-nav button {
+    border: none; background: none; padding: 4px 2px; font-family: inherit; font-size: .9rem;
+    color: var(--text); cursor: pointer;
+  }
+  .top-nav button:hover { color: var(--primary); }
+  .hdr-add {
+    display: none; border: none; border-radius: 999px; background: var(--primary); color: #fff;
+    font-family: "Kanit", sans-serif; font-weight: 500; font-size: .9rem; padding: 10px 18px; cursor: pointer;
+  }
+  .hdr-add:hover { background: #b91f26; }
+  .hdr-add:active { background: #8f1218; }
   .motto {
     display: inline-block; font-size: .8rem; font-weight: 500; color: var(--muted);
     background: none; border: none; padding: 0; line-height: 1.5;
   }
-  .top-panel .motto {
-    color: var(--primary); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 600;
-  }
   .motto-line { text-align: center; margin: 0 0 12px; }
 
-  .hero { margin: 6px 0 14px; }
+  .hero { margin: 10px 0 16px; }
+  .hero .kicker {
+    font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
+    color: var(--primary); margin-bottom: 6px;
+  }
   .hero h1 { margin: 0 0 2px; font-size: clamp(1.7rem, 6vw, 2.4rem); font-weight: 600; line-height: 1.15; }
   .hero .hero-sub { margin: 0; font-size: .86rem; color: var(--muted); }
 
@@ -144,8 +165,8 @@
   /* แจ้งเตือนสติ๊กเกอร์ QR ครบ 1 ปี (ปริ้นจากกระดาษ สีซีด/ลอกได้) */
   .sticker-bar {
     display: block; width: 100%; text-align: left; cursor: pointer;
-    background: var(--yellow-bg); border: 1px solid transparent; border-left: 4px solid var(--yellow);
-    color: var(--yellow); border-radius: 10px; padding: 11px 14px; font-family: inherit; font-size: .86rem;
+    background: var(--yellow-bg); border: 2px solid transparent;
+    color: var(--yellow); border-radius: 18px; padding: 11px 16px; font-family: inherit; font-size: .86rem;
     font-weight: 600; margin-bottom: 12px; line-height: 1.5;
   }
   .sticker-bar.active { border-color: var(--yellow); }
@@ -153,16 +174,16 @@
 
   /* กล่องเมนูรวม */
   .menu-group {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    margin-bottom: 12px; overflow: hidden;
+    background: var(--surface); border: none; border-radius: 24px;
+    margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow-sm);
   }
   .menu-group .stock-bar { margin: 0; border: none; border-radius: 0; border-bottom: 1px solid var(--border); }
   .menu-group .stock-bar:last-child { border-bottom: none; }
 
   .search-wrap { position: relative; margin-bottom: 12px; }
   .search-wrap input {
-    width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border); border-radius: 12px;
-    font-family: inherit; font-size: .95rem; background: var(--card); color: var(--text);
+    width: 100%; min-height: 44px; padding: 11px 16px 11px 42px; border: 1px solid var(--border); border-radius: 999px;
+    font-family: inherit; font-size: .95rem; background: var(--surface); color: var(--text);
   }
   .search-wrap input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(210,38,43,.12); }
   .search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
@@ -170,9 +191,10 @@
   /* การ์ดลูกค้า — แถวมนแบบม็อค: วงกลมอักษรย่อบอกสถานะ + ป้ายวันมุมขวา */
   .cust-card {
     display: flex; align-items: center; gap: 12px; background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 24px; padding: 12px 14px 12px 12px; margin-bottom: 8px; cursor: pointer; transition: transform .1s;
+    border: none; box-shadow: var(--shadow-sm);
+    border-radius: 26px; padding: 12px 14px 12px 12px; margin-bottom: 8px; cursor: pointer; transition: transform .1s;
   }
+  .cust-card:active { background: var(--surface); }
   .cust-card:active { transform: scale(.985); }
   .cust-card .avi {
     width: 44px; height: 44px; border-radius: 50%; flex: none; align-self: flex-start;
@@ -184,7 +206,10 @@
   .cust-card.green .avi { background: var(--green-bg); color: #23252c; }
   .cust-card .info { flex: 1; min-width: 0; }
   .cust-card .name { font-weight: 600; font-size: .98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cust-card .phone { font-size: .84rem; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; }
+  .cust-card .phone {
+    font-size: .84rem; color: #8f1218; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;
+    max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .cust-card .prov { font-size: .78rem; color: var(--muted); margin-top: 1px; }
   .cust-card .phone:active { opacity: .6; }
   .cust-card .days { flex-shrink: 0; text-align: center; padding: 5px 10px; border-radius: 14px; min-width: 62px; }
@@ -214,16 +239,16 @@
 
   /* หน้ารายละเอียด */
   .back-btn {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 8px 16px; font-family: inherit; font-size: .9rem; color: var(--text);
+    background: transparent; border: 1px solid var(--border); border-radius: 999px;
+    padding: 8px 18px; font-size: .9rem; color: var(--text);
     cursor: pointer; margin-bottom: 14px;
   }
-  .detail-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; }
+  .detail-card { background: var(--surface); border: none; border-radius: 28px; padding: 20px 22px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
   .detail-card h2 { margin: 0 0 2px; font-size: 1.25rem; font-weight: 600; }
   .detail-card .sub { color: var(--muted); font-size: .88rem; }
   .count-badge {
-    display: inline-block; margin-top: 10px; padding: 6px 14px; border-radius: 8px;
-    font-weight: 700; font-size: .92rem; font-variant-numeric: tabular-nums;
+    display: inline-block; margin-top: 10px; padding: 6px 14px; border-radius: 999px;
+    font-weight: 600; font-size: .92rem; font-variant-numeric: tabular-nums;
   }
   .count-badge.red { background: var(--red-bg); color: var(--red); }
   .count-badge.yellow { background: var(--yellow-bg); color: var(--yellow); }
@@ -252,7 +277,7 @@
   table.info td.k { color: var(--muted); width: 42%; padding-right: 10px; font-weight: 400; }
   #dSerial, #qvSerial { font-family: "IBM Plex Mono", Consolas, monospace; font-size: .85rem; letter-spacing: .02em; }
 
-  .note-box { background: var(--primary-soft); border-left: 3px solid var(--primary); border-radius: 10px; padding: 12px 14px; font-size: .9rem; margin-top: 4px; white-space: pre-wrap; }
+  .note-box { background: var(--primary-soft); border: none; border-radius: 16px; padding: 12px 16px; font-size: .9rem; margin-top: 4px; white-space: pre-wrap; }
 
   .hist-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
   .hist-item:last-child { border-bottom: none; }
@@ -269,14 +294,15 @@
 
   .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
   .btn {
-    border: none; border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 600;
-    font-family: inherit; cursor: pointer; width: 100%;
+    border: none; border-radius: 999px; padding: 13px 18px; font-size: 1rem; font-weight: 500;
+    cursor: pointer; width: 100%; min-height: 44px;
   }
   .btn:active { opacity: .85; }
   .btn:disabled { opacity: .45; cursor: default; }
-  .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(210,38,43,.22); }
-  .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-  .btn.danger { background: var(--card); color: var(--red); border: 1px solid var(--red-bg); }
+  .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(210,38,43,.2); }
+  .btn.primary:hover { background: #b91f26; }
+  .btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: transparent; color: var(--red); border: 1px solid var(--red-bg); }
 
   /* bottom sheet */
   .sheet-overlay {
@@ -286,7 +312,7 @@
   .sheet-overlay.show { opacity: 1; pointer-events: auto; }
   .sheet {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 31;
-    background: var(--card); border-radius: 20px 20px 0 0; padding: 18px 18px 26px;
+    background: var(--card); border-radius: 28px 28px 0 0; padding: 18px 18px 26px;
     max-width: 520px; margin: 0 auto; max-height: 88vh; overflow-y: auto;
     transform: translateY(105%); transition: transform .25s cubic-bezier(.22,1,.36,1);
     box-shadow: 0 -12px 36px rgba(36,31,31,.25);
@@ -296,9 +322,13 @@
   .sheet h3 { margin: 0 0 14px; font-size: 1.08rem; font-weight: 600; }
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 5px; }
-  .field input, .field select, .field textarea {
-    width: 100%; padding: 12px 13px; border: 1px solid var(--border); border-radius: 10px;
-    font-family: inherit; font-size: .95rem; background: var(--bg); color: var(--text);
+  .field input, .field select {
+    width: 100%; min-height: 44px; padding: 10px 16px; border: 1px solid var(--border); border-radius: 999px;
+    font-family: inherit; font-size: .95rem; background: var(--surface); color: var(--text);
+  }
+  .field textarea {
+    width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 16px;
+    font-family: inherit; font-size: .95rem; background: var(--surface); color: var(--text);
   }
   .field input:focus, .field select:focus, .field textarea:focus {
     outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(210,38,43,.12);
@@ -308,11 +338,11 @@
   .cycle-row { display: flex; gap: 8px; align-items: center; }
   .cycle-row input { flex: 1; }
   .cycle-quick {
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
-    border-radius: 10px; padding: 11px 14px; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
+    border: 1px solid var(--border); background: transparent; color: var(--text);
+    border-radius: 999px; padding: 11px 16px; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
     white-space: nowrap; font-variant-numeric: tabular-nums;
   }
-  .cycle-quick.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .cycle-quick.active { background: var(--text); border-color: var(--text); color: var(--bg); }
   .err { color: var(--red); font-size: .82rem; min-height: 18px; margin-top: 4px; }
 
   #toast {
@@ -326,16 +356,16 @@
 
   /* ปุ่ม QR บนการ์ดลูกค้า */
   .qr-btn {
-    flex-shrink: 0; border: 1px solid var(--border); background: var(--bg); color: var(--primary);
-    border-radius: 9px; padding: 9px 11px; font-family: inherit; font-size: .78rem; font-weight: 700;
+    flex-shrink: 0; border: 1px solid var(--border); background: transparent; color: #8f1218;
+    border-radius: 999px; padding: 9px 13px; font-family: inherit; font-size: .78rem; font-weight: 700;
     cursor: pointer; line-height: 1;
   }
   .qr-btn:active { background: var(--primary-soft); }
 
   /* sheet แสดง QR */
-  .qr-status { border-radius: 10px; padding: 10px 14px; font-size: .86rem; margin-bottom: 10px; }
-  .qr-status.ok { background: var(--green-bg); color: var(--green); border-left: 3px solid var(--green); }
-  .qr-status.warn { background: var(--yellow-bg); color: var(--yellow); border-left: 3px solid var(--yellow); }
+  .qr-status { border-radius: 16px; padding: 10px 16px; font-size: .86rem; margin-bottom: 10px; }
+  .qr-status.ok { background: var(--green-bg); color: #23252c; }
+  .qr-status.warn { background: var(--yellow-bg); color: var(--yellow); }
   #qrHolder { text-align: center; padding: 8px 0 2px; }
   #qrHolder img {
     width: 100%; max-width: 260px;
@@ -378,12 +408,12 @@
   .stock-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
     text-align: left; cursor: pointer;
-    background: var(--card); border: 1px solid var(--border); color: var(--text);
-    border-radius: 12px; padding: 13px 14px; font-family: inherit; font-size: .92rem;
+    background: var(--surface); border: none; color: var(--text);
+    border-radius: 18px; padding: 14px 18px; font-family: inherit; font-size: .92rem;
     font-weight: 600; margin-bottom: 12px;
   }
   .stock-bar:active { background: var(--primary-soft); }
-  .stock-bar .arr { color: var(--primary); font-size: .82rem; flex-shrink: 0; }
+  .stock-bar .arr { color: #8f1218; font-size: .82rem; flex-shrink: 0; }
 
   /* หน้าแผนที่ภาคอีสาน */
   .map-card { position: relative; background: linear-gradient(180deg, #ffffff 0%, #f5ebe8 100%); overflow: hidden; }
@@ -497,7 +527,7 @@
     border: 1px solid var(--border); background: var(--bg); color: var(--text);
     border-radius: 999px; padding: 9px 16px; font-family: inherit; font-size: .9rem; font-weight: 600; cursor: pointer;
   }
-  .reason-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .reason-chip.active { background: var(--text); border-color: var(--text); color: var(--bg); }
   .stk-preview { background: var(--primary-soft); border-radius: 10px; padding: 10px 14px; font-size: .95rem; font-weight: 600; margin-bottom: 12px; }
   .stk-preview.bad { background: var(--red-bg); color: var(--red); }
 
@@ -507,6 +537,10 @@
     .top-panel { margin: 0 -28px 18px; padding: 22px 30px 20px; border-radius: 0 0 26px 26px; }
     .brand img { height: 46px; width: 46px; }
     .hero h1 { font-size: 2.6rem; }
+    .top-nav { display: flex; }
+    .hdr-add { display: inline-flex; align-items: center; }
+    /* เดสก์ท็อปมีปุ่ม ＋ เพิ่มลูกค้า ในหัวเว็บแล้ว — ซ่อนปุ่มลอยกันบังการ์ด */
+    .fab { display: none; }
     .sum-box { padding: 14px 8px 12px; }
     .sum-box .n { font-size: 2rem; }
     .sum-box .l { font-size: .78rem; }
@@ -530,7 +564,7 @@
     /* ชีตเด้งกลางจอแทนแผ่นล่าง */
     .sheet {
       left: 50%; right: auto; bottom: auto; top: 50%; width: min(600px, calc(100vw - 48px));
-      border-radius: 20px; max-height: 86vh; padding: 22px 24px 26px;
+      border-radius: 32px; max-height: 86vh; padding: 22px 24px 26px;
       transform: translate(-50%, -50%) translateY(14px); opacity: 0; pointer-events: none; visibility: hidden;
       transition: transform .22s cubic-bezier(.22,1,.36,1), opacity .18s, visibility .18s;
       box-shadow: 0 24px 64px rgba(36,31,31,.35);
@@ -556,12 +590,29 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="i-hammer" viewBox="0 0 24 24"><path d="m15 12-8.37 8.37a1 1 0 1 1-3-3L12 9"/><path d="m18 15 4-4"/><path d="m21.5 11.5-1.91-1.91A2 2 0 0 1 19 8.17V7l-2.26-2.26a6 6 0 0 0-4.2-1.76L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.17a2 2 0 0 1 1.42.59L18.5 14.5"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M14.1 5.55a2 2 0 0 0 1.8 0l3.66-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.56 2.27a2 2 0 0 1-1.78 0l-4.22-2.1a2 2 0 0 0-1.78 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.56-2.27a2 2 0 0 1 1.78 0z"/><path d="M15 5.76v15"/><path d="M9 3.24v15"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
+  <symbol id="i-snow" viewBox="0 0 24 24"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></symbol>
+</svg>
 <div id="loginPage" hidden>
   <div class="login-box">
     <div class="big-icon"><img src="logo.png" alt="โอเมก้าอีสาน"></div>
     <h2>เตือนรอบ PM</h2>
     <p class="sub">บริษัทโอเมก้าอีสาน — ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
-    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
+    <div class="motto-line"><span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
     <input id="loginPin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••">
     <button type="button" class="btn primary" id="loginBtn">เข้าใช้งาน</button>
     <div class="err" id="loginErr"></div>
@@ -580,16 +631,21 @@
           <span class="b-sub">ระบบเตือนรอบ PM</span>
         </div>
       </div>
-      <span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span>
+      <nav class="top-nav">
+        <button type="button" id="navStock">สต๊อก</button>
+        <button type="button" id="navMap">แผนที่</button>
+      </nav>
+      <button type="button" class="hdr-add" id="hdrAddBtn">＋ เพิ่มลูกค้า</button>
     </header>
 
     <div class="cloud-bar">
-      <span class="st" id="cloudStatus">☁️ กำลังเชื่อมต่อข้อมูลกลาง...</span>
-      <button type="button" id="cloudRefreshBtn">🔄 รีเฟรช</button>
-      <button type="button" id="logoutBtn" title="ออกจากระบบ">🔒</button>
+      <span class="st" id="cloudStatus">กำลังเชื่อมต่อข้อมูลกลาง...</span>
+      <button type="button" id="cloudRefreshBtn"><svg class="ic"><use href="#i-refresh"/></svg> รีเฟรช</button>
+      <button type="button" id="logoutBtn" title="ออกจากระบบ"><svg class="ic"><use href="#i-lock"/></svg></button>
     </div>
 
     <div class="hero">
+      <div class="kicker">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</div>
       <h1>รอบ PM สัปดาห์นี้</h1>
       <p class="hero-sub"><span id="todayLabel"></span>ดูเครื่องที่ครบกำหนด กดโทรหาลูกค้า และบันทึกงานได้จากหน้าเดียว</p>
     </div>
@@ -612,22 +668,22 @@
 
     <div class="menu-group">
     <button type="button" class="stock-bar" id="stockBar">
-      <span>📦 สต๊อกเครื่อง <span id="stockBarInfo" style="color:var(--muted);font-weight:500"></span></span>
+      <span><svg class="ic" style="color:var(--primary)"><use href="#i-package"/></svg> สต๊อกเครื่อง <span id="stockBarInfo" style="color:var(--muted);font-weight:500"></span></span>
       <span class="arr">ดู / ตัดสต๊อก ›</span>
     </button>
 
     <a class="stock-bar" href="stock.html" style="text-decoration:none">
-      <span>🧰 สต๊อกวัสดุ-อะไหล่ <span style="color:var(--muted);font-weight:500">· ท่อ / ล้างจาน / น้ำแข็ง</span></span>
+      <span><svg class="ic" style="color:var(--primary)"><use href="#i-hammer"/></svg> สต๊อกวัสดุ-อะไหล่ <span style="color:var(--muted);font-weight:500">· ท่อ / ล้างจาน / น้ำแข็ง</span></span>
       <span class="arr">เปิด ›</span>
     </a>
 
     <button type="button" class="stock-bar" id="mapBar">
-      <span>🗺️ แผนที่ลูกค้าภาคอีสาน <span id="mapBarInfo" style="color:var(--muted);font-weight:500"></span></span>
+      <span><svg class="ic" style="color:var(--primary)"><use href="#i-map"/></svg> แผนที่ลูกค้าภาคอีสาน <span id="mapBarInfo" style="color:var(--muted);font-weight:500"></span></span>
       <span class="arr">ดูแผนที่ ›</span>
     </button>
 
     <button type="button" class="stock-bar" id="importBar">
-      <span>📥 นำเข้าลูกค้าจากไฟล์ <span style="color:var(--muted);font-weight:500">· Excel / CSV</span></span>
+      <span><svg class="ic" style="color:var(--primary)"><use href="#i-download"/></svg> นำเข้าลูกค้าจากไฟล์ <span style="color:var(--muted);font-weight:500">· Excel / CSV</span></span>
       <span class="arr">เปิด ›</span>
     </button>
     </div>
@@ -635,13 +691,13 @@
     <button type="button" class="sticker-bar" id="stickerBar" hidden></button>
 
     <div class="search-wrap">
-      <span class="ico">🔍</span>
+      <span class="ico"><svg class="ic"><use href="#i-search"/></svg></span>
       <input id="searchInput" placeholder="ค้นหาชื่อ เบอร์โทร หรือรุ่นเครื่อง...">
     </div>
 
     <div id="custList"></div>
     <div class="empty" id="listEmpty" hidden>
-      <div class="big">🧊</div>
+      <div class="big"><svg class="ic" style="color:var(--color-neutral-400, #c1b6b3)"><use href="#i-snow"/></svg></div>
       ยังไม่มีลูกค้าในระบบ<br>กดปุ่ม “+ เพิ่มลูกค้า” เพื่อเริ่มต้น
     </div>
   </div>
@@ -649,7 +705,7 @@
   <!-- ==================== หน้ารายละเอียด ==================== -->
   <div id="pageDetail" hidden>
     <button type="button" class="back-btn" id="backBtn">← กลับหน้ารายชื่อ</button>
-    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
+    <div class="motto-line"><span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
     <div class="detail-card">
       <h2 id="dName"></h2>
@@ -661,8 +717,8 @@
       </div>
     </div>
 
-    <a class="call-btn" id="dCallBtn" href="#">📞 โทรหาลูกค้า</a>
-    <a class="call-btn map-btn" id="dMapBtn" href="#" target="_blank" rel="noopener" hidden>🗺 นำทาง (Google Maps)</a>
+    <a class="call-btn" id="dCallBtn" href="#"><svg class="ic"><use href="#i-phone"/></svg> โทรหาลูกค้า</a>
+    <a class="call-btn map-btn" id="dMapBtn" href="#" target="_blank" rel="noopener" hidden><svg class="ic"><use href="#i-nav"/></svg> นำทาง (Google Maps)</a>
 
     <div class="detail-card">
       <table class="info">
@@ -680,41 +736,41 @@
     </div>
 
     <div class="detail-card">
-      <h3 style="margin:0 0 6px;font-size:1rem">📜 ประวัติการทำ PM</h3>
+      <h3 style="margin:0 0 6px;font-size:1rem">ประวัติการทำ PM</h3>
       <div id="dHistory"></div>
     </div>
 
     <div class="btn-row">
       <button type="button" class="btn primary" id="pmDoneBtn">✓ ทำ PM วันนี้แล้ว</button>
-      <button type="button" class="btn secondary" id="qrBtn">🔲 QR แจ้งลูกค้า — ตรวจเช็คแล้ว</button>
-      <button type="button" class="btn secondary" id="stickerBtn">🏷️ เปลี่ยนสติ๊กเกอร์ใหม่แล้ว — เริ่มนับ 1 ปีใหม่</button>
-      <button type="button" class="btn secondary" id="editBtn">✏️ แก้ไขข้อมูล</button>
-      <button type="button" class="btn danger" id="deleteBtn">🗑 ลบลูกค้า</button>
+      <button type="button" class="btn secondary" id="qrBtn">QR แจ้งลูกค้า — ตรวจเช็คแล้ว</button>
+      <button type="button" class="btn secondary" id="stickerBtn">เปลี่ยนสติ๊กเกอร์ใหม่แล้ว — เริ่มนับ 1 ปีใหม่</button>
+      <button type="button" class="btn secondary" id="editBtn">แก้ไขข้อมูล</button>
+      <button type="button" class="btn danger" id="deleteBtn">ลบลูกค้า</button>
     </div>
   </div>
 
   <!-- ==================== หน้าสต๊อกเครื่อง ==================== -->
   <div id="pageStock" hidden>
     <button type="button" class="back-btn" id="stockBackBtn">← กลับหน้ารายชื่อ</button>
-    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
+    <div class="motto-line"><span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
     <div class="detail-card" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
       <div style="min-width:0">
-        <h2 style="margin:0;font-size:1.2rem">📦 สต๊อกเครื่อง</h2>
-        <div class="sub" id="stockSub">⏳ กำลังโหลด...</div>
+        <h2 style="margin:0;font-size:1.2rem">สต๊อกเครื่อง</h2>
+        <div class="sub" id="stockSub">กำลังโหลด...</div>
       </div>
-      <button type="button" class="qr-btn" id="stockRefreshBtn">🔄 รีเฟรช</button>
+      <button type="button" class="qr-btn" id="stockRefreshBtn">รีเฟรช</button>
     </div>
 
     <div id="stockGroups"></div>
 
     <div class="btn-row" style="margin-bottom:12px">
-      <button type="button" class="btn primary" id="stockShareBtn" style="background:var(--primary)">📋 คัดลอกสรุปส่งเข้าไลน์</button>
+      <button type="button" class="btn primary" id="stockShareBtn" style="background:var(--primary)">คัดลอกสรุปส่งเข้าไลน์</button>
       <button type="button" class="btn secondary" id="stockAddBtn">＋ เพิ่มรุ่น/รายการใหม่</button>
     </div>
 
     <div class="detail-card">
-      <h3 style="margin:0 0 6px;font-size:1rem">📜 ความเคลื่อนไหวล่าสุด</h3>
+      <h3 style="margin:0 0 6px;font-size:1rem">ความเคลื่อนไหวล่าสุด</h3>
       <div id="stockMovesList"></div>
     </div>
   </div>
@@ -722,22 +778,22 @@
   <!-- ==================== หน้าแผนที่ภาคอีสาน ==================== -->
   <div id="pageMap" hidden>
     <button type="button" class="back-btn" id="mapBackBtn">← กลับหน้ารายชื่อ</button>
-    <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
+    <div class="motto-line"><span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
     <div class="detail-card">
-      <h2 style="margin:0;font-size:1.2rem">🗺️ แผนที่ลูกค้าภาคอีสาน</h2>
-      <div class="sub" id="mapSub">⏳ กำลังโหลด...</div>
+      <h2 style="margin:0;font-size:1.2rem">แผนที่ลูกค้าภาคอีสาน</h2>
+      <div class="sub" id="mapSub">กำลังโหลด...</div>
     </div>
 
     <div class="detail-card map-card">
-      <button type="button" class="map-expand" id="mapExpandBtn" title="ดูแผนที่ใหญ่เต็มจอ">⛶</button>
+      <button type="button" class="map-expand" id="mapExpandBtn" title="ดูแผนที่ใหญ่เต็มจอ"><svg class="ic"><use href="#i-max"/></svg></button>
       <svg id="isanSvg" viewBox="-8 -8 736 701" role="img" aria-label="แผนที่ภาคอีสาน"></svg>
       <div class="map-legend" id="mapLegend"></div>
-      <div class="map-hint">ตัวเลข = จำนวนเครื่อง · แตะจังหวัดดูรายชื่อร้าน · ปุ่ม ⛶ ขยายเต็มจอ</div>
+      <div class="map-hint">ตัวเลข = จำนวนเครื่อง · แตะจังหวัดดูรายชื่อร้าน · ปุ่มมุมขวาบน = ขยายเต็มจอ</div>
     </div>
 
     <button type="button" class="stock-bar" id="pinMapBar">
-      <span>🧭 แผนที่ละเอียด — หมุดตำแหน่งร้านจริง <span id="pinMapInfo" style="color:var(--muted);font-weight:500"></span></span>
+      <span><svg class="ic" style="color:var(--primary)"><use href="#i-nav"/></svg> แผนที่ละเอียด — หมุดตำแหน่งร้านจริง <span id="pinMapInfo" style="color:var(--muted);font-weight:500"></span></span>
       <span class="arr">เปิด ›</span>
     </button>
 
@@ -748,7 +804,7 @@
   <div id="bigMapModal" hidden>
     <div class="bm-top">
       <div style="min-width:0">
-        <div class="bm-title">🗺️ แผนที่ลูกค้าภาคอีสาน</div>
+        <div class="bm-title">แผนที่ลูกค้าภาคอีสาน</div>
         <div class="bm-sub" id="bmSub"></div>
       </div>
       <div class="bm-tools">
@@ -767,17 +823,17 @@
   <div id="pinMapModal" hidden>
     <div class="bm-top">
       <div style="min-width:0">
-        <div class="bm-title">🧭 แผนที่ละเอียด — หมุดร้านค้า</div>
-        <div class="bm-sub" id="pmmSub">⏳ กำลังโหลด...</div>
+        <div class="bm-title">แผนที่ละเอียด — หมุดร้านค้า</div>
+        <div class="bm-sub" id="pmmSub">กำลังโหลด...</div>
       </div>
       <div class="bm-tools">
-        <button type="button" id="pmmListBtn" title="รายชื่อร้านพร้อมหมายเลข">📋</button>
+        <button type="button" id="pmmListBtn" title="รายชื่อร้านพร้อมหมายเลข"></button>
         <button type="button" id="pmmCloseBtn" title="ปิด">✕</button>
       </div>
     </div>
     <div id="pmmBar">
       <select id="pmmProv"></select>
-      <button type="button" id="pmmSync" title="ดูดพิกัดจากลิงก์ Google Maps ที่แปะในช่องที่อยู่">🔄 อัปเดตพิกัด</button>
+      <button type="button" id="pmmSync" title="ดูดพิกัดจากลิงก์ Google Maps ที่แปะในช่องที่อยู่">อัปเดตพิกัด</button>
     </div>
     <div id="leafletMap"></div>
     <div id="pmmSheet" hidden></div>
@@ -802,12 +858,12 @@
       </table>
     </div>
     <div class="detail-card" id="qvPhotoCard" hidden>
-      <h3 style="margin:0 0 4px;font-size:1rem" id="qvPhotoTitle">📷 รูปจุดที่ตรวจเช็ค</h3>
+      <h3 style="margin:0 0 4px;font-size:1rem" id="qvPhotoTitle">รูปจุดที่ตรวจเช็ค</h3>
       <div class="sub" style="font-size:.8rem">แตะที่รูปเพื่อดูขนาดเต็ม</div>
       <div class="photo-grid" id="qvPhotoGrid"></div>
     </div>
-    <button type="button" class="btn secondary" id="storeTechBtn" hidden>🧑‍🔧 สำหรับช่าง — บันทึกการตรวจครั้งนี้ + แนบรูป</button>
-    <div class="qrv-footer">🔧 บริการตรวจเช็คโดย บริษัทโอเมก้าอีสาน</div>
+    <button type="button" class="btn secondary" id="storeTechBtn" hidden>‍สำหรับช่าง — บันทึกการตรวจครั้งนี้ + แนบรูป</button>
+    <div class="qrv-footer">บริการตรวจเช็คโดย บริษัทโอเมก้าอีสาน</div>
   </div>
 </div>
 
@@ -820,7 +876,7 @@
   <h3 id="custSheetTitle">เพิ่มลูกค้าใหม่</h3>
   <form id="custForm">
     <div class="field" id="pickWrap" hidden>
-      <label for="fPick">📋 เลือกจากรายชื่อลูกค้าในระบบ (เติมข้อมูลให้อัตโนมัติ)</label>
+      <label for="fPick">เลือกจากรายชื่อลูกค้าในระบบ (เติมข้อมูลให้อัตโนมัติ)</label>
       <select id="fPick"><option value="">— พิมพ์เองด้านล่าง หรือเลือกจากรายชื่อ —</option></select>
     </div>
     <div class="field">
@@ -907,7 +963,7 @@
 <div class="sheet-overlay" id="impOverlay"></div>
 <div class="sheet" id="impSheet">
   <div class="grip"></div>
-  <h3>📥 นำเข้าลูกค้าจากไฟล์</h3>
+  <h3>นำเข้าลูกค้าจากไฟล์</h3>
   <div class="imp-drop" id="impDrop">
     ลากไฟล์มาวางที่นี่<br>หรือแตะเพื่อเลือกไฟล์
     <div class="sub">รองรับ Excel (.xlsx) และ CSV — แถวแรกเป็นหัวตาราง เช่น ชื่อร้าน / ประเภท / รุ่น / เบอร์โทร / จังหวัด / S/N</div>
@@ -939,7 +995,7 @@
       <textarea id="pmNote" rows="3" placeholder="เช่น ล้างหัวฉีด เปลี่ยนไส้กรอง เติมน้ำยา"></textarea>
     </div>
     <div class="field">
-      <label>📷 รูปจุดที่ตรวจเช็ค (สูงสุด 15 รูป — ลูกค้าจะเห็นเมื่อสแกน QR)</label>
+      <label>รูปจุดที่ตรวจเช็ค (สูงสุด 15 รูป — ลูกค้าจะเห็นเมื่อสแกน QR)</label>
       <input id="pmPhotos" type="file" accept="image/*" multiple hidden>
       <button type="button" class="photo-add" id="pmAddPhotoBtn">＋ เพิ่มรูป (0/15)</button>
       <div class="photo-grid" id="pmPhotoGrid"></div>
@@ -956,8 +1012,8 @@
   <h3 id="qrTitle">QR ตรวจเช็ค PM</h3>
   <div class="qr-status" id="qrStatus"></div>
   <div id="qrHolder"></div>
-  <div class="qr-hint">พิมพ์หรือบันทึกรูป QR นี้ ไปติดหน้าเครื่องของร้านได้ถาวร<br>🏷️ ใต้ QR มีชื่อร้าน + เครื่อง/รุ่นกำกับ — ร้านที่มีหลายเครื่องจะได้ไม่ติดสลับใบกัน<br>👀 ลูกค้าสแกน = เห็นการตรวจล่าสุด+รูป · 🧑‍🔧 ช่างสแกน = กดบันทึก PM + แนบรูปได้เลย<br>(กดค้างที่รูป QR เพื่อบันทึกเป็นรูปภาพ)</div>
-  <button type="button" class="btn primary" id="qrShareBtn" style="background:var(--primary)">📤 แชร์ลิงก์ให้ลูกค้า</button>
+  <div class="qr-hint">พิมพ์หรือบันทึกรูป QR นี้ ไปติดหน้าเครื่องของร้านได้ถาวร<br>ใต้ QR มีชื่อร้าน + เครื่อง/รุ่นกำกับ — ร้านที่มีหลายเครื่องจะได้ไม่ติดสลับใบกัน<br>ลูกค้าสแกน = เห็นการตรวจล่าสุด+รูป · ‍ช่างสแกน = กดบันทึก PM + แนบรูปได้เลย<br>(กดค้างที่รูป QR เพื่อบันทึกเป็นรูปภาพ)</div>
+  <button type="button" class="btn primary" id="qrShareBtn" style="background:var(--primary)">แชร์ลิงก์ให้ลูกค้า</button>
   <button type="button" class="btn secondary" id="qrCloseBtn" style="margin-top:8px">ปิด</button>
 </div>
 
@@ -965,7 +1021,7 @@
 <div class="sheet-overlay" id="pinOverlay"></div>
 <div class="sheet" id="pinSheet">
   <div class="grip"></div>
-  <h3>🧑‍🔧 สำหรับช่างเท่านั้น</h3>
+  <h3>‍สำหรับช่างเท่านั้น</h3>
   <div class="field">
     <label for="pinInput">รหัสช่าง</label>
     <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="ใส่รหัสช่าง">
@@ -1117,7 +1173,7 @@
     });
     return p.then(function () {
       try { localStorage.setItem(MIGRATED_KEY, "1"); } catch (e) {}
-      flash("☁️ ย้ายข้อมูลในเครื่องขึ้นเว็บแล้ว " + locals.length + " ร้าน");
+      flash("ย้ายข้อมูลในเครื่องขึ้นเว็บแล้ว " + locals.length + " ร้าน");
     });
   }
 
@@ -1262,7 +1318,7 @@
     // ซ่อนลิงก์ยาวๆ ไว้หลังปุ่มข้อความ อ่านง่ายกว่าโชว์ URL เต็ม
     var rest = addr.replace(u, "").replace(/\s{2,}/g, " ").trim();
     cell.innerHTML = (rest ? esc(rest) + "<br>" : "") +
-      '<a href="' + esc(u) + '" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">📍 เปิดใน Google Maps</a>';
+      '<a href="' + esc(u) + '" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">เปิดใน Google Maps</a>';
   }
   function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   var toastTimer = null;
@@ -1290,8 +1346,8 @@
     el.stickerBar.hidden = stickerCount === 0;
     el.stickerBar.classList.toggle("active", stickerFilter);
     el.stickerBar.textContent = stickerFilter
-      ? "🏷️ กำลังแสดง " + stickerCount + " ร้านที่สติ๊กเกอร์ครบ 1 ปี — แตะอีกครั้งเพื่อดูทุกร้าน"
-      : "🏷️ " + stickerCount + " ร้านติดสติ๊กเกอร์ QR ครบ 1 ปีแล้ว — ปริ้นใหม่ไปเปลี่ยน (แตะดูรายชื่อ)";
+      ? "กำลังแสดง " + stickerCount + " ร้านที่สติ๊กเกอร์ครบ 1 ปี — แตะอีกครั้งเพื่อดูทุกร้าน"
+      : "" + stickerCount + " ร้านติดสติ๊กเกอร์ QR ครบ 1 ปีแล้ว — ปริ้นใหม่ไปเปลี่ยน (แตะดูรายชื่อ)";
 
     // แถบแผนที่ — ยอดรวมร้าน/เครื่อง (+ รีเฟรชแผนที่ถ้าเปิดค้างอยู่ตอนข้อมูลโหลดใหม่)
     var mStat = mapStats();
@@ -1313,7 +1369,7 @@
 
     el.listEmpty.hidden = !(customers.length === 0 && cloudLoaded);
     if (customers.length === 0 && !cloudLoaded) {
-      el.custList.innerHTML = '<div class="empty">⏳ กำลังโหลดข้อมูลจากเว็บ...</div>';
+      el.custList.innerHTML = '<div class="empty">กำลังโหลดข้อมูลจากเว็บ...</div>';
       return;
     }
     el.custList.innerHTML = list.map(function (c) {
@@ -1327,14 +1383,14 @@
         '<div class="avi">' + esc(initial) + "</div>" +
         '<div class="info">' +
           '<div class="name">' + esc(c.name) + "</div>" +
-          (mach ? '<div class="prov">🔧 ' + esc(mach) + "</div>" : "") +
-          (c.province ? '<div class="prov">📍 ' + esc(c.province) + "</div>" : "") +
-          (stickerDue(c) ? '<div class="stick-tag">🏷️ ครบ 1 ปี — เปลี่ยนสติ๊กเกอร์</div>' : "") +
+          (mach ? '<div class="prov">' + esc(mach) + "</div>" : "") +
+          (c.province ? '<div class="prov">' + esc(c.province) + "</div>" : "") +
+          (stickerDue(c) ? '<div class="stick-tag">ครบ 1 ปี — เปลี่ยนสติ๊กเกอร์</div>' : "") +
           (c.phone
-            ? '<a class="phone" href="tel:' + esc(c.phone.replace(/[^0-9+]/g, "")) + '" onclick="event.stopPropagation()">📞 ' + esc(c.phone) + "</a>"
+            ? '<a class="phone" href="tel:' + esc(c.phone.replace(/[^0-9+]/g, "")) + '" onclick="event.stopPropagation()"><svg class="ic"><use href="#i-phone"/></svg> ' + esc(c.phone) + "</a>"
             : '<span class="phone" style="color:var(--muted)">ไม่มีเบอร์โทร</span>') +
         "</div>" +
-        '<button type="button" class="qr-btn" data-qr="' + c.id + '">🔲 QR</button>' +
+        '<button type="button" class="qr-btn" data-qr="' + c.id + '">QR</button>' +
         '<div class="days"><div class="dn">' + dn + '</div><div class="dl">' + dl + "</div></div>" +
         "</div>";
     }).join("");
@@ -1382,7 +1438,7 @@
 
     el.dName.textContent = c.name;
     el.dTypeModel.textContent = [c.type, c.model].filter(Boolean).join(" · ") || "-";
-    el.dBadge.textContent = st === "red" ? "⚠️ " + daysText(c) : st === "yellow" ? "⏳ " + daysText(c) : "✅ " + daysText(c);
+    el.dBadge.textContent = st === "red" ? "" + daysText(c) : st === "yellow" ? "" + daysText(c) : "" + daysText(c);
     el.dBadge.className = "count-badge " + st;
 
     // progress: ใช้รอบไปแล้วกี่ %
@@ -1398,7 +1454,7 @@
     if (c.phone) {
       el.dCallBtn.hidden = false;
       el.dCallBtn.href = "tel:" + c.phone.replace(/[^0-9+]/g, "");
-      el.dCallBtn.textContent = "📞 โทร " + c.phone;
+      el.dCallBtn.textContent = "โทร " + c.phone;
     } else {
       el.dCallBtn.hidden = true;
     }
@@ -1423,17 +1479,17 @@
       el.dSticker.textContent = "-";
     } else if (stickerDue(c)) {
       el.dSticker.innerHTML = "ติดเมื่อ " + fmtThai(c.stickerDate) +
-        '<br><span style="color:var(--red);font-weight:700">🏷️ ครบ 1 ปีแล้ว (ติดมา ' + sa + " วัน) — ปริ้นใหม่ไปเปลี่ยน</span>";
+        '<br><span style="color:var(--red);font-weight:700">ครบ 1 ปีแล้ว (ติดมา ' + sa + " วัน) — ปริ้นใหม่ไปเปลี่ยน</span>";
     } else {
       var sLeft = STICKER_LIFE - sa;
       el.dSticker.innerHTML = "ติดเมื่อ " + fmtThai(c.stickerDate) +
         (sLeft <= 30
-          ? '<br><span style="color:var(--yellow);font-weight:600">⏳ อีก ' + sLeft + " วันครบ 1 ปี — เตรียมปริ้นใบใหม่</span>"
+          ? '<br><span style="color:var(--yellow);font-weight:600">อีก ' + sLeft + " วันครบ 1 ปี — เตรียมปริ้นใบใหม่</span>"
           : " · อีก " + sLeft + " วันครบ 1 ปี");
     }
 
     el.dNote.hidden = !c.note;
-    el.dNote.textContent = c.note ? "📝 " + c.note : "";
+    el.dNote.textContent = c.note ? "" + c.note : "";
 
     renderHistory(c);
     // ประวัติอยู่บนเว็บ — โหลดสดทุกครั้งที่เปิด (เห็นบันทึกจากเครื่องอื่นด้วย)
@@ -1441,7 +1497,7 @@
       if (currentId === id) renderHistory(c);
     }).catch(function () {
       if (currentId === id && !c.history) {
-        el.dHistory.innerHTML = '<div class="hist-empty">⚠️ โหลดประวัติไม่สำเร็จ (เช็คสัญญาณเน็ต)</div>';
+        el.dHistory.innerHTML = '<div class="hist-empty">โหลดประวัติไม่สำเร็จ (เช็คสัญญาณเน็ต)</div>';
       }
     });
 
@@ -1461,7 +1517,7 @@
   }
   function renderHistory(c) {
     if (!c.history) {
-      el.dHistory.innerHTML = '<div class="hist-empty">⏳ กำลังโหลดประวัติ...</div>';
+      el.dHistory.innerHTML = '<div class="hist-empty">กำลังโหลดประวัติ...</div>';
       return;
     }
     var hist = c.history.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
@@ -1470,10 +1526,10 @@
       : hist.map(function (h) {
           return '<div class="hist-item"><div class="dot"></div><div style="flex:1;min-width:0">' +
             '<div class="d">' + fmtThai(h.date) + "</div>" +
-            (h.tech ? '<div class="n">🧑‍🔧 ช่าง: ' + esc(h.tech) + "</div>" : "") +
+            (h.tech ? '<div class="n">‍ช่าง: ' + esc(h.tech) + "</div>" : "") +
             (h.note ? '<div class="n">' + esc(h.note) + "</div>" : "") +
             (h.pf && h.pn ? '<div class="photo-grid small">' + photoLinks(h.pf, h.pn) + "</div>" : "") +
-            (h.id != null ? '<button type="button" class="hist-edit" data-rid="' + h.id + '">✏️ แก้ไขบันทึกนี้</button>' : "") +
+            (h.id != null ? '<button type="button" class="hist-edit" data-rid="' + h.id + '">แก้ไขบันทึกนี้</button>' : "") +
             "</div></div>";
         }).join("");
   }
@@ -1607,6 +1663,10 @@
   el.fCycle.addEventListener("input", updateCycleQuick);
 
   el.fabAdd.addEventListener("click", function () { openCustSheet(null); });
+  // ปุ่ม/ลิงก์ในหัวเว็บ (เดสก์ท็อป) — ใช้ปุ่มเดิมเป็นตัวกลาง
+  document.getElementById("hdrAddBtn").addEventListener("click", function () { openCustSheet(null); });
+  document.getElementById("navStock").addEventListener("click", function () { el.stockBar.click(); });
+  document.getElementById("navMap").addEventListener("click", function () { el.mapBar.click(); });
   el.editBtn.addEventListener("click", function () { if (currentId) openCustSheet(currentId); });
 
   // กดเมื่อเอาสติ๊กเกอร์ QR ใบใหม่ไปแปะที่ร้านแล้ว — เริ่มนับอายุ 1 ปีใหม่
@@ -1623,10 +1683,10 @@
       if (!r.ok) throw new Error("sticker " + r.status);
       c.stickerDate = d;
       saveCache();
-      flash("🏷️ บันทึกแล้ว — เริ่มนับอายุสติ๊กเกอร์ใหม่");
+      flash("บันทึกแล้ว — เริ่มนับอายุสติ๊กเกอร์ใหม่");
       openDetail(currentId);
     }).catch(function () {
-      flash("⚠️ บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+      flash("บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
     });
   });
   el.custCancelBtn.addEventListener("click", closeCustSheet);
@@ -1675,7 +1735,7 @@
       saveCache();
       sbtn.disabled = false;
       closeCustSheet();
-      flash(editingId ? "✅ แก้ไขข้อมูลแล้ว" : "✅ เพิ่มลูกค้าแล้ว");
+      flash(editingId ? "แก้ไขข้อมูลแล้ว" : "เพิ่มลูกค้าแล้ว");
       if (currentId) openDetail(currentId); else renderList();
     }).catch(function () {
       sbtn.disabled = false;
@@ -1754,14 +1814,14 @@
     var room = MAX_PHOTOS - pmPhotoFiles.length;
     if (files.length > room) {
       files = files.slice(0, room);
-      flash("⚠️ ใส่รูปได้สูงสุด " + MAX_PHOTOS + " รูป");
+      flash("ใส่รูปได้สูงสุด " + MAX_PHOTOS + " รูป");
     }
     files.forEach(function (f) {
       compressImage(f).then(function (blob) {
         if (pmPhotoFiles.length >= MAX_PHOTOS) return;
         pmPhotoFiles.push({ blob: blob, url: URL.createObjectURL(blob) });
         renderPmPhotos();
-      }).catch(function () { flash("⚠️ อ่านรูปไม่สำเร็จ 1 รูป"); });
+      }).catch(function () { flash("อ่านรูปไม่สำเร็จ 1 รูป"); });
     });
   });
   // ---------- ซิงก์ข้อมูลขึ้น Supabase (ให้ QR ติดหน้าเครื่องแสดงข้อมูลล่าสุดเสมอ) ----------
@@ -1884,7 +1944,7 @@
     var h = c && (c.history || []).find(function (x) { return x.id === rid; });
     if (!h) return;
     editingRec = h;
-    el.pmSheetTitle.textContent = "✏️ แก้ไขบันทึก PM";
+    el.pmSheetTitle.textContent = "แก้ไขบันทึก PM";
     el.pmDate.value = h.date || todayStr();
     el.pmTech.value = h.tech || "";
     el.pmNote.value = h.note || "";
@@ -1924,7 +1984,7 @@
     } else {
       // รวมรูปเดิมที่เหลือ + รูปใหม่ แล้วอัปโหลดเป็นชุดใหม่ (ของเดิมบนเว็บไม่ถูกแตะ)
       var folder = c.id + "-" + date + "-" + Math.random().toString(36).slice(2, 6);
-      el.pmSubmitBtn.textContent = "⏳ กำลังเตรียมรูป...";
+      el.pmSubmitBtn.textContent = "กำลังเตรียมรูป...";
       prep = Promise.all(pmPhotoFiles.map(function (p) {
         if (p.blob) return Promise.resolve(p.blob);
         return fetch(p.remote).then(function (r) {
@@ -1933,7 +1993,7 @@
         });
       })).then(function (blobs) {
         return uploadPmPhotos(folder, blobs, function (i, n) {
-          el.pmSubmitBtn.textContent = "⏳ กำลังอัปโหลดรูป " + i + "/" + n + "...";
+          el.pmSubmitBtn.textContent = "กำลังอัปโหลดรูป " + i + "/" + n + "...";
         }).then(function (done) {
           if (done < blobs.length) throw new Error("upload incomplete");
           patch.pf = folder;
@@ -1943,7 +2003,7 @@
     }
 
     prep.then(function () {
-      el.pmSubmitBtn.textContent = "⏳ กำลังบันทึกขึ้นเว็บ...";
+      el.pmSubmitBtn.textContent = "กำลังบันทึกขึ้นเว็บ...";
       return fetch(SUPABASE_URL + "/rest/v1/pm_records?id=eq." + h.id, {
         method: "PATCH",
         headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
@@ -1960,12 +2020,12 @@
       el.pmSubmitBtn.disabled = false;
       el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
       closePmSheet();
-      flash("✅ แก้ไขบันทึก PM แล้ว");
+      flash("แก้ไขบันทึก PM แล้ว");
       openDetail(currentId);
     }).catch(function () {
       el.pmSubmitBtn.disabled = false;
       el.pmSubmitBtn.textContent = "✓ บันทึกการแก้ไข";
-      flash("⚠️ แก้ไขไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+      flash("แก้ไขไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
     });
   }
 
@@ -1985,11 +2045,11 @@
     var blobs = pmPhotoFiles.map(function (p) { return p.blob; });
     el.pmSubmitBtn.disabled = true;
     var up = blobs.length === 0 ? Promise.resolve(0) : uploadPmPhotos(folder, blobs, function (i, n) {
-      el.pmSubmitBtn.textContent = "⏳ กำลังอัปโหลดรูป " + i + "/" + n + "...";
+      el.pmSubmitBtn.textContent = "กำลังอัปโหลดรูป " + i + "/" + n + "...";
     });
     up.then(function (done) {
       if (done > 0) { entry.pf = folder; entry.pn = done; }
-      el.pmSubmitBtn.textContent = "⏳ กำลังบันทึกขึ้นเว็บ...";
+      el.pmSubmitBtn.textContent = "กำลังบันทึกขึ้นเว็บ...";
       // บันทึกขึ้นเว็บต้องสำเร็จก่อน — ทุกเครื่อง (และ QR หน้าเครื่อง) จะได้เห็นตรงกัน
       return syncStore(c).then(function () { return syncRecord(c.id, entry); }).then(function () { return done; });
     }).then(function (done) {
@@ -2002,13 +2062,13 @@
       el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
       closePmSheet();
       flash(blobs.length && done < blobs.length
-        ? "⚠️ อัปโหลดรูปได้ " + done + "/" + blobs.length + " รูป — บันทึก PM แล้ว"
-        : "✅ บันทึก PM แล้ว เริ่มนับรอบใหม่");
+        ? "อัปโหลดรูปได้ " + done + "/" + blobs.length + " รูป — บันทึก PM แล้ว"
+        : "บันทึก PM แล้ว เริ่มนับรอบใหม่");
       openDetail(currentId);
     }).catch(function () {
       el.pmSubmitBtn.disabled = false;
       el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
-      flash("⚠️ บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง");
+      flash("บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง");
     });
   });
 
@@ -2081,7 +2141,7 @@
     var c = custById(id);
     if (!c) return;
     if (typeof qrcode !== "function") {
-      flash("⚠️ โหลดตัวสร้าง QR ไม่สำเร็จ — ต่ออินเทอร์เน็ตแล้วรีเฟรชหน้า");
+      flash("โหลดตัวสร้าง QR ไม่สำเร็จ — ต่ออินเทอร์เน็ตแล้วรีเฟรชหน้า");
       return;
     }
     // QR ประจำร้าน: เก็บแค่รหัสร้าน — สแกนเมื่อไหร่ก็เห็นการตรวจล่าสุดจากเว็บเสมอ ติดหน้าเครื่องได้ถาวร
@@ -2105,19 +2165,19 @@
     var base;
     if (sameMonth(c.lastPM)) {
       el.qrStatus.className = "qr-status ok";
-      base = "✅ ตรวจเช็คเดือนนี้แล้ว (" + fmtThai(c.lastPM) + ")";
+      base = "ตรวจเช็คเดือนนี้แล้ว (" + fmtThai(c.lastPM) + ")";
     } else {
       el.qrStatus.className = "qr-status warn";
       base = c.lastPM
-        ? "⚠️ เดือนนี้ยังไม่มีบันทึก PM — คนสแกนจะเห็นการตรวจล่าสุด " + fmtThai(c.lastPM)
-        : "⚠️ ร้านนี้ยังไม่มีบันทึก PM เลย";
+        ? "เดือนนี้ยังไม่มีบันทึก PM — คนสแกนจะเห็นการตรวจล่าสุด " + fmtThai(c.lastPM)
+        : "ร้านนี้ยังไม่มีบันทึก PM เลย";
     }
     if (stickerDue(c)) {
       el.qrStatus.className = "qr-status warn";
-      base += " · 🏷️ สติ๊กเกอร์เดิมติดครบ 1 ปีแล้ว — ปริ้น QR นี้ไปเปลี่ยน แล้วกดปุ่ม “เปลี่ยนสติ๊กเกอร์ใหม่แล้ว” ในหน้าร้าน";
+      base += " · สติ๊กเกอร์เดิมติดครบ 1 ปีแล้ว — ปริ้น QR นี้ไปเปลี่ยน แล้วกดปุ่ม “เปลี่ยนสติ๊กเกอร์ใหม่แล้ว” ในหน้าร้าน";
     }
     var seq = ++qrSyncSeq;
-    el.qrStatus.textContent = base + " · ⏳ กำลังเช็คข้อมูลบนเว็บ...";
+    el.qrStatus.textContent = base + " · กำลังเช็คข้อมูลบนเว็บ...";
     Promise.all([
       syncStore(c),   // กันร้านยังไม่อยู่บนเว็บ (เช่น QR ใบแรกของร้าน)
       fetch(SUPABASE_URL + "/rest/v1/pm_records?store_id=eq." + encodeURIComponent(c.id) +
@@ -2126,12 +2186,12 @@
     ]).then(function (rs) {
       if (seq !== qrSyncSeq) return;
       var rec = rs[1][0];
-      var photoTxt = (rec && rec.pn) ? " · 📷 มีรูปแนบ " + rec.pn + " รูป" : "";
-      el.qrStatus.textContent = base + photoTxt + " · ☁️ พร้อมใช้งาน";
+      var photoTxt = (rec && rec.pn) ? " · มีรูปแนบ " + rec.pn + " รูป" : "";
+      el.qrStatus.textContent = base + photoTxt + " · พร้อมใช้งาน";
     }).catch(function () {
       if (seq !== qrSyncSeq) return;
       el.qrStatus.className = "qr-status warn";
-      el.qrStatus.textContent = base + " · ⚠️ เช็คข้อมูลบนเว็บไม่สำเร็จ (เช็คเน็ต) — ก่อนพิมพ์ไปติด ให้เปิด QR นี้อีกครั้งตอนมีเน็ต";
+      el.qrStatus.textContent = base + " · เช็คข้อมูลบนเว็บไม่สำเร็จ (เช็คเน็ต) — ก่อนพิมพ์ไปติด ให้เปิด QR นี้อีกครั้งตอนมีเน็ต";
     });
     el.qrOverlay.classList.add("show");
     el.qrSheet.classList.add("show");
@@ -2148,9 +2208,9 @@
     if (navigator.share) {
       navigator.share({ title: "รายละเอียดการตรวจเช็ค PM", url: qrShareUrl }).catch(function () {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(qrShareUrl).then(function () { flash("📋 คัดลอกลิงก์แล้ว ส่งให้ลูกค้าได้เลย"); });
+      navigator.clipboard.writeText(qrShareUrl).then(function () { flash("คัดลอกลิงก์แล้ว ส่งให้ลูกค้าได้เลย"); });
     } else {
-      flash("⚠️ เบราว์เซอร์นี้ไม่รองรับการแชร์ — ให้ลูกค้าสแกน QR แทน");
+      flash("เบราว์เซอร์นี้ไม่รองรับการแชร์ — ให้ลูกค้าสแกน QR แทน");
     }
   });
 
@@ -2167,14 +2227,14 @@
   function renderStoreView(store, rec) {
     scanStore = store; scanRecord = rec || null;
     var checked = rec && sameMonth(rec.date);
-    el.qvIcon.textContent = checked ? "✓" : "🕐";
+    el.qvIcon.textContent = checked ? "✓" : "";
     el.qvIcon.className = "qrv-check" + (checked ? "" : " warn");
     el.qvHead.textContent = store.name;
     el.qvBadge.hidden = false;
     el.qvBadge.className = "count-badge " + (checked ? "green" : "yellow");
     el.qvBadge.textContent = checked
-      ? "✅ ช่างเข้าตรวจเช็คเดือนนี้แล้ว"
-      : (rec ? "🕐 ตรวจเช็คล่าสุด " + fmtThai(rec.date) : "ยังไม่มีข้อมูลการตรวจเช็ค");
+      ? "ช่างเข้าตรวจเช็คเดือนนี้แล้ว"
+      : (rec ? "ตรวจเช็คล่าสุด " + fmtThai(rec.date) : "ยังไม่มีข้อมูลการตรวจเช็ค");
     el.qvDate.textContent = rec ? fmtThai(rec.date) : "-";
     el.qvTech.textContent = (rec && rec.tech) || "-";
     el.qvWorkRow.hidden = !(rec && rec.note);
@@ -2185,7 +2245,7 @@
     el.qvSerial.textContent = store.serial || "-";
     el.qvNext.textContent = rec ? fmtThai(addDays(rec.date, Number(store.cycle) || 45)) : "-";
     if (rec && rec.pf && rec.pn) {
-      el.qvPhotoTitle.textContent = "📷 รูปจุดที่ตรวจเช็ค (" + rec.pn + " รูป)";
+      el.qvPhotoTitle.textContent = "รูปจุดที่ตรวจเช็ค (" + rec.pn + " รูป)";
       el.qvPhotoGrid.innerHTML = photoLinks(rec.pf, rec.pn);
       el.qvPhotoCard.hidden = false;
     } else {
@@ -2195,7 +2255,7 @@
   }
   function loadStoreView(id) {
     showScanShell();
-    el.qvIcon.textContent = "⏳";
+    el.qvIcon.textContent = "";
     el.qvIcon.className = "qrv-check warn";
     el.qvHead.textContent = "กำลังโหลดข้อมูล...";
     el.qvBadge.hidden = true;
@@ -2210,7 +2270,7 @@
         .then(function (r) { if (!r.ok) throw new Error("r"); return r.json(); })
     ]).then(function (rs) {
       if (!rs[0].length) {
-        el.qvIcon.textContent = "❓";
+        el.qvIcon.textContent = "";
         el.qvHead.textContent = "ไม่พบข้อมูลร้านนี้";
         el.qvBadge.hidden = false;
         el.qvBadge.className = "count-badge yellow";
@@ -2219,7 +2279,7 @@
       }
       renderStoreView(rs[0][0], rs[1][0] || null);
     }).catch(function () {
-      el.qvIcon.textContent = "⚠️";
+      el.qvIcon.textContent = "";
       el.qvHead.textContent = "โหลดข้อมูลไม่สำเร็จ";
       el.qvBadge.hidden = false;
       el.qvBadge.className = "count-badge yellow";
@@ -2273,11 +2333,11 @@
     var blobs = pmPhotoFiles.map(function (p) { return p.blob; });
     el.pmSubmitBtn.disabled = true;
     var up = blobs.length === 0 ? Promise.resolve(0) : uploadPmPhotos(folder, blobs, function (i, n) {
-      el.pmSubmitBtn.textContent = "⏳ กำลังอัปโหลดรูป " + i + "/" + n + "...";
+      el.pmSubmitBtn.textContent = "กำลังอัปโหลดรูป " + i + "/" + n + "...";
     });
     up.then(function (done) {
       if (done > 0) { entry.pf = folder; entry.pn = done; }
-      el.pmSubmitBtn.textContent = "⏳ กำลังบันทึก...";
+      el.pmSubmitBtn.textContent = "กำลังบันทึก...";
       return syncRecord(scanStore.id, entry).then(function () { return done; });
     }).then(function (done) {
       var lc = custById(scanStore.id);
@@ -2292,13 +2352,13 @@
       el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
       closePmSheet();
       flash(blobs.length && done < blobs.length
-        ? "⚠️ อัปโหลดรูปได้ " + done + "/" + blobs.length + " รูป — บันทึก PM แล้ว"
-        : "✅ บันทึก PM แล้ว");
+        ? "อัปโหลดรูปได้ " + done + "/" + blobs.length + " รูป — บันทึก PM แล้ว"
+        : "บันทึก PM แล้ว");
       loadStoreView(scanStore.id);
     }).catch(function () {
       el.pmSubmitBtn.disabled = false;
       el.pmSubmitBtn.textContent = "✓ บันทึก แล้วเริ่มนับรอบใหม่";
-      flash("⚠️ บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง");
+      flash("บันทึกขึ้นเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกดบันทึกอีกครั้ง");
     });
   }
 
@@ -2310,13 +2370,13 @@
     try { d = b64uDecode(m[1]); } catch (e) { return false; }
     if (!d || !d.n) return false;
     var checked = sameMonth(d.d);
-    el.qvIcon.textContent = checked ? "✓" : "🕐";
+    el.qvIcon.textContent = checked ? "✓" : "";
     el.qvIcon.className = "qrv-check" + (checked ? "" : " warn");
     el.qvHead.textContent = d.n;
     el.qvBadge.className = "count-badge " + (checked ? "green" : "yellow");
     el.qvBadge.textContent = checked
-      ? "✅ ช่างเข้าตรวจเช็คเดือนนี้แล้ว"
-      : (d.d ? "🕐 ตรวจเช็คล่าสุด " + fmtThai(d.d) : "ยังไม่มีข้อมูลการตรวจเช็ค");
+      ? "ช่างเข้าตรวจเช็คเดือนนี้แล้ว"
+      : (d.d ? "ตรวจเช็คล่าสุด " + fmtThai(d.d) : "ยังไม่มีข้อมูลการตรวจเช็ค");
     el.qvDate.textContent = fmtThai(d.d);
     el.qvTech.textContent = d.tech || "-";
     el.qvWorkRow.hidden = !d.w;
@@ -2325,7 +2385,7 @@
     el.qvModel.textContent = d.m || "-";
     el.qvNext.textContent = fmtThai(d.nd);
     if (d.pf && d.pn) {
-      el.qvPhotoTitle.textContent = "📷 รูปจุดที่ตรวจเช็ค (" + d.pn + " รูป)";
+      el.qvPhotoTitle.textContent = "รูปจุดที่ตรวจเช็ค (" + d.pn + " รูป)";
       el.qvPhotoGrid.innerHTML = photoLinks(d.pf, d.pn);
       el.qvPhotoCard.hidden = false;
     } else {
@@ -2351,10 +2411,10 @@
       if (!r.ok) throw new Error("del " + r.status);
       customers = customers.filter(function (x) { return x.id !== currentId; });
       saveCache();
-      flash("🗑 ลบลูกค้าแล้ว");
+      flash("ลบลูกค้าแล้ว");
       backToList();
     }).catch(function () {
-      flash("⚠️ ลบไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+      flash("ลบไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
     });
   });
 
@@ -2407,7 +2467,7 @@
 
   function renderStock() {
     if (!stockItems) {
-      el.stockGroups.innerHTML = '<div class="empty">⏳ กำลังโหลดสต๊อกจากเว็บ...</div>';
+      el.stockGroups.innerHTML = '<div class="empty">กำลังโหลดสต๊อกจากเว็บ...</div>';
       renderStockMoves();
       return;
     }
@@ -2418,7 +2478,7 @@
         go.items.map(function (it) {
           return '<div class="stk-row">' +
             '<div class="nm">' + esc(it.name) + "</div>" +
-            (boss ? '<button type="button" class="stk-del" data-del="' + it.id + '" title="ลบรายการ">🗑</button>' : "") +
+            (boss ? '<button type="button" class="stk-del" data-del="' + it.id + '" title="ลบรายการ"></button>' : "") +
             '<button type="button" class="stk-btn minus" data-minus="' + it.id + '"' + (it.qty <= 0 ? " disabled" : "") + ">−</button>" +
             '<div class="q' + (it.qty === 0 ? " zero" : "") + '">' + it.qty + "</div>" +
             '<button type="button" class="stk-btn plus" data-plus="' + it.id + '">＋</button>' +
@@ -2430,7 +2490,7 @@
   }
   function renderStockMoves() {
     if (!stockMoves) {
-      el.stockMovesList.innerHTML = '<div class="hist-empty">⏳ กำลังโหลด...</div>';
+      el.stockMovesList.innerHTML = '<div class="hist-empty">กำลังโหลด...</div>';
       return;
     }
     el.stockMovesList.innerHTML = stockMoves.length === 0
@@ -2451,8 +2511,8 @@
     return Promise.all([fetchStockItems(), fetchStockMoves()])
       .then(renderStock)
       .catch(function () {
-        el.stockSub.textContent = "⚠️ โหลดไม่สำเร็จ — เช็คเน็ตแล้วกด 🔄 รีเฟรช";
-        if (!stockItems) el.stockGroups.innerHTML = '<div class="empty">📴 โหลดสต๊อกไม่สำเร็จ<br>เช็คสัญญาณเน็ตแล้วกด 🔄 รีเฟรชด้านบน</div>';
+        el.stockSub.textContent = "โหลดไม่สำเร็จ — เช็คเน็ตแล้วกด รีเฟรช";
+        if (!stockItems) el.stockGroups.innerHTML = '<div class="empty">โหลดสต๊อกไม่สำเร็จ<br>เช็คสัญญาณเน็ตแล้วกด รีเฟรชด้านบน</div>';
       });
   }
   function openStock() {
@@ -2478,7 +2538,7 @@
   el.stockBar.addEventListener("click", openStock);
   el.stockBackBtn.addEventListener("click", closeStock);
   el.stockRefreshBtn.addEventListener("click", function () {
-    el.stockSub.textContent = "⏳ กำลังโหลด...";
+    el.stockSub.textContent = "กำลังโหลด...";
     refreshStock();
   });
 
@@ -2533,7 +2593,7 @@
     var bad = after < 0;
     el.stkMovePreview.className = "stk-preview" + (bad ? " bad" : "");
     el.stkMovePreview.textContent = bad
-      ? "⚠️ สต๊อกมีแค่ " + it.qty + " เครื่อง — ตัดเกินไม่ได้"
+      ? "สต๊อกมีแค่ " + it.qty + " เครื่อง — ตัดเกินไม่ได้"
       : "คงเหลือ " + it.qty + " → " + after + " เครื่อง";
     el.stkMoveOkBtn.disabled = bad || n < 1;
   }
@@ -2544,7 +2604,7 @@
     stkMoveDir = dir;
     var reasons = dir < 0 ? STK_REASONS_OUT : STK_REASONS_IN;
     stkReason = reasons[0];
-    el.stkMoveTitle.textContent = (dir < 0 ? "➖ ตัดสต๊อก — " : "➕ รับเข้า — ") + it.name + (it.grp ? " (" + it.grp + ")" : "");
+    el.stkMoveTitle.textContent = (dir < 0 ? "− ตัดสต๊อก — " : "＋ รับเข้า — ") + it.name + (it.grp ? " (" + it.grp + ")" : "");
     el.stkReasonRow.innerHTML = reasons.map(function (rn) {
       return '<button type="button" class="reason-chip' + (rn === stkReason ? " active" : "") + '" data-reason="' + esc(rn) + '">' + esc(rn) + "</button>";
     }).join("");
@@ -2592,7 +2652,7 @@
     var by = el.stkBy.value.trim();
     try { localStorage.setItem(STK_BY_KEY, by); } catch (e) {}
     el.stkMoveOkBtn.disabled = true;
-    el.stkMoveOkBtn.textContent = "⏳ กำลังบันทึก...";
+    el.stkMoveOkBtn.textContent = "กำลังบันทึก...";
     fetch(SUPABASE_URL + "/rest/v1/rpc/stock_adjust", {
       method: "POST",
       headers: sbHeaders(true),
@@ -2604,15 +2664,15 @@
       it.qty = typeof newQty === "number" ? newQty : it.qty + delta;
       closeStkMoveSheet();
       flash(delta < 0
-        ? "✅ ตัด " + it.name + " ออก " + n + " เครื่อง (เหลือ " + it.qty + ")"
-        : "✅ รับ " + it.name + " เข้า " + n + " เครื่อง (รวม " + it.qty + ")");
+        ? "ตัด " + it.name + " ออก " + n + " เครื่อง (เหลือ " + it.qty + ")"
+        : "รับ " + it.name + " เข้า " + n + " เครื่อง (รวม " + it.qty + ")");
       renderStock();
       fetchStockMoves().then(renderStockMoves).catch(function () {});
     }).catch(function (e2) {
       el.stkMoveOkBtn.disabled = false;
       el.stkMoveOkBtn.textContent = "บันทึก";
       el.stkErr.textContent = String(e2.message).indexOf("QTY_BELOW_ZERO") !== -1
-        ? "ยอดบนเว็บมีไม่พอ (มีคนตัดไปก่อนหน้า) — กด 🔄 รีเฟรชดูยอดล่าสุด"
+        ? "ยอดบนเว็บมีไม่พอ (มีคนตัดไปก่อนหน้า) — กด รีเฟรชดูยอดล่าสุด"
         : "บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง";
     });
   });
@@ -2622,7 +2682,7 @@
     var grps = stockGrouped().map(function (go) { return go.grp; });
     el.stkItemGrp.innerHTML = grps.map(function (g) {
       return '<option value="' + esc(g) + '">' + esc(g || "ไม่ระบุกลุ่ม") + "</option>";
-    }).join("") + '<option value="__new__">➕ สร้างกลุ่มใหม่...</option>';
+    }).join("") + '<option value="__new__">＋ สร้างกลุ่มใหม่...</option>';
     el.stkItemGrpNewWrap.hidden = grps.length > 0;
     if (!grps.length) el.stkItemGrp.value = "__new__";
     el.stkItemGrpNew.value = "";
@@ -2639,7 +2699,7 @@
     el.stkItemSheet.classList.remove("show");
   }
   el.stockAddBtn.addEventListener("click", function () {
-    if (!stockItems) { flash("⏳ รอโหลดสต๊อกก่อนสักครู่ แล้วลองใหม่"); return; }
+    if (!stockItems) { flash("รอโหลดสต๊อกก่อนสักครู่ แล้วลองใหม่"); return; }
     openStkItemSheet();
   });
   el.stkItemGrp.addEventListener("change", function () {
@@ -2661,7 +2721,7 @@
     var maxPos = 0;
     (stockItems || []).forEach(function (x) { if (x.pos > maxPos) maxPos = x.pos; });
     el.stkItemOkBtn.disabled = true;
-    el.stkItemOkBtn.textContent = "⏳ กำลังบันทึก...";
+    el.stkItemOkBtn.textContent = "กำลังบันทึก...";
     var by = "";
     try { by = localStorage.getItem(STK_BY_KEY) || ""; } catch (e) {}
     fetch(SUPABASE_URL + "/rest/v1/stock_items", {
@@ -2689,7 +2749,7 @@
     }).then(function (row) {
       stockItems.push(row);
       closeStkItemSheet();
-      flash("✅ เพิ่ม " + row.name + " เข้าสต๊อกแล้ว");
+      flash("เพิ่ม " + row.name + " เข้าสต๊อกแล้ว");
       renderStock();
       fetchStockMoves().then(renderStockMoves).catch(function () {});
     }).catch(function () {
@@ -2711,10 +2771,10 @@
     }).then(function (r) {
       if (!r.ok) throw new Error("del " + r.status);
       stockItems = stockItems.filter(function (x) { return x.id !== id; });
-      flash("🗑 ลบ " + it.name + " แล้ว");
+      flash("ลบ " + it.name + " แล้ว");
       renderStock();
     }).catch(function () {
-      flash("⚠️ ลบไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
+      flash("ลบไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
     });
   }
 
@@ -2722,7 +2782,7 @@
   function stockSummaryText() {
     var d = new Date();
     var yy = (d.getFullYear() + 543) % 100;   // ปี พ.ศ. 2 หลัก เช่น 69
-    var lines = ["📦 สต๊อกเครื่อง อัพเดท " + d.getDate() + "/" + (d.getMonth() + 1) + "/" + yy, ""];
+    var lines = ["สต๊อกเครื่อง อัพเดท " + d.getDate() + "/" + (d.getMonth() + 1) + "/" + yy, ""];
     stockGrouped().forEach(function (go) {
       lines.push(go.grp || "อื่นๆ");
       go.items.forEach(function (it) {
@@ -2741,10 +2801,10 @@
       navigator.share({ text: txt }).catch(function () {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).then(function () {
-        flash("📋 คัดลอกสรุปแล้ว — ไปวางในกลุ่มไลน์ได้เลย");
+        flash("คัดลอกสรุปแล้ว — ไปวางในกลุ่มไลน์ได้เลย");
       });
     } else {
-      flash("⚠️ เบราว์เซอร์นี้ไม่รองรับการคัดลอก");
+      flash("เบราว์เซอร์นี้ไม่รองรับการคัดลอก");
     }
   });
 
@@ -2773,7 +2833,7 @@
     el.loginErr.textContent = "";
     el.loginPage.hidden = true;
     applyRole();
-    flash(role === "boss" ? "👑 เข้าระบบด้วยรหัสเจ้าของ" : "🧑‍🔧 เข้าระบบด้วยรหัสช่าง");
+    flash(role === "boss" ? "เข้าระบบด้วยรหัสเจ้าของ" : "‍เข้าระบบด้วยรหัสช่าง");
   }
   el.loginBtn.addEventListener("click", tryLogin);
   el.loginPin.addEventListener("keydown", function (e) { if (e.key === "Enter") tryLogin(); });
@@ -2795,10 +2855,10 @@
     el.cloudStatus.textContent = txt;
   }
   function cloudOkStatus() {
-    setCloudStatus("ok", "☁️ ข้อมูลกลางล่าสุด · " + customers.length + " ร้าน · " + timeStr() + " · " + PM_VERSION);
+    setCloudStatus("ok", "ข้อมูลกลางล่าสุด · " + customers.length + " ร้าน · " + timeStr() + " · " + PM_VERSION);
   }
   function refreshFromCloud() {
-    setCloudStatus("", "☁️ กำลังเชื่อมต่อข้อมูลกลาง...");
+    setCloudStatus("", "กำลังเชื่อมต่อข้อมูลกลาง...");
     return migrateLocalToCloud().catch(function () {})
       .then(fetchCustomers)
       .then(function () {
@@ -2809,8 +2869,8 @@
       .catch(function () {
         cloudLoaded = true;  // ออฟไลน์ — ใช้แคชในเครื่องไปก่อน
         renderList();
-        setCloudStatus("err", "📴 ต่อข้อมูลกลางไม่ได้ — แสดงข้อมูลที่เคยโหลดในเครื่องนี้ · " + PM_VERSION);
-        flash("📴 โหลดจากเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกด 🔄 รีเฟรช");
+        setCloudStatus("err", "ต่อข้อมูลกลางไม่ได้ — แสดงข้อมูลที่เคยโหลดในเครื่องนี้ · " + PM_VERSION);
+        flash("โหลดจากเว็บไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วกด รีเฟรช");
       });
   }
   // ==================== นำเข้าลูกค้าจากไฟล์ (Excel / CSV) ====================
@@ -3012,7 +3072,7 @@
     impRows = impRows.filter(function (r) {
       return !(r.serial && exS[impNorm(r.serial)]) && !exNM[impNorm(r.name) + "|" + impNorm(r.model)];
     });
-    if (!impRows.length) { closeImp(); flash("✅ ข้อมูลทั้งหมดมีในระบบแล้ว — ไม่มีอะไรต้องนำเข้าเพิ่ม"); return; }
+    if (!impRows.length) { closeImp(); flash("ข้อมูลทั้งหมดมีในระบบแล้ว — ไม่มีอะไรต้องนำเข้าเพิ่ม"); return; }
     var rows = impRows.map(function (r) {
       return {
         id: newId(), name: r.name, phone: r.phone, type: r.type, model: r.model, serial: r.serial,
@@ -3025,7 +3085,7 @@
     function nextBatch() {
       if (done >= rows.length) return Promise.resolve();
       var chunk = rows.slice(done, done + 50);
-      el.impOkBtn.textContent = "⏳ กำลังบันทึก " + Math.min(done + 50, rows.length) + "/" + rows.length + "...";
+      el.impOkBtn.textContent = "กำลังบันทึก " + Math.min(done + 50, rows.length) + "/" + rows.length + "...";
       return fetch(SUPABASE_URL + "/rest/v1/pm_stores", {
         method: "POST",
         headers: Object.assign(sbHeaders(true), { Prefer: "return=minimal" }),
@@ -3041,7 +3101,7 @@
     }).then(function () {
       renderList();
       closeImp();
-      flash("📥 นำเข้าแล้ว " + rows.length + " เครื่อง");
+      flash("นำเข้าแล้ว " + rows.length + " เครื่อง");
     }).catch(function (e) {
       el.impErr.textContent = "บันทึกไม่สำเร็จ (" + e.message + ") — บันทึกไปแล้ว " + done + " เครื่อง เช็คเน็ตแล้วลองใหม่";
       el.impOkBtn.disabled = false;
@@ -3095,7 +3155,7 @@
     var provCount = Object.keys(st.byProv).length;
     el.mapSub.textContent = customers.length
       ? "รวม " + st.shopTotal + " ร้าน · " + st.machTotal + " เครื่อง ใน " + provCount + " จังหวัด"
-      : (cloudLoaded ? "ยังไม่มีลูกค้าในระบบ" : "⏳ กำลังโหลดข้อมูลจากเว็บ...");
+      : (cloudLoaded ? "ยังไม่มีลูกค้าในระบบ" : "กำลังโหลดข้อมูลจากเว็บ...");
 
     // วาดจังหวัดก่อน แล้วค่อยวางตัวเลข+ชื่อจังหวัดทับ ให้ตัวหนังสือลอยเหนือเส้นขอบเสมอ
     var svg = provs.map(function (p) {
@@ -3141,7 +3201,7 @@
           '<span class="s-n">' + arr.length + " เครื่อง</span></div>" +
           arr.map(function (c) {
             return '<div class="mp-shop mp-mach" data-id="' + esc(c.id) + '"><div class="s-info">' +
-              '<div class="s-sub">🔧 ' + esc([c.type, c.model, c.serial ? "S/N " + c.serial : ""].filter(Boolean).join(" · ") || "เครื่อง") + "</div></div></div>";
+              '<div class="s-sub">' + esc([c.type, c.model, c.serial ? "S/N " + c.serial : ""].filter(Boolean).join(" · ") || "เครื่อง") + "</div></div></div>";
           }).join("");
       }).join("");
     }
@@ -3164,25 +3224,25 @@
       var n = Object.keys(pending).length;
       if (!n) return;
       listHtml += '<div class="map-prov" data-prov="' + esc(p) + '">' +
-        '<div class="mp-head"><span class="mp-name">📍 ' + esc(p) + '</span>' +
+        '<div class="mp-head"><span class="mp-name">' + esc(p) + '</span>' +
         '<span class="mp-cnt">ยังไม่ปักหมุด ' + n + "/" + Object.keys(st.byProv[p]).length + " ร้าน</span></div>" +
         shopRowsHtml(pending) + "</div>";
     });
     if (Object.keys(st.other).length) {
       var pendingO = pendingOf(st.other);
       if (Object.keys(pendingO).length) {
-        listHtml += '<div class="map-prov"><div class="mp-head"><span class="mp-name">❓ ไม่ระบุจังหวัด</span>' +
+        listHtml += '<div class="map-prov"><div class="mp-head"><span class="mp-name">ไม่ระบุจังหวัด</span>' +
           '<span class="mp-cnt">ยังไม่ปักหมุด ' + Object.keys(pendingO).length + " ร้าน</span></div>" +
           shopRowsHtml(pendingO) + "</div>";
       }
     }
     if (listHtml) {
-      listHtml = '<div class="map-hint" style="margin:2px 4px 10px">📌 รายชื่อด้านล่างคือร้านที่<b>ยังไม่มีหมุด</b>ในแผนที่ละเอียด — เปิดร้าน → แก้ไขข้อมูล → วางลิงก์ Google Maps ในช่องที่อยู่ → กด "🔄 อัปเดตพิกัด" แล้วชื่อจะหายจากรายการนี้เอง</div>' + listHtml;
+      listHtml = '<div class="map-hint" style="margin:2px 4px 10px">รายชื่อด้านล่างคือร้านที่<b>ยังไม่มีหมุด</b>ในแผนที่ละเอียด — เปิดร้าน → แก้ไขข้อมูล → วางลิงก์ Google Maps ในช่องที่อยู่ → กด "อัปเดตพิกัด" แล้วชื่อจะหายจากรายการนี้เอง</div>' + listHtml;
     }
     el.mapProvList.innerHTML = listHtml ||
       (cloudLoaded
-        ? (customers.length ? '<div class="empty"><div class="big">🎉</div>ปักหมุดครบทุกร้านแล้ว</div>' : '<div class="empty">ยังไม่มีลูกค้าในระบบ</div>')
-        : '<div class="empty">⏳ กำลังโหลดข้อมูลจากเว็บ...</div>');
+        ? (customers.length ? '<div class="empty"><div class="big"></div>ปักหมุดครบทุกร้านแล้ว</div>' : '<div class="empty">ยังไม่มีลูกค้าในระบบ</div>')
+        : '<div class="empty">กำลังโหลดข้อมูลจากเว็บ...</div>');
 
     // ยอดร้านที่มีพิกัดแล้ว โชว์บนปุ่มแผนที่ละเอียด
     var geoN = 0, allN = 0;
@@ -3199,7 +3259,7 @@
     renderMap();
     var card = el.mapProvList.querySelector('.map-prov[data-prov="' + p + '"]');
     if (!card) {
-      flash(mapStats().byProv[p] ? "📍 " + p + " — ปักหมุดครบทุกร้านแล้ว ✅ ดูได้ในแผนที่ละเอียด" : "ยังไม่มีร้านใน จ." + p);
+      flash(mapStats().byProv[p] ? "" + p + " — ปักหมุดครบทุกร้านแล้ว ดูได้ในแผนที่ละเอียด" : "ยังไม่มีร้านใน จ." + p);
       return;
     }
     card.classList.add("hl");
@@ -3239,8 +3299,8 @@
     renderMap();
     var shops = mapStats().byProv[p];
     flash(shops
-      ? "📍 " + p + " — " + Object.keys(shops).length + " ร้าน · " + machOf(shops) + " เครื่อง"
-      : "📍 " + p + " — ยังไม่มีร้าน");
+      ? "" + p + " — " + Object.keys(shops).length + " ร้าน · " + machOf(shops) + " เครื่อง"
+      : "" + p + " — ยังไม่มีร้าน");
   });
 
   // ---------- แผนที่ละเอียด (Leaflet — หมุดตัวเลขตามพิกัดจริง แบบภาพตัวอย่างโซนเซอร์วิส) ----------
@@ -3330,9 +3390,9 @@
       var pop = '<div style="min-width:170px"><b>' + num + ". " + esc(s.name) + "</b><br>" +
         '<span style="color:#827674">' + esc(s.province) + (s.district ? " · อ." + esc(s.district) : "") + " · " + s.machines + " เครื่อง</span>" +
         '<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;font-weight:600">' +
-        (s.phone ? '<a href="tel:' + esc(s.phone) + '">📞 โทร</a>' : "") +
-        '<a href="' + esc(nav) + '" target="_blank" rel="noopener">🧭 นำทาง</a>' +
-        '<a href="#" data-open-store="' + esc(s.id) + '">📄 ข้อมูลร้าน</a>' +
+        (s.phone ? '<a href="tel:' + esc(s.phone) + '">โทร</a>' : "") +
+        '<a href="' + esc(nav) + '" target="_blank" rel="noopener">นำทาง</a>' +
+        '<a href="#" data-open-store="' + esc(s.id) + '">ข้อมูลร้าน</a>' +
         "</div></div>";
       var marker = L.marker([s.lat, s.lng], { icon: icon }).addTo(pinMap).bindPopup(pop);
       pinMarkers.push({ marker: marker, shop: s });
@@ -3346,7 +3406,7 @@
   }
   function renderPinSheet(list) {
     $("pmmSheet").innerHTML =
-      '<div style="font-weight:700;margin-bottom:4px">📋 รายชื่อร้าน (' + list.length + ' จุด) — แตะเพื่อซูมไปหมุด' +
+      '<div style="font-weight:700;margin-bottom:4px">รายชื่อร้าน (' + list.length + ' จุด) — แตะเพื่อซูมไปหมุด' +
       '<button type="button" id="pmmSheetClose" style="float:right;border:none;background:none;font-size:1.05rem;cursor:pointer;color:var(--muted)">✕</button></div>' +
       list.map(function (s, i) {
         return '<div class="pmm-row" data-idx="' + i + '">' +
@@ -3424,13 +3484,13 @@
   // ดูดพิกัดจากลิงก์ Google Maps ที่แปะไว้ในช่องที่อยู่ (ร้านที่ยังไม่มีพิกัด)
   $("pmmSync").addEventListener("click", function () {
     var btn = this;
-    btn.disabled = true; btn.textContent = "⏳ กำลังดูด...";
+    btn.disabled = true; btn.textContent = "กำลังดูด...";
     fetch("api/geo-sync").then(function (r) { return r.json(); }).then(function (j) {
-      btn.disabled = false; btn.textContent = "🔄 อัปเดตพิกัด";
-      flash(j.updated ? "✅ ได้พิกัดเพิ่ม " + j.updated + " ร้าน" : "ไม่มีลิงก์ใหม่ให้ดูดพิกัด — แปะลิงก์ Google Maps ในช่องที่อยู่ของร้านก่อน");
+      btn.disabled = false; btn.textContent = "อัปเดตพิกัด";
+      flash(j.updated ? "ได้พิกัดเพิ่ม " + j.updated + " ร้าน" : "ไม่มีลิงก์ใหม่ให้ดูดพิกัด — แปะลิงก์ Google Maps ในช่องที่อยู่ของร้านก่อน");
       if (j.updated) fetchCustomers().then(function () { renderPins(); renderMap(); }).catch(function () {});
     }).catch(function () {
-      btn.disabled = false; btn.textContent = "🔄 อัปเดตพิกัด";
+      btn.disabled = false; btn.textContent = "อัปเดตพิกัด";
       flash("อัปเดตพิกัดไม่สำเร็จ ลองใหม่อีกครั้ง");
     });
   });
