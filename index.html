@@ -6,126 +6,140 @@
 <title>ระบบเตือนรอบ PM · บริษัทโอเมก้าอีสาน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Kanit:wght@500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" defer></script>
 <style>
-  /* ============ โทเคนดีไซน์ — "แผงควบคุมเครื่อง + ป้ายตรวจเช็ค" ============ */
+  /* ============ โทเคนดีไซน์ — "ครีม-แดงโอเมก้า" (ตามม็อค Omega PM - Standalone 14 ก.ย. 2569) ============ */
   :root {
-    --bg: #EEF3F5;            /* ขาวพอร์ซเลน */
+    --bg: #faf6f4;            /* ครีมอุ่น */
     --card: #ffffff;
-    --text: #142833;          /* น้ำเงินหมึก */
-    --muted: #5D7480;
-    --border: #D7E1E6;
-    --panel: #0E2C3A;         /* แผงเข้ม */
-    --panel-2: #123647;
-    --ice: #8FD4EA;           /* ฟ้าน้ำแข็ง — สีเน้นบนพื้นเข้ม */
-    --primary: #1D6786;
-    --primary-soft: #E2EEF3;
-    --red: #B93A2B;
-    --red-bg: #F9E9E6;
-    --red-b: #FF9282;         /* แดงบนพื้นเข้ม */
-    --yellow: #92600C;
-    --yellow-bg: #F9F0DB;
-    --yellow-b: #FFC670;
-    --green: #2E7D4F;
-    --green-bg: #E6F3EC;
-    --green-b: #7BD6A1;
-    --radius: 16px;
-    --shadow: 0 10px 30px rgba(14,44,58,.16);
+    --surface: #f1e9e6;       /* พื้นการ์ดครีมเข้ม */
+    --text: #1c1818;
+    --muted: #827674;
+    --border: #E3D9D6;
+    --panel: #2e2929;         /* พื้นเข้มอุ่น — โมดัลแผนที่/ทอสต์ */
+    --panel-2: #47403f;
+    --ice: #f5837f;           /* สีเน้นบนพื้นเข้ม (ชื่อตัวแปรคงเดิมกันอ้างอิงพัง) */
+    --primary: #d2262b;       /* แดงโอเมก้า */
+    --primary-soft: #fff0ee;
+    --red: #b91f26;
+    --red-bg: #ffdcd8;
+    --red-b: #f5837f;         /* แดงบนพื้นเข้ม */
+    --yellow: #8f1218;        /* "ใกล้ครบ" = ชมพูแดงตามม็อค */
+    --yellow-bg: #ffe9e6;
+    --yellow-b: #ffbdb6;
+    --green: #4f5361;         /* "ปกติ" = เทาสเลทตามม็อค */
+    --green-bg: #e1e3ea;
+    --green-b: #a8acba;
+    --radius: 20px;
+    --shadow: 0 10px 30px rgba(46,41,41,.14);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; font-family: "IBM Plex Sans Thai", "Segoe UI", Tahoma, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.55;
-    min-height: 100vh;
+    min-height: 100vh; -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .btn, .fab, .sum-box .n, .cust-card .avi, .count-badge, .back-btn {
+    font-family: "Kanit", "IBM Plex Sans Thai", sans-serif; letter-spacing: 0;
   }
   .app { max-width: 520px; margin: 0 auto; padding: 0 14px 110px; }
   #pageDetail, #pageStock, #pageMap, #pageQrView { padding-top: 16px; }
 
   :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-  .top-panel :focus-visible, #loginPage :focus-visible,
   #bigMapModal :focus-visible, #pinMapModal :focus-visible { outline-color: var(--ice); }
 
-  /* หน้าล็อกอิน (2 รหัส: ช่าง / เจ้าของ) */
+  /* หน้าล็อกอิน (2 รหัส: ช่าง / เจ้าของ) — ธีมครีมสว่าง */
   #loginPage {
     position: fixed; inset: 0; z-index: 999;
-    background: radial-gradient(120% 90% at 50% 0%, var(--panel-2) 0%, #0B222D 72%);
-    display: flex; align-items: center; justify-content: center; padding: 24px; color: #fff;
+    background: radial-gradient(120% 90% at 50% 0%, #fff 0%, var(--bg) 55%, var(--surface) 100%);
+    display: flex; align-items: center; justify-content: center; padding: 24px; color: var(--text);
   }
   #loginPage[hidden] { display: none; }
   .login-box { width: 100%; max-width: 320px; text-align: center; }
   .login-box .big-icon {
-    width: 76px; height: 76px; margin: 0 auto 16px; font-size: 34px;
+    width: 84px; height: 84px; margin: 0 auto 16px; overflow: hidden;
     display: flex; align-items: center; justify-content: center; border-radius: 50%;
-    background: rgba(143,212,234,.08); border: 1px solid rgba(143,212,234,.35);
+    background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow);
   }
-  .login-box h2 { margin: 0 0 4px; color: #fff; font-size: 1.4rem; font-weight: 600; }
-  .login-box .sub { color: rgba(255,255,255,.55); font-size: .88rem; margin: 0 0 18px; }
-  #loginPage .motto { color: var(--ice); background: none; border: none; padding: 0; font-size: .82rem; font-weight: 500; }
+  .login-box .big-icon img { width: 100%; height: 100%; object-fit: contain; }
+  .login-box h2 { margin: 0 0 4px; color: var(--text); font-size: 1.45rem; font-weight: 600; }
+  .login-box .sub { color: var(--muted); font-size: .88rem; margin: 0 0 18px; }
+  #loginPage .motto { color: var(--primary); background: none; border: none; padding: 0; font-size: .82rem; font-weight: 500; }
   .login-box input {
     width: 100%; text-align: center; font-size: 1.6rem; letter-spacing: 10px;
-    padding: 12px 10px; border: 1.5px solid rgba(255,255,255,.2); border-radius: 12px;
-    background: rgba(255,255,255,.07); color: #fff; outline: none;
+    padding: 12px 10px; border: 1.5px solid var(--border); border-radius: 999px;
+    background: #fff; color: var(--text); outline: none;
     font-family: inherit; font-variant-numeric: tabular-nums;
   }
-  .login-box input:focus { border-color: var(--ice); }
+  .login-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(210,38,43,.12); }
   .login-box .btn { margin-top: 14px; }
-  #loginPage .btn.primary { background: var(--ice); color: #0B222D; font-weight: 700; box-shadow: none; }
-  .login-box .err { color: var(--red-b); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
-  #loginPage .err { color: var(--red-b); }
+  #loginPage .btn.primary { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 6px 16px rgba(210,38,43,.25); }
+  .login-box .err { color: var(--red); font-size: .85rem; min-height: 1.3em; margin-top: 10px; }
+  #loginPage .err { color: var(--red); }
 
-  /* ============ แผงหัวเข้ม (เฉพาะหน้ารายชื่อ) ============ */
+  /* ============ แผงหัวครีม + ฮีโร่ (เฉพาะหน้ารายชื่อ) ============ */
   .top-panel {
-    margin: 0 -14px 14px; padding: 18px 18px 16px;
-    background: linear-gradient(178deg, #0C2530 0%, var(--panel) 55%, var(--panel-2) 100%);
-    border-radius: 0 0 22px 22px; color: #fff;
+    margin: 0 -14px 14px; padding: 14px 18px 18px;
+    background: var(--bg); color: var(--text);
   }
   @media (prefers-reduced-motion: no-preference) {
     .top-panel { animation: panelIn .45s cubic-bezier(.22,1,.36,1) both; }
     @keyframes panelIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
   }
 
-  header.top { display: flex; align-items: center; justify-content: space-between; gap: 4px 10px; margin-bottom: 10px; flex-wrap: wrap; }
-  header.top h1 { font-size: 1.28rem; margin: 0; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 4px 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand img { height: 40px; width: 40px; object-fit: cover; border-radius: 999px; border: 1px solid var(--border); background: #fff; }
+  .brand .b-t { display: flex; flex-direction: column; line-height: 1.15; }
+  .brand .b-name { font-family: "Kanit", sans-serif; font-weight: 600; font-size: 1.05rem; }
+  .brand .b-sub { font-size: .72rem; color: var(--muted); }
   header.top .home-link { font-size: .8rem; color: var(--muted); text-decoration: none; border: 1px solid var(--border); background: var(--card); padding: 6px 12px; border-radius: 999px; }
   .motto {
     display: inline-block; font-size: .8rem; font-weight: 500; color: var(--muted);
     background: none; border: none; padding: 0; line-height: 1.5;
   }
-  .top-panel .motto { color: var(--ice); opacity: .9; }
+  .top-panel .motto {
+    color: var(--primary); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 600;
+  }
   .motto-line { text-align: center; margin: 0 0 12px; }
+
+  .hero { margin: 6px 0 14px; }
+  .hero h1 { margin: 0 0 2px; font-size: clamp(1.7rem, 6vw, 2.4rem); font-weight: 600; line-height: 1.15; }
+  .hero .hero-sub { margin: 0; font-size: .86rem; color: var(--muted); }
 
   /* แถบสถานะข้อมูลกลาง */
   .cloud-bar {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    font-size: .78rem; color: rgba(255,255,255,.55); margin: 0 0 12px; padding: 0 2px;
+    font-size: .78rem; color: var(--muted); margin: 0 0 4px; padding: 0 2px;
   }
   .cloud-bar .st { min-width: 0; }
-  .cloud-bar .st.ok { color: var(--green-b); }
-  .cloud-bar .st.err { color: var(--red-b); }
+  .cloud-bar .st.ok { color: var(--green); }
+  .cloud-bar .st.err { color: var(--red); }
   .cloud-bar button {
-    flex-shrink: 0; border: none; background: rgba(255,255,255,.12); color: #fff;
+    flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--text);
     border-radius: 999px; padding: 6px 12px; font-family: inherit; font-size: .76rem; font-weight: 600; cursor: pointer;
   }
-  .cloud-bar button:active { background: rgba(255,255,255,.26); }
+  .cloud-bar button:active { background: var(--surface); }
 
-  /* แถบสรุป 3 ช่อง — หน้าปัดคิวงาน */
+  /* แถบสรุป 3 ช่อง — ปุ่มสถิติใหญ่กดกรองได้ (ตามม็อค) */
   .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 2px; }
   .sum-box {
-    border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 10px 6px 8px; text-align: center;
-    cursor: pointer; transition: transform .1s, border-color .15s, background-color .15s;
-    background: rgba(255,255,255,.06); font-family: inherit; color: #fff;
+    border: 2px solid transparent; border-radius: var(--radius); padding: 12px 8px 10px; text-align: left;
+    cursor: pointer; transition: transform .1s, border-color .15s, background-color .15s, box-shadow .15s;
+    font-family: inherit; display: flex; flex-direction: column; gap: 2px; align-items: flex-start;
+    padding-left: 14px;
   }
   .sum-box:active { transform: scale(.97); }
-  .sum-box .n { font-size: 1.7rem; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
-  .sum-box .l { font-size: .7rem; color: rgba(255,255,255,.55); }
-  .sum-box.red .n { color: var(--red-b); font-weight: 700; }
-  .sum-box.red .l { color: rgba(255,255,255,.75); }
-  .sum-box.yellow .n { color: var(--yellow-b); }
-  .sum-box.green .n { color: var(--green-b); }
-  .sum-box.red.active { border-color: var(--red-b); background: rgba(255,146,130,.14); }
-  .sum-box.yellow.active { border-color: var(--yellow-b); background: rgba(255,198,112,.14); }
-  .sum-box.green.active { border-color: var(--green-b); background: rgba(123,214,161,.14); }
+  .sum-box .n { font-size: 1.9rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .sum-box .l { font-size: .68rem; }
+  .sum-box.red { background: var(--primary); color: #fff; box-shadow: 0 3px 10px rgba(210,38,43,.25); }
+  .sum-box.red .l { opacity: .9; }
+  .sum-box.yellow { background: var(--red-bg); color: #8f1218; }
+  .sum-box.green { background: var(--green-bg); color: #23252c; }
+  .sum-box.red.active { border-color: #8f1218; background: #b91f26; }
+  .sum-box.yellow.active { border-color: #f5837f; background: #ffbdb6; }
+  .sum-box.green.active { border-color: #878c9c; background: #c9ccd6; }
 
   /* แจ้งเตือนสติ๊กเกอร์ QR ครบ 1 ปี (ปริ้นจากกระดาษ สีซีด/ลอกได้) */
   .sticker-bar {
@@ -150,25 +164,30 @@
     width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border); border-radius: 12px;
     font-family: inherit; font-size: .95rem; background: var(--card); color: var(--text);
   }
-  .search-wrap input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,103,134,.12); }
+  .search-wrap input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(210,38,43,.12); }
   .search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
 
-  /* การ์ดลูกค้า — ป้ายตรวจเช็ค: สันสีบอกสถานะ ป้ายวันมุมขวา */
+  /* การ์ดลูกค้า — แถวมนแบบม็อค: วงกลมอักษรย่อบอกสถานะ + ป้ายวันมุมขวา */
   .cust-card {
-    display: flex; align-items: center; gap: 10px; background: var(--card);
-    border: 1px solid var(--border); border-left: 4px solid var(--green);
-    border-radius: 12px; padding: 11px 12px 11px 14px; margin-bottom: 8px; cursor: pointer; transition: transform .1s;
+    display: flex; align-items: center; gap: 12px; background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px; padding: 12px 14px 12px 12px; margin-bottom: 8px; cursor: pointer; transition: transform .1s;
   }
   .cust-card:active { transform: scale(.985); }
-  .cust-card.red { border-left-color: var(--red); }
-  .cust-card.yellow { border-left-color: var(--yellow); }
-  .cust-card.green { border-left-color: var(--green); }
+  .cust-card .avi {
+    width: 44px; height: 44px; border-radius: 50%; flex: none; align-self: flex-start;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 1.1rem; margin-top: 2px;
+  }
+  .cust-card.red .avi { background: var(--primary); color: #fff; }
+  .cust-card.yellow .avi { background: var(--red-bg); color: #8f1218; }
+  .cust-card.green .avi { background: var(--green-bg); color: #23252c; }
   .cust-card .info { flex: 1; min-width: 0; }
   .cust-card .name { font-weight: 600; font-size: .98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cust-card .phone { font-size: .84rem; color: var(--primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; }
   .cust-card .prov { font-size: .78rem; color: var(--muted); margin-top: 1px; }
   .cust-card .phone:active { opacity: .6; }
-  .cust-card .days { flex-shrink: 0; text-align: center; padding: 5px 10px; border-radius: 9px; min-width: 62px; }
+  .cust-card .days { flex-shrink: 0; text-align: center; padding: 5px 10px; border-radius: 14px; min-width: 62px; }
   .cust-card .days .dn { font-size: 1.15rem; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
   .cust-card .days .dl { font-size: .66rem; color: var(--muted); }
   .cust-card.red .days { background: var(--red-bg); }
@@ -187,9 +206,9 @@
   /* ปุ่มลอย */
   .fab {
     position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px; z-index: 20;
-    background: var(--panel); color: #fff; border: 1px solid rgba(143,212,234,.35); border-radius: 999px;
-    padding: 15px 28px; font-size: 1rem; font-weight: 600; font-family: inherit; cursor: pointer;
-    box-shadow: 0 10px 24px rgba(14,44,58,.35);
+    background: var(--primary); color: #fff; border: none; border-radius: 999px;
+    padding: 15px 28px; font-size: 1rem; font-weight: 500; cursor: pointer;
+    box-shadow: 0 10px 24px rgba(210,38,43,.35);
   }
   .fab:active { transform: translateX(-50%) scale(.96); }
 
@@ -222,10 +241,10 @@
     display: flex; align-items: center; justify-content: center; gap: 8px;
     background: var(--primary); color: #fff; text-decoration: none; border-radius: 12px;
     padding: 15px; font-size: 1.05rem; font-weight: 600; margin-bottom: 12px;
-    box-shadow: 0 6px 16px rgba(29,103,134,.25);
+    box-shadow: 0 6px 16px rgba(210,38,43,.25);
   }
   .call-btn:active { opacity: .85; }
-  .map-btn { background: #1E7E43; box-shadow: 0 6px 16px rgba(30,126,67,.25); }
+  .map-btn { background: #4f5361; box-shadow: 0 6px 16px rgba(79,83,97,.25); }
 
   table.info { width: 100%; border-collapse: collapse; font-size: .9rem; }
   table.info td { padding: 9px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -255,13 +274,13 @@
   }
   .btn:active { opacity: .85; }
   .btn:disabled { opacity: .45; cursor: default; }
-  .btn.primary { background: var(--green); color: #fff; box-shadow: 0 6px 16px rgba(46,125,79,.22); }
+  .btn.primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(210,38,43,.22); }
   .btn.secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
   .btn.danger { background: var(--card); color: var(--red); border: 1px solid var(--red-bg); }
 
   /* bottom sheet */
   .sheet-overlay {
-    position: fixed; inset: 0; background: rgba(11,34,45,.5); z-index: 30;
+    position: fixed; inset: 0; background: rgba(36,31,31,.5); z-index: 30;
     opacity: 0; pointer-events: none; transition: opacity .2s;
   }
   .sheet-overlay.show { opacity: 1; pointer-events: auto; }
@@ -270,7 +289,7 @@
     background: var(--card); border-radius: 20px 20px 0 0; padding: 18px 18px 26px;
     max-width: 520px; margin: 0 auto; max-height: 88vh; overflow-y: auto;
     transform: translateY(105%); transition: transform .25s cubic-bezier(.22,1,.36,1);
-    box-shadow: 0 -12px 36px rgba(11,34,45,.25);
+    box-shadow: 0 -12px 36px rgba(36,31,31,.25);
   }
   .sheet.show { transform: translateY(0); }
   .sheet .grip { width: 44px; height: 5px; background: var(--border); border-radius: 99px; margin: 0 auto 14px; }
@@ -282,7 +301,7 @@
     font-family: inherit; font-size: .95rem; background: var(--bg); color: var(--text);
   }
   .field input:focus, .field select:focus, .field textarea:focus {
-    outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(29,103,134,.12);
+    outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(210,38,43,.12);
   }
   .field textarea { resize: vertical; min-height: 60px; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -299,7 +318,7 @@
   #toast {
     position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(16px);
     background: var(--panel); color: #fff; padding: 11px 20px; border-radius: 999px;
-    font-size: .9rem; font-weight: 600; box-shadow: 0 8px 24px rgba(11,34,45,.35);
+    font-size: .9rem; font-weight: 600; box-shadow: 0 8px 24px rgba(36,31,31,.35);
     opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 50;
     max-width: 90vw; text-align: center;
   }
@@ -328,9 +347,9 @@
   .qrv-check {
     width: 72px; height: 72px; border-radius: 50%; background: var(--green-bg); color: var(--green);
     font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px; border: 1px solid rgba(46,125,79,.25);
+    margin: 0 auto 12px; border: 1px solid rgba(79,83,97,.25);
   }
-  .qrv-check.warn { background: var(--yellow-bg); color: var(--yellow); border-color: rgba(146,96,12,.25); }
+  .qrv-check.warn { background: var(--yellow-bg); color: var(--yellow); border-color: rgba(143,18,24,.2); }
   .qrv-footer { text-align: center; color: var(--muted); font-size: .82rem; margin-top: 16px; }
 
   /* รูปการตรวจเช็ค */
@@ -367,8 +386,8 @@
   .stock-bar .arr { color: var(--primary); font-size: .82rem; flex-shrink: 0; }
 
   /* หน้าแผนที่ภาคอีสาน */
-  .map-card { position: relative; background: linear-gradient(180deg, #ffffff 0%, #EAF3F7 100%); overflow: hidden; }
-  .map-card svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 3px 8px rgba(29,103,134,.16)); }
+  .map-card { position: relative; background: linear-gradient(180deg, #ffffff 0%, #f5ebe8 100%); overflow: hidden; }
+  .map-card svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 3px 8px rgba(210,38,43,.16)); }
   .map-card path, #bigMapSvg path { stroke: #fff; stroke-width: 1.6; cursor: pointer; transition: fill .25s, opacity .15s; }
   .map-card path:active, #bigMapSvg path:active { opacity: .75; }
   .map-card path.sel { stroke: var(--text); stroke-width: 3; }
@@ -384,11 +403,11 @@
     display: inline-flex; align-items: center; gap: 6px; background: #fff;
     border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-weight: 600;
   }
-  .map-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 4px; border: 1px solid rgba(20,40,51,.12); }
+  .map-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 4px; border: 1px solid rgba(28,24,24,.12); }
   .map-hint { color: var(--muted); font-size: .82rem; margin-top: 10px; }
 
   /* แผนที่เต็มจอ */
-  #bigMapModal { position: fixed; inset: 0; z-index: 60; background: linear-gradient(180deg, #0B222D 0%, var(--panel-2) 100%); display: flex; flex-direction: column; }
+  #bigMapModal { position: fixed; inset: 0; z-index: 60; background: linear-gradient(180deg, #241f1f 0%, var(--panel-2) 100%); display: flex; flex-direction: column; }
   .bm-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; color: #fff; }
   .bm-top .bm-title { font-weight: 600; font-size: 1.02rem; min-width: 0; }
   .bm-top .bm-sub { font-size: .76rem; color: rgba(255,255,255,.6); font-weight: 500; }
@@ -400,12 +419,12 @@
   .bm-tools button:active { background: rgba(255,255,255,.26); }
   .bm-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 12px; }
   #bigMapSvg { width: var(--bmw, 165%); max-width: none; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 8px 22px rgba(0,0,0,.4)); }
-  #bigMapSvg path { stroke: #0E2C3A; stroke-width: 1.1; }
+  #bigMapSvg path { stroke: #2e2929; stroke-width: 1.1; }
   #bigMapSvg path.sel { stroke: var(--ice); stroke-width: 3; }
   .bm-hint { color: rgba(255,255,255,.7); text-align: center; font-size: .8rem; padding: 8px 12px 14px; }
 
   /* แผนที่ละเอียด — หมุดตามพิกัดจริง (Leaflet) */
-  #pinMapModal { position: fixed; inset: 0; z-index: 70; background: #0B222D; display: flex; flex-direction: column; }
+  #pinMapModal { position: fixed; inset: 0; z-index: 70; background: #241f1f; display: flex; flex-direction: column; }
   #pmmBar { display: flex; gap: 8px; padding: 0 14px 10px; flex: none; }
   #pmmProv {
     flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; border: none;
@@ -452,7 +471,7 @@
     padding: 28px 14px; text-align: center; color: var(--primary); font-weight: 600;
     cursor: pointer; margin-bottom: 12px; line-height: 1.6;
   }
-  .imp-drop.drag { background: #CBE5F0; border-style: solid; }
+  .imp-drop.drag { background: #ffd9d5; border-style: solid; }
   .imp-drop .sub { font-size: .8rem; font-weight: 500; color: var(--muted); }
   .imp-info { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: .88rem; margin-bottom: 12px; white-space: pre-line; }
 
@@ -486,7 +505,8 @@
   @media (min-width: 880px) {
     .app { max-width: 1100px; padding: 0 28px 120px; }
     .top-panel { margin: 0 -28px 18px; padding: 22px 30px 20px; border-radius: 0 0 26px 26px; }
-    header.top h1 { font-size: 1.45rem; }
+    .brand img { height: 46px; width: 46px; }
+    .hero h1 { font-size: 2.6rem; }
     .sum-box { padding: 14px 8px 12px; }
     .sum-box .n { font-size: 2rem; }
     .sum-box .l { font-size: .78rem; }
@@ -513,7 +533,7 @@
       border-radius: 20px; max-height: 86vh; padding: 22px 24px 26px;
       transform: translate(-50%, -50%) translateY(14px); opacity: 0; pointer-events: none; visibility: hidden;
       transition: transform .22s cubic-bezier(.22,1,.36,1), opacity .18s, visibility .18s;
-      box-shadow: 0 24px 64px rgba(11,34,45,.35);
+      box-shadow: 0 24px 64px rgba(36,31,31,.35);
     }
     .sheet.show { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; visibility: visible; }
     .sheet .grip { display: none; }
@@ -522,10 +542,10 @@
   /* hover สำหรับเมาส์ (ไม่แตะมือถือ) */
   @media (hover: hover) and (pointer: fine) {
     .cust-card { transition: transform .1s, box-shadow .15s; }
-    .cust-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14,44,58,.1); }
+    .cust-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(46,41,41,.1); }
     .stock-bar:hover { background: var(--bg); }
     .menu-group .stock-bar:hover { background: var(--bg); }
-    .sum-box:hover { background: rgba(255,255,255,.12); }
+    .sum-box:hover { filter: brightness(1.04); }
     .btn:hover, .fab:hover, .call-btn:hover { filter: brightness(1.06); }
     .back-btn:hover, .qr-btn:hover, .cycle-quick:not(.active):hover { background: var(--primary-soft); }
     .cloud-bar button:hover { background: rgba(255,255,255,.22); }
@@ -538,7 +558,7 @@
 <body>
 <div id="loginPage" hidden>
   <div class="login-box">
-    <div class="big-icon">🔧</div>
+    <div class="big-icon"><img src="logo.png" alt="โอเมก้าอีสาน"></div>
     <h2>เตือนรอบ PM</h2>
     <p class="sub">บริษัทโอเมก้าอีสาน — ใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
     <div class="motto-line"><span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
@@ -553,14 +573,25 @@
   <div id="pageList">
     <div class="top-panel">
     <header class="top">
-      <h1>🔧 เตือนรอบ PM</h1>
-      <span class="motto">💡 ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span>
+      <div class="brand">
+        <img src="logo.png" alt="Omega E-Sarn">
+        <div class="b-t">
+          <span class="b-name">โอเมก้าอีสาน</span>
+          <span class="b-sub">ระบบเตือนรอบ PM</span>
+        </div>
+      </div>
+      <span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span>
     </header>
 
     <div class="cloud-bar">
       <span class="st" id="cloudStatus">☁️ กำลังเชื่อมต่อข้อมูลกลาง...</span>
       <button type="button" id="cloudRefreshBtn">🔄 รีเฟรช</button>
       <button type="button" id="logoutBtn" title="ออกจากระบบ">🔒</button>
+    </div>
+
+    <div class="hero">
+      <h1>รอบ PM สัปดาห์นี้</h1>
+      <p class="hero-sub"><span id="todayLabel"></span>ดูเครื่องที่ครบกำหนด กดโทรหาลูกค้า และบันทึกงานได้จากหน้าเดียว</p>
     </div>
 
     <div class="summary">
@@ -1291,7 +1322,9 @@
       var dn = d === null ? "–" : d < 0 ? "-" + Math.abs(d) : String(d);
       var dl = d === null ? "ยังไม่มี PM" : d < 0 ? "เกินกำหนด (วัน)" : d === 0 ? "ครบวันนี้" : "เหลือ (วัน)";
       var mach = [c.type, c.model].filter(Boolean).join(" · ");
+      var initial = String(c.name || "?").replace(/^ร้าน\s*/, "").trim().charAt(0).toUpperCase() || "?";
       return '<div class="cust-card ' + st + '" data-id="' + c.id + '">' +
+        '<div class="avi">' + esc(initial) + "</div>" +
         '<div class="info">' +
           '<div class="name">' + esc(c.name) + "</div>" +
           (mach ? '<div class="prov">🔧 ' + esc(mach) + "</div>" : "") +
@@ -1317,6 +1350,15 @@
     if (card) openDetail(card.getAttribute("data-id"));
   });
   el.searchInput.addEventListener("input", renderList);
+  // ป้ายวันที่ในฮีโร่ (ตามม็อค: "{วันนี้} · ดูเครื่องที่ครบกำหนด...")
+  (function () {
+    var tl = document.getElementById("todayLabel");
+    if (!tl) return;
+    var M = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+    var D = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัส", "ศุกร์", "เสาร์"];
+    var now = new Date();
+    tl.textContent = "วัน" + D[now.getDay()] + " " + now.getDate() + " " + M[now.getMonth()] + " " + (now.getFullYear() + 543) + " · ";
+  })();
   [["sumRed", "red"], ["sumYellow", "yellow"], ["sumGreen", "green"]].forEach(function (pair) {
     el[pair[0]].addEventListener("click", function () {
       statusFilter = statusFilter === pair[1] ? "" : pair[1];
@@ -3018,7 +3060,7 @@
     { min: 10, fill: "#0F3D50", txt: "#ffffff", label: "10+ เครื่อง" },
     { min: 6,  fill: "#1D6786", txt: "#ffffff", label: "6–9" },
     { min: 3,  fill: "#5E9FBE", txt: "#ffffff", label: "3–5" },
-    { min: 1,  fill: "#BDDCE9", txt: "#142833", label: "1–2" },
+    { min: 1,  fill: "#BDDCE9", txt: "#1c1818", label: "1–2" },
     { min: 0,  fill: "#EDF2F4", txt: "",        label: "ยังไม่มีร้าน" }
   ];
   function mapBucket(n) {
@@ -3286,7 +3328,7 @@
       });
       var nav = s.addr || ("https://www.google.com/maps/dir/?api=1&destination=" + s.lat + "," + s.lng);
       var pop = '<div style="min-width:170px"><b>' + num + ". " + esc(s.name) + "</b><br>" +
-        '<span style="color:#5D7480">' + esc(s.province) + (s.district ? " · อ." + esc(s.district) : "") + " · " + s.machines + " เครื่อง</span>" +
+        '<span style="color:#827674">' + esc(s.province) + (s.district ? " · อ." + esc(s.district) : "") + " · " + s.machines + " เครื่อง</span>" +
         '<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;font-weight:600">' +
         (s.phone ? '<a href="tel:' + esc(s.phone) + '">📞 โทร</a>' : "") +
         '<a href="' + esc(nav) + '" target="_blank" rel="noopener">🧭 นำทาง</a>' +
