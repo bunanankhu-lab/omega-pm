@@ -1039,6 +1039,7 @@
       stickerDate: s.sticker_date || "",      // วันที่ติดสติ๊กเกอร์ QR หน้าเครื่อง
       lat: (s.lat == null ? null : s.lat),    // พิกัดหมุดสำหรับแผนที่ละเอียด
       lng: (s.lng == null ? null : s.lng),
+      district: s.district || "",             // อำเภอ — ใช้กรองในแผนที่ละเอียด (geo-sync เติมให้อัตโนมัติ)
       history: (old && old.history) || null   // โหลดตอนเปิดหน้ารายละเอียด
     };
   }
@@ -3224,8 +3225,9 @@
     var by = {};
     customers.forEach(function (c) {
       var key = (c.name || "") + "||" + (c.province || "");
-      var o = by[key] = by[key] || { name: c.name || "(ไม่มีชื่อร้าน)", province: String(c.province || "").trim() || "ไม่ระบุ", machines: 0, lat: null, lng: null, phone: "", id: c.id, addr: "" };
+      var o = by[key] = by[key] || { name: c.name || "(ไม่มีชื่อร้าน)", province: String(c.province || "").trim() || "ไม่ระบุ", district: "", machines: 0, lat: null, lng: null, phone: "", id: c.id, addr: "" };
       o.machines++;
+      if (!o.district && c.district) o.district = String(c.district).trim();
       if (o.lat == null && c.lat != null && c.lng != null) { o.lat = c.lat; o.lng = c.lng; }
       if (!o.phone && c.phone) o.phone = c.phone;
       if (!o.addr && /https?:\/\//.test(c.address || "")) o.addr = String(c.address).match(/https?:\/\/\S+/)[0];
@@ -3243,16 +3245,36 @@
     var all = pinShops();
     var shops = all.filter(function (s) { return s.lat != null; });
     var provs = {};
-    shops.forEach(function (s) { provs[s.province] = (provs[s.province] || 0) + 1; });
+    shops.forEach(function (s) {
+      var g = provs[s.province] = provs[s.province] || { count: 0, dists: {} };
+      g.count++;
+      var d = s.district || "ไม่ระบุอำเภอ";
+      g.dists[d] = (g.dists[d] || 0) + 1;
+    });
     var sel = $("pmmProv");
     var cur = pinProv;
+    // ค่าใน option: "จังหวัด||" = ทั้งจังหวัด · "จังหวัด||อำเภอ" = เฉพาะอำเภอ (แบบเดียวกับ map.html)
     sel.innerHTML = '<option value="">ทุกจังหวัด (' + shops.length + " ร้าน)</option>" +
       Object.keys(provs).sort(function (a, b) { return a.localeCompare(b, "th"); }).map(function (p) {
-        return '<option value="' + esc(p) + '">' + esc(p) + " (" + provs[p] + " ร้าน)</option>";
+        var g = provs[p];
+        var ds = Object.keys(g.dists).sort(function (a, b) {
+          if (a === "ไม่ระบุอำเภอ") return 1;
+          if (b === "ไม่ระบุอำเภอ") return -1;
+          return a.localeCompare(b, "th");
+        });
+        return '<optgroup label="' + esc(p) + '">' +
+          '<option value="' + esc(p) + '||">' + esc(p) + " ทุกอำเภอ (" + g.count + " ร้าน)</option>" +
+          ds.map(function (d) {
+            return '<option value="' + esc(p) + "||" + esc(d) + '">— ' + esc(d) + " (" + g.dists[d] + " ร้าน)</option>";
+          }).join("") + "</optgroup>";
       }).join("");
     sel.value = cur;
     if (sel.value !== cur) { pinProv = ""; sel.value = ""; }
-    var list = shops.filter(function (s) { return !pinProv || s.province === pinProv; });
+    var pv = "", dv = "";
+    if (pinProv) { var pd = pinProv.split("||"); pv = pd[0]; dv = pd[1] || ""; }
+    var list = shops.filter(function (s) {
+      return (!pv || s.province === pv) && (!dv || (s.district || "ไม่ระบุอำเภอ") === dv);
+    });
     list.sort(function (a, b) { return a.province.localeCompare(b.province, "th") || a.name.localeCompare(b.name, "th"); });
     var group = [];
     list.forEach(function (s, i) {
@@ -3264,7 +3286,7 @@
       });
       var nav = s.addr || ("https://www.google.com/maps/dir/?api=1&destination=" + s.lat + "," + s.lng);
       var pop = '<div style="min-width:170px"><b>' + num + ". " + esc(s.name) + "</b><br>" +
-        '<span style="color:#5D7480">' + esc(s.province) + " · " + s.machines + " เครื่อง</span>" +
+        '<span style="color:#5D7480">' + esc(s.province) + (s.district ? " · อ." + esc(s.district) : "") + " · " + s.machines + " เครื่อง</span>" +
         '<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;font-weight:600">' +
         (s.phone ? '<a href="tel:' + esc(s.phone) + '">📞 โทร</a>' : "") +
         '<a href="' + esc(nav) + '" target="_blank" rel="noopener">🧭 นำทาง</a>' +
@@ -3274,8 +3296,9 @@
       pinMarkers.push({ marker: marker, shop: s });
       group.push(marker);
     });
+    spreadPinOverlaps();
     $("pmmSub").textContent = "ปักหมุดแล้ว " + list.length + " ร้าน" +
-      (pinProv ? " · จ." + pinProv : (all.length > shops.length ? " · ยังไม่มีพิกัด " + (all.length - shops.length) + " ร้าน" : ""));
+      (pv ? " · จ." + pv + (dv ? " อ." + dv : "") : (all.length > shops.length ? " · ยังไม่มีพิกัด " + (all.length - shops.length) + " ร้าน" : ""));
     if (group.length) pinMap.fitBounds(L.featureGroup(group).getBounds().pad(0.12));
     renderPinSheet(list);
   }
@@ -3287,8 +3310,26 @@
         return '<div class="pmm-row" data-idx="' + i + '">' +
           '<span class="pin-badge" style="background:' + provColor(s.province) + ';flex:none">' + (i + 1) + "</span>" +
           '<span style="flex:1;min-width:0"><b>' + esc(s.name) + "</b><br>" +
-          '<span style="color:var(--muted);font-size:.78rem">' + esc(s.province) + " · " + s.machines + " เครื่อง</span></span></div>";
+          '<span style="color:var(--muted);font-size:.78rem">' + esc(s.province) + (s.district ? " อ." + esc(s.district) : "") + " · " + s.machines + " เครื่อง</span></span></div>";
       }).join("");
+  }
+  // ร้านพิกัดเดียวกันหมุดจะซ้อนทับจนเห็นตัวเดียว — กางออกเป็นวงรอบจุดจริง (ระยะคงที่เป็นพิกเซล คำนวณใหม่ทุกครั้งที่ซูม)
+  function spreadPinOverlaps() {
+    if (!pinMap) return;
+    var groups = {};
+    pinMarkers.forEach(function (m) {
+      var k = m.shop.lat + "," + m.shop.lng;
+      (groups[k] = groups[k] || []).push(m);
+    });
+    Object.keys(groups).forEach(function (k) {
+      var g = groups[k];
+      if (g.length === 1) { g[0].marker.setLatLng([g[0].shop.lat, g[0].shop.lng]); return; }
+      var c = pinMap.latLngToLayerPoint([g[0].shop.lat, g[0].shop.lng]);
+      g.forEach(function (m, i) {
+        var a = (2 * Math.PI * i) / g.length - Math.PI / 2;
+        m.marker.setLatLng(pinMap.layerPointToLatLng(L.point(c.x + 20 * Math.cos(a), c.y + 20 * Math.sin(a))));
+      });
+    });
   }
   function openPinMap() {
     $("pinMapModal").hidden = false;
@@ -3300,6 +3341,7 @@
           maxZoom: 19,
           attribution: "© OpenStreetMap",
         }).addTo(pinMap);
+        pinMap.on("zoomend", spreadPinOverlaps);
         // ปุ่ม "ข้อมูลร้าน" ในป๊อปอัปหมุด
         $("leafletMap").addEventListener("click", function (e) {
           var a = e.target.closest ? e.target.closest("[data-open-store]") : null;
