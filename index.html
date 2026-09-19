@@ -539,12 +539,24 @@
   #dashBarChart svg { width: 100%; height: auto; display: block; }
   /* การ์ดรายเดือน */
   .dash-month { background: var(--dcard); border: 1px solid var(--dline); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-  .dash-month .dm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 9px 14px; background: var(--dcard2); border-bottom: 1px solid var(--dline); }
+  .dash-month .dm-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; background: var(--dcard2); border-bottom: 1px solid var(--dline); }
   .dash-month .dm-title { font-weight: 600; color: var(--daccent); font-size: .98rem; }
   .dash-month.nodate .dm-title { color: var(--dmut); }
   .dash-month .dm-cnt { font-size: .85rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .dm-models { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0; }
-  .dm-models .chip { background: rgba(255,255,255,.06); border: 1px solid var(--dline); color: #cdd5e3; border-radius: 999px; padding: 3px 10px; font-size: .78rem; font-weight: 600; }
+  .dash-month .dm-sub { font-size: .76rem; color: var(--dmut); font-weight: 500; }
+  /* กราฟแท่งแนวนอนรายรุ่นของเดือนนั้น */
+  .dm-bars { padding: 10px 14px 4px; display: flex; flex-direction: column; gap: 7px; }
+  .db-row { display: flex; align-items: center; gap: 8px; }
+  .db-name { flex: none; width: 96px; font-size: .78rem; font-weight: 600; color: #cdd5e3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .db-track { display: block; flex: 1; min-width: 0; height: 12px; background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
+  .db-fill { display: block; height: 100%; border-radius: 999px; min-width: 4px; }
+  .db-n { flex: none; min-width: 20px; text-align: right; font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dm-toggle {
+    display: block; width: calc(100% - 28px); margin: 8px 14px 12px; padding: 8px 12px;
+    background: rgba(255,255,255,.05); border: 1px solid var(--dline); border-radius: 8px;
+    color: var(--dmut); font-family: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; text-align: center;
+  }
+  .dm-toggle:active { background: rgba(255,255,255,.1); }
   .dm-rows { padding: 2px 14px 8px; }
   .dm-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-bottom: 1px solid var(--dline); cursor: pointer; }
   .dm-row:last-child { border-bottom: none; }
@@ -2847,11 +2859,23 @@
       '<line x1="4" y1="' + (H - bot) + '" x2="' + (W - 4) + '" y2="' + (H - bot) + '" stroke="#303646"/>' + s + "</svg>";
   }
   function dashMonthCard(title, list, nodate) {
-    var models = {};
-    list.forEach(function (c) { var m = c.model || "ไม่ระบุรุ่น"; models[m] = (models[m] || 0) + 1; });
-    var chips = Object.keys(models).sort(function (a, b) { return models[b] - models[a]; }).map(function (m) {
-      return '<span class="chip">' + esc(m) + " × " + models[m] + "</span>";
+    // สรุปประเภทของเดือนนั้น — โชว์ใต้ชื่อเดือน
+    var types = dashCountBy(list, dashTypeGroup);
+    var typeSub = Object.keys(types).sort(function (a, b) { return types[b] - types[a]; }).map(function (t) {
+      return t.replace("เครื่อง", "") + " " + types[t];
+    }).join(" · ");
+
+    // กราฟแท่งแนวนอนรายรุ่น — เรียงจากรุ่นที่ติดตั้งเยอะสุด
+    var models = dashCountBy(list, function (c) { return c.model || "ไม่ระบุรุ่น"; });
+    var mKeys = Object.keys(models).sort(function (a, b) { return models[b] - models[a] || a.localeCompare(b, "th"); });
+    var maxM = models[mKeys[0]] || 1;
+    var bars = mKeys.map(function (m, i) {
+      var col = DASH_COLORS[i % DASH_COLORS.length];
+      return '<div class="db-row"><span class="db-name" title="' + esc(m) + '">' + esc(m) + '</span>' +
+        '<span class="db-track"><span class="db-fill" style="width:' + Math.round(models[m] / maxM * 100) + "%;background:" + col + '"></span></span>' +
+        '<span class="db-n" style="color:' + col + '">' + models[m] + "</span></div>";
     }).join("");
+
     var rows = list.slice().sort(function (a, b) {
       return String(a.installDate).localeCompare(String(b.installDate)) || a.name.localeCompare(b.name, "th");
     }).map(function (c) {
@@ -2864,9 +2888,12 @@
         "</div>";
     }).join("");
     return '<div class="dash-month' + (nodate ? " nodate" : "") + '">' +
-      '<div class="dm-head"><span class="dm-title">' + esc(title) + '</span><span class="dm-cnt">' + list.length + " เครื่อง</span></div>" +
-      (chips ? '<div class="dm-models">' + chips + "</div>" : "") +
-      '<div class="dm-rows">' + rows + "</div></div>";
+      '<div class="dm-head"><div><div class="dm-title">' + esc(title) + '</div>' +
+      (typeSub ? '<div class="dm-sub">' + esc(typeSub) + "</div>" : "") +
+      '</div><span class="dm-cnt">' + list.length + " เครื่อง</span></div>" +
+      '<div class="dm-bars">' + bars + "</div>" +
+      '<button type="button" class="dm-toggle">ดูรายชื่อเครื่อง + วันที่ (' + list.length + ") ▾</button>" +
+      '<div class="dm-rows" hidden>' + rows + "</div></div>";
   }
   function openDash() {
     el.pageList.hidden = true;
@@ -2894,6 +2921,14 @@
   el.dashYear.addEventListener("change", renderDash);
   el.dashType.addEventListener("change", renderDash);
   el.dashMonths.addEventListener("click", function (e) {
+    // ปุ่มพับ/กางรายชื่อเครื่องของเดือนนั้น
+    var tg = e.target.closest ? e.target.closest(".dm-toggle") : null;
+    if (tg) {
+      var rowsBox = tg.nextElementSibling;
+      rowsBox.hidden = !rowsBox.hidden;
+      tg.textContent = tg.textContent.replace(rowsBox.hidden ? "▴" : "▾", rowsBox.hidden ? "▾" : "▴");
+      return;
+    }
     var row = e.target.closest ? e.target.closest(".dm-row") : null;
     if (!row) return;
     dashReturn = true;
