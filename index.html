@@ -537,6 +537,13 @@
   .donut-legend .lval { color: var(--dmut); font-variant-numeric: tabular-nums; white-space: nowrap; }
   #dashBarChart { padding: 10px 10px 4px; }
   #dashBarChart svg { width: 100%; height: auto; display: block; }
+  /* กราฟเส้นเปรียบเทียบรายปี */
+  .dash-cmp-legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; padding: 10px 10px 0; font-size: .8rem; font-weight: 600; }
+  .dash-cmp-legend .cl { display: inline-flex; align-items: center; gap: 6px; }
+  .dash-cmp-legend .cl i { display: block; width: 18px; height: 3px; border-radius: 2px; }
+  .dash-cmp-sub { text-align: center; color: var(--dmut); font-size: .78rem; padding: 0 10px 12px; }
+  #dashLineChart { padding: 4px 10px 2px; }
+  #dashLineChart svg { width: 100%; height: auto; display: block; }
   /* การ์ดรายเดือน */
   .dash-month { background: var(--dcard); border: 1px solid var(--dline); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
   .dash-month .dm-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; background: var(--dcard2); border-bottom: 1px solid var(--dline); }
@@ -551,6 +558,7 @@
   .db-track { display: block; flex: 1; min-width: 0; height: 12px; background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
   .db-fill { display: block; height: 100%; border-radius: 999px; min-width: 4px; }
   .db-n { flex: none; min-width: 20px; text-align: right; font-size: .8rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .db-p { flex: none; min-width: 34px; text-align: right; font-size: .72rem; color: var(--dmut); font-variant-numeric: tabular-nums; }
   .dm-toggle {
     display: block; width: calc(100% - 28px); margin: 8px 14px 12px; padding: 8px 12px;
     background: rgba(255,255,255,.05); border: 1px solid var(--dline); border-radius: 8px;
@@ -891,6 +899,13 @@
     <div class="dash-card">
       <div class="dc-title">จำนวนติดตั้งรายเดือน</div>
       <div id="dashBarChart"></div>
+    </div>
+
+    <div class="dash-card">
+      <div class="dc-title">เปรียบเทียบรายปี — ติดตั้งเดือนต่อเดือน</div>
+      <div class="dash-cmp-legend" id="dashCmpLegend"></div>
+      <div id="dashLineChart"></div>
+      <div class="dash-cmp-sub" id="dashCmpSub"></div>
     </div>
 
     <div class="dash-donuts">
@@ -1345,6 +1360,7 @@
     dashSub: $("dashSub"), dashYear: $("dashYear"), dashType: $("dashType"), dashKpis: $("dashKpis"),
     dashBarChart: $("dashBarChart"), dashDonutType: $("dashDonutType"), dashDonutModel: $("dashDonutModel"),
     dashDonutProv: $("dashDonutProv"), dashMonths: $("dashMonths"),
+    dashCmpLegend: $("dashCmpLegend"), dashCmpSub: $("dashCmpSub"), dashLineChart: $("dashLineChart"),
     fNote: $("fNote"), fErr: $("fErr"), custCancelBtn: $("custCancelBtn"),
     pmOverlay: $("pmOverlay"), pmSheet: $("pmSheet"), pmSheetTitle: $("pmSheetTitle"), pmForm: $("pmForm"),
     pmDate: $("pmDate"), pmTech: $("pmTech"), techList: $("techList"),
@@ -2797,6 +2813,42 @@
     }
     el.dashBarChart.innerHTML = dashBarSvg(barKeys.map(function (k) { return { k: k, n: (byMonth[k] || []).length }; }), nowKey);
 
+    // ---- กราฟเส้นเปรียบเทียบรายปี: 2 ปีล่าสุดที่มีข้อมูล เดือนต่อเดือน (ไม่ขึ้นกับตัวกรองปี) ----
+    var nowBE = Number(nowKey.slice(0, 4)) + 543, nowM = Number(nowKey.slice(5, 7));
+    function yearSeries(yBE) {
+      var ce = yBE - 543;
+      var lastM = (yBE === nowBE) ? nowM : 12;   // ปีปัจจุบันลากเส้นถึงเดือนนี้ (YTD)
+      var pts = [];
+      for (var mi = 1; mi <= lastM; mi++) pts.push((byMonth[ce + "-" + String(mi).padStart(2, "0")] || []).length);
+      return pts;
+    }
+    var yAll = Object.keys(years).sort();
+    if (yAll.length >= 2) {
+      var yPrevBE = Number(yAll[yAll.length - 2]), yCurBE = Number(yAll[yAll.length - 1]);
+      var sPrev = yearSeries(yPrevBE), sCur = yearSeries(yCurBE);
+      el.dashCmpLegend.innerHTML =
+        '<span class="cl"><i style="background:#4fd8e0"></i>ปี ' + yCurBE + (yCurBE === nowBE ? " (ถึง " + TH_M_ABBR[nowM - 1] + ")" : "") + "</span>" +
+        '<span class="cl"><i style="background:#f26d6d"></i>ปี ' + yPrevBE + "</span>";
+      el.dashLineChart.innerHTML = dashLineSvg(sPrev, sCur);
+      // สรุปเทียบช่วงเดียวกัน (ม.ค.–เดือนล่าสุดของปีปัจจุบัน) เป็นเปอร์เซ็นต์
+      var upto = sCur.length, sumCur = 0, sumPrev = 0;
+      sCur.forEach(function (v) { sumCur += v; });
+      sPrev.slice(0, upto).forEach(function (v) { sumPrev += v; });
+      var yoy = sumPrev ? Math.round((sumCur - sumPrev) / sumPrev * 100) : null;
+      el.dashCmpSub.innerHTML = "ช่วง ม.ค.–" + TH_M_ABBR[upto - 1] + " : ปี " + yCurBE +
+        ' ติดตั้ง <b style="color:#4fd8e0">' + sumCur + '</b> · ปี ' + yPrevBE + ' ช่วงเดียวกัน <b style="color:#f26d6d">' + sumPrev + "</b> เครื่อง" +
+        (yoy === null ? "" : ' · <b style="color:' + (yoy >= 0 ? "#3ecf8e" : "#f26d6d") + '">' + (yoy >= 0 ? "▲ +" : "▼ ") + yoy + "%</b>");
+    } else if (yAll.length === 1) {
+      var yOnly = Number(yAll[0]);
+      el.dashCmpLegend.innerHTML = '<span class="cl"><i style="background:#4fd8e0"></i>ปี ' + yOnly + "</span>";
+      el.dashLineChart.innerHTML = dashLineSvg(null, yearSeries(yOnly));
+      el.dashCmpSub.textContent = "มีข้อมูลปีเดียว — จะเทียบให้อัตโนมัติเมื่อมีข้อมูลปีถัดไป";
+    } else {
+      el.dashCmpLegend.innerHTML = "";
+      el.dashLineChart.innerHTML = "";
+      el.dashCmpSub.textContent = "ยังไม่มีข้อมูลติดตั้ง";
+    }
+
     // ---- โดนัท: ประเภท / รุ่น Top 5 / จังหวัด Top 5 (นับจากช่วงที่กรองอยู่) ----
     el.dashDonutType.innerHTML = dashDonut(dashTopSegs(dashCountBy(shownList, function (c) { return c.type; }), 4), "เครื่อง");
     el.dashDonutModel.innerHTML = dashDonut(dashTopSegs(dashCountBy(shownList, function (c) { return c.model; }), 5), "เครื่อง");
@@ -2858,6 +2910,39 @@
       '<stop offset="0" stop-color="#4aa8f0"/><stop offset="1" stop-color="#3ecf8e"/></linearGradient></defs>' +
       '<line x1="4" y1="' + (H - bot) + '" x2="' + (W - 4) + '" y2="' + (H - bot) + '" stroke="#303646"/>' + s + "</svg>";
   }
+  // กราฟเส้นเทียบ 2 ปี: sPrev = ปีก่อน (12 เดือน), sCur = ปีล่าสุด (อาจถึงแค่เดือนปัจจุบัน) — แรเงาช่องว่างระหว่างเส้น
+  function dashLineSvg(sPrev, sCur) {
+    var STEP = 30, W = STEP * 12 + 12, H = 180, top = 26, bot = 30;
+    var max = 1;
+    (sPrev || []).forEach(function (v) { if (v > max) max = v; });
+    (sCur || []).forEach(function (v) { if (v > max) max = v; });
+    function X(i) { return 6 + i * STEP + STEP / 2; }
+    function Y(v) { return H - bot - (H - top - bot) * v / max; }
+    var area = "";
+    if (sPrev && sCur && sCur.length > 1) {
+      var f = sCur.map(function (v, i) { return X(i) + "," + Y(v); });
+      var b = sPrev.slice(0, sCur.length).map(function (v, i) { return X(i) + "," + Y(v); }).reverse();
+      area = '<polygon points="' + f.concat(b).join(" ") + '" fill="rgba(242,109,109,.20)"/>';
+    }
+    function lineOf(s, color) {
+      if (!s || !s.length) return "";
+      return '<polyline points="' + s.map(function (v, i) { return X(i) + "," + Y(v); }).join(" ") +
+        '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+        s.map(function (v, i) { return '<circle cx="' + X(i) + '" cy="' + Y(v) + '" r="2.6" fill="' + color + '"/>'; }).join("");
+    }
+    var labels = "";
+    for (var i = 0; i < 12; i++) {
+      var a = sPrev && i < sPrev.length ? sPrev[i] : null;
+      var c = sCur && i < sCur.length ? sCur[i] : null;
+      // เลขของเส้นที่อยู่สูงกว่าวางเหนือจุด อีกเส้นวางใต้จุด — กันตัวเลขทับกัน
+      if (a !== null) labels += '<text x="' + X(i) + '" y="' + (Y(a) + (c !== null && c > a ? 14 : -6)) + '" text-anchor="middle" font-size="8.8" font-weight="600" fill="#f9a8a8">' + a + "</text>";
+      if (c !== null) labels += '<text x="' + X(i) + '" y="' + (Y(c) + (a !== null && a >= c ? 14 : -6)) + '" text-anchor="middle" font-size="8.8" font-weight="600" fill="#8ee8f0">' + c + "</text>";
+      labels += '<text x="' + X(i) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="8.5" fill="#97a0b3">' + TH_M_ABBR[i] + "</text>";
+    }
+    return '<svg viewBox="0 0 ' + W + " " + H + '">' +
+      '<line x1="4" y1="' + (H - bot) + '" x2="' + (W - 4) + '" y2="' + (H - bot) + '" stroke="#303646"/>' +
+      area + lineOf(sPrev, "#f26d6d") + lineOf(sCur, "#4fd8e0") + labels + "</svg>";
+  }
   function dashMonthCard(title, list, nodate) {
     // สรุปประเภทของเดือนนั้น — โชว์ใต้ชื่อเดือน
     var types = dashCountBy(list, dashTypeGroup);
@@ -2873,7 +2958,8 @@
       var col = DASH_COLORS[i % DASH_COLORS.length];
       return '<div class="db-row"><span class="db-name" title="' + esc(m) + '">' + esc(m) + '</span>' +
         '<span class="db-track"><span class="db-fill" style="width:' + Math.round(models[m] / maxM * 100) + "%;background:" + col + '"></span></span>' +
-        '<span class="db-n" style="color:' + col + '">' + models[m] + "</span></div>";
+        '<span class="db-n" style="color:' + col + '">' + models[m] + '</span>' +
+        '<span class="db-p">' + Math.round(models[m] / list.length * 100) + "%</span></div>";
     }).join("");
 
     var rows = list.slice().sort(function (a, b) {
