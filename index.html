@@ -495,6 +495,33 @@
   .mp-shop .s-n { color: var(--primary); font-size: .85rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .mp-mach { margin-left: 18px; }
 
+  /* หน้าแดชบอร์ดติดตั้งรายเดือน */
+  .dash-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .dash-sum .box { background: var(--primary-soft); border-radius: 14px; padding: 10px 6px; text-align: center; }
+  .dash-sum .n { font-size: 1.3rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+  .dash-sum .l { font-size: .73rem; color: var(--muted); font-weight: 600; }
+  #dashYear {
+    width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-family: inherit; font-size: .92rem; font-weight: 600; margin-bottom: 12px;
+  }
+  .dash-month { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+  .dash-month .dm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .dash-month .dm-title { font-weight: 700; color: var(--primary); font-size: 1.02rem; }
+  .dash-month.nodate .dm-title { color: var(--muted); }
+  .dash-month .dm-cnt { color: var(--primary); font-size: .85rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dm-models { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .dm-models .chip { background: var(--primary-soft); color: var(--primary); border-radius: 999px; padding: 3px 10px; font-size: .78rem; font-weight: 600; }
+  .dm-rows { margin-top: 4px; }
+  .dm-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .dm-row:last-child { border-bottom: none; padding-bottom: 2px; }
+  .dm-row:active { background: var(--primary-soft); }
+  .dm-row .i { flex: 1; min-width: 0; }
+  .dm-row .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dm-row .sub { color: var(--muted); font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dm-row .dt { flex: none; font-size: .8rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dm-row .dt.na { color: var(--muted); font-weight: 500; }
+  .f-hint { color: var(--muted); font-size: .78rem; margin-top: 4px; }
+
   /* นำเข้าลูกค้าจากไฟล์ */
   .imp-drop {
     border: 2px dashed var(--primary); background: var(--primary-soft); border-radius: 14px;
@@ -606,6 +633,7 @@
   <symbol id="i-max" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
   <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
   <symbol id="i-snow" viewBox="0 0 24 24"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M8 17v-3"/><path d="M13 17V5"/><path d="M18 17V9"/></symbol>
 </svg>
 <div id="loginPage" hidden>
   <div class="login-box">
@@ -634,6 +662,7 @@
       <nav class="top-nav">
         <button type="button" id="navStock">สต๊อก</button>
         <button type="button" id="navMap">แผนที่</button>
+        <button type="button" id="navDash">สรุปติดตั้ง</button>
       </nav>
       <button type="button" class="hdr-add" id="hdrAddBtn">＋ เพิ่มลูกค้า</button>
     </header>
@@ -682,6 +711,11 @@
       <span class="arr">ดูแผนที่ ›</span>
     </button>
 
+    <button type="button" class="stock-bar" id="dashBar">
+      <span><svg class="ic" style="color:var(--primary)"><use href="#i-chart"/></svg> แดชบอร์ดติดตั้งรายเดือน <span id="dashBarInfo" style="color:var(--muted);font-weight:500"></span></span>
+      <span class="arr">ดูสรุป ›</span>
+    </button>
+
     <button type="button" class="stock-bar" id="importBar">
       <span><svg class="ic" style="color:var(--primary)"><use href="#i-download"/></svg> นำเข้าลูกค้าจากไฟล์ <span style="color:var(--muted);font-weight:500">· Excel / CSV</span></span>
       <span class="arr">เปิด ›</span>
@@ -727,6 +761,7 @@
         <tr><td class="k">ประเภทเครื่อง</td><td id="dType"></td></tr>
         <tr><td class="k">ยี่ห้อ/รุ่น</td><td id="dModel"></td></tr>
         <tr><td class="k">Serial No. (S/N)</td><td id="dSerial"></td></tr>
+        <tr><td class="k">วันที่ติดตั้ง</td><td id="dInstall"></td></tr>
         <tr><td class="k">วัน PM ล่าสุด</td><td id="dLastPM"></td></tr>
         <tr><td class="k">วันครบรอบถัดไป</td><td id="dNextDue"></td></tr>
         <tr><td class="k">รอบ PM</td><td id="dCycle"></td></tr>
@@ -773,6 +808,25 @@
       <h3 style="margin:0 0 6px;font-size:1rem">ความเคลื่อนไหวล่าสุด</h3>
       <div id="stockMovesList"></div>
     </div>
+  </div>
+
+  <!-- ==================== หน้าแดชบอร์ดติดตั้งรายเดือน ==================== -->
+  <div id="pageDash" hidden>
+    <button type="button" class="back-btn" id="dashBackBtn">← กลับหน้ารายชื่อ</button>
+    <div class="motto-line"><span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
+
+    <div class="detail-card">
+      <h2 style="margin:0;font-size:1.2rem">แดชบอร์ดติดตั้งรายเดือน</h2>
+      <div style="color:var(--muted);font-size:.85rem" id="dashSub"></div>
+      <div class="dash-sum">
+        <div class="box"><div class="n" id="dashTotalN">0</div><div class="l">ติดตั้งทั้งหมด</div></div>
+        <div class="box"><div class="n" id="dashThisMonthN">0</div><div class="l" id="dashThisMonthL">เดือนนี้</div></div>
+        <div class="box"><div class="n" id="dashMonthCntN">0</div><div class="l">เดือนที่มีติดตั้ง</div></div>
+      </div>
+    </div>
+
+    <select id="dashYear"></select>
+    <div id="dashMonths"></div>
   </div>
 
   <!-- ==================== หน้าแผนที่ภาคอีสาน ==================== -->
@@ -904,6 +958,11 @@
     <div class="field">
       <label for="fSerial">Serial No. (S/N) ของเครื่อง</label>
       <input id="fSerial" placeholder="เช่น A12345678 (ดูจากป้ายข้างเครื่อง)">
+    </div>
+    <div class="field">
+      <label for="fInstall">วันที่ติดตั้งเครื่อง</label>
+      <input id="fInstall" type="date">
+      <div class="f-hint" id="fInstallHint" hidden></div>
     </div>
     <div class="field">
       <label for="fProvince">จังหวัด (ภาคอีสาน)</label>
@@ -1123,6 +1182,7 @@
       id: s.id, name: s.name, phone: s.phone || "", type: s.type || "",
       model: s.model || "", serial: s.serial || "", province: s.province || "", address: s.address || "", cycle: s.cycle || 45,
       note: s.note || "", lastPM: s.last_pm || "",
+      installDate: s.install_date || "",      // วันที่ติดตั้ง: "YYYY-MM-DD" หรือ "YYYY-MM" ถ้าข้อมูลเก่ารู้แค่เดือน
       stickerDate: s.sticker_date || "",      // วันที่ติดสติ๊กเกอร์ QR หน้าเครื่อง
       lat: (s.lat == null ? null : s.lat),    // พิกัดหมุดสำหรับแผนที่ละเอียด
       lng: (s.lng == null ? null : s.lng),
@@ -1207,6 +1267,10 @@
     pickWrap: $("pickWrap"), fPick: $("fPick"),
     custForm: $("custForm"), fName: $("fName"), fPhone: $("fPhone"), fType: $("fType"),
     fModel: $("fModel"), fSerial: $("fSerial"), fProvince: $("fProvince"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
+    fInstall: $("fInstall"), fInstallHint: $("fInstallHint"), dInstall: $("dInstall"),
+    dashBar: $("dashBar"), dashBarInfo: $("dashBarInfo"), pageDash: $("pageDash"), dashBackBtn: $("dashBackBtn"),
+    dashSub: $("dashSub"), dashTotalN: $("dashTotalN"), dashThisMonthN: $("dashThisMonthN"), dashThisMonthL: $("dashThisMonthL"),
+    dashMonthCntN: $("dashMonthCntN"), dashYear: $("dashYear"), dashMonths: $("dashMonths"),
     fNote: $("fNote"), fErr: $("fErr"), custCancelBtn: $("custCancelBtn"),
     pmOverlay: $("pmOverlay"), pmSheet: $("pmSheet"), pmSheetTitle: $("pmSheetTitle"), pmForm: $("pmForm"),
     pmDate: $("pmDate"), pmTech: $("pmTech"), techList: $("techList"),
@@ -1256,6 +1320,16 @@
     var d = new Date(dateStr + "T00:00:00");
     if (isNaN(d)) return "-";
     return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+  }
+  // วันที่ติดตั้ง: "2026-09-14" → "14 ก.ย. 2569" · ข้อมูลเก่ารู้แค่เดือน "2025-09" → "ก.ย. 2568"
+  var TH_M_ABBR = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  var TH_M_FULL = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  function fmtInstall(s) {
+    if (!s) return "-";
+    if (s.length >= 10) return fmtThai(s.slice(0, 10));
+    var m = String(s).match(/^(\d{4})-(\d{2})$/);
+    if (!m) return "-";
+    return TH_M_ABBR[Number(m[2]) - 1] + " " + (Number(m[1]) + 543);
   }
   function addDays(dateStr, n) {
     var d = new Date(dateStr + "T00:00:00");
@@ -1353,6 +1427,12 @@
     var mStat = mapStats();
     el.mapBarInfo.textContent = customers.length ? "· " + mStat.shopTotal + " ร้าน · " + mStat.machTotal + " เครื่อง" : "";
     if (!el.pageMap.hidden) renderMap();
+
+    // แถบแดชบอร์ดติดตั้ง — ติดตั้งเดือนนี้กี่เครื่อง (+ รีเฟรชแดชบอร์ดถ้าเปิดค้างอยู่)
+    var nowMonth = todayStr().slice(0, 7);
+    var instThisMonth = customers.filter(function (c) { return c.installDate && String(c.installDate).slice(0, 7) === nowMonth; }).length;
+    el.dashBarInfo.textContent = instThisMonth ? "· เดือนนี้ " + instThisMonth + " เครื่อง" : "";
+    if (!el.pageDash.hidden) renderDash();
 
     var q = el.searchInput.value.trim().toLowerCase();
     var list = customers.filter(function (c) {
@@ -1469,6 +1549,7 @@
     el.dType.textContent = c.type || "-";
     el.dModel.textContent = c.model || "-";
     el.dSerial.textContent = c.serial || "-";
+    el.dInstall.textContent = fmtInstall(c.installDate);
     el.dLastPM.textContent = fmtThai(c.lastPM);
     el.dNextDue.textContent = fmtThai(nextDue(c));
     el.dCycle.textContent = cyc + " วัน";
@@ -1542,6 +1623,7 @@
     currentId = null;
     el.pageDetail.hidden = true;
     if (mapReturn) { mapReturn = false; openMap(); return; }
+    if (dashReturn) { dashReturn = false; openDash(); return; }
     el.pageList.hidden = false;
     el.fabAdd.hidden = false;
     renderList();
@@ -1635,6 +1717,11 @@
     el.fSerial.value = c ? (c.serial || "") : "";
     el.fProvince.value = c ? (c.province || "") : "";
     el.fAddress.value = c ? c.address : "";
+    // ลูกค้าใหม่ default = วันนี้ (ส่วนใหญ่เพิ่มตอนเพิ่งติดตั้งเสร็จ) · ข้อมูลเก่าที่รู้แค่เดือนใส่ในช่องปฏิทินไม่ได้ — โชว์เป็น hint แทน
+    el.fInstall.value = c ? (c.installDate && c.installDate.length >= 10 ? c.installDate.slice(0, 10) : "") : todayStr();
+    var monthOnly = c && c.installDate && c.installDate.length === 7;
+    el.fInstallHint.hidden = !monthOnly;
+    el.fInstallHint.textContent = monthOnly ? "ข้อมูลเดิมระบุแค่เดือน: ติดตั้ง " + fmtInstall(c.installDate) + " — ถ้ารู้วันที่แน่นอนค่อยเลือกจากปฏิทิน" : "";
     el.fLastPM.value = c ? c.lastPM : todayStr();
     el.fCycle.value = c ? c.cycle : 45;
     el.fNote.value = c ? c.note : "";
@@ -1667,6 +1754,7 @@
   document.getElementById("hdrAddBtn").addEventListener("click", function () { openCustSheet(null); });
   document.getElementById("navStock").addEventListener("click", function () { el.stockBar.click(); });
   document.getElementById("navMap").addEventListener("click", function () { el.mapBar.click(); });
+  document.getElementById("navDash").addEventListener("click", function () { el.dashBar.click(); });
   el.editBtn.addEventListener("click", function () { if (currentId) openCustSheet(currentId); });
 
   // กดเมื่อเอาสติ๊กเกอร์ QR ใบใหม่ไปแปะที่ร้านแล้ว — เริ่มนับอายุ 1 ปีใหม่
@@ -1708,10 +1796,13 @@
       address: el.fAddress.value.trim(),
       lastPM: el.fLastPM.value || todayStr(),
       cycle: cycle,
-      note: el.fNote.value.trim()
+      note: el.fNote.value.trim(),
+      installDate: el.fInstall.value
     };
     // บันทึกขึ้นเว็บก่อน (ทุกเครื่องจะเห็นเหมือนกัน) สำเร็จแล้วค่อยอัปเดตหน้าจอ
     var target = editingId ? custById(editingId) : null;
+    // ไม่ได้เลือกวันในปฏิทิน = คงค่าติดตั้งเดิมไว้ (รวมข้อมูลเก่าแบบรู้แค่เดือน)
+    if (!data.installDate && target && target.installDate) data.installDate = target.installDate;
     var obj = Object.assign({}, target || {}, data);
     // ลิงก์ Google Maps ในที่อยู่เปลี่ยน = ร้านย้ายหมุด → ล้างพิกัดเก่า ให้ปุ่มอัปเดตพิกัดดูดจากลิงก์ใหม่
     function gmapLink(s) {
@@ -1834,7 +1925,8 @@
     var body = {
       id: c.id, name: c.name, type: c.type || "", model: c.model || "",
       serial: c.serial || "", phone: c.phone || "", province: c.province || "", address: c.address || "", cycle: Number(c.cycle) || 45,
-      note: c.note || "", last_pm: c.lastPM || null, active: true
+      note: c.note || "", last_pm: c.lastPM || null, active: true,
+      install_date: c.installDate || null
     };
     // ส่งวันที่ติดสติ๊กเกอร์เฉพาะตอนมีค่า — ไม่มี = ปล่อยให้ฐานข้อมูลตั้ง/คงค่าเดิมไว้
     if (c.stickerDate) body.sticker_date = c.stickerDate;
@@ -2550,6 +2642,99 @@
     openStkMoveSheet(Number(t.getAttribute(minus ? "data-minus" : "data-plus")), minus ? -1 : 1);
   });
 
+  // ==================== แดชบอร์ดติดตั้งรายเดือน (#dash) ====================
+  // นับจากวันที่ติดตั้ง (install_date) ของเครื่องที่ใช้งานอยู่ — ข้อมูลเก่าที่รู้แค่เดือนก็นับรวมในเดือนนั้น
+  var dashReturn = false;   // เปิดหน้ารายละเอียดมาจากแดชบอร์ด — กดกลับให้กลับมาแดชบอร์ด
+  function installMonthKey(c) { return c.installDate ? String(c.installDate).slice(0, 7) : ""; }
+  function dashMonthTitle(key) {
+    var m = key.match(/^(\d{4})-(\d{2})$/);
+    if (!m) return key;
+    return TH_M_FULL[Number(m[2]) - 1] + " " + (Number(m[1]) + 543);
+  }
+  function renderDash() {
+    var byMonth = {}, noDate = [];
+    customers.forEach(function (c) {
+      var k = installMonthKey(c);
+      if (k) (byMonth[k] = byMonth[k] || []).push(c);
+      else noDate.push(c);
+    });
+    var keys = Object.keys(byMonth).sort().reverse();  // เดือนล่าสุดขึ้นก่อน
+
+    // ตัวเลือกปี พ.ศ. — สร้างจากข้อมูลจริง คงค่าที่เลือกไว้ตอนรีเฟรช
+    var years = {};
+    keys.forEach(function (k) { years[Number(k.slice(0, 4)) + 543] = 1; });
+    var prevY = el.dashYear.value;
+    el.dashYear.innerHTML = '<option value="">ทุกปี</option>' + Object.keys(years).sort().reverse().map(function (y) {
+      return '<option value="' + y + '">เฉพาะปี พ.ศ. ' + y + "</option>";
+    }).join("");
+    if (prevY && years[prevY]) el.dashYear.value = prevY;
+
+    var nowKey = todayStr().slice(0, 7);
+    el.dashTotalN.textContent = customers.length - noDate.length;
+    el.dashThisMonthN.textContent = (byMonth[nowKey] || []).length;
+    el.dashThisMonthL.textContent = "เดือนนี้ (" + TH_M_ABBR[Number(nowKey.slice(5, 7)) - 1] + ")";
+    el.dashMonthCntN.textContent = keys.length;
+    el.dashSub.textContent = "เครื่องที่ใช้งานอยู่ " + customers.length + " เครื่อง" +
+      (noDate.length ? " · ไม่มีข้อมูลติดตั้ง " + noDate.length + " เครื่อง (ดูท้ายหน้า)" : "");
+
+    var selY = el.dashYear.value;
+    var shown = selY ? keys.filter(function (k) { return Number(k.slice(0, 4)) + 543 === Number(selY); }) : keys;
+    var h = shown.map(function (k) { return dashMonthCard(dashMonthTitle(k), byMonth[k], false); }).join("");
+    if (!selY && noDate.length) h += dashMonthCard("ไม่มีข้อมูลติดตั้ง", noDate, true);
+    el.dashMonths.innerHTML = h || '<div class="empty">ยังไม่มีข้อมูลการติดตั้งในปีนี้</div>';
+  }
+  function dashMonthCard(title, list, nodate) {
+    var models = {};
+    list.forEach(function (c) { var m = c.model || "ไม่ระบุรุ่น"; models[m] = (models[m] || 0) + 1; });
+    var chips = Object.keys(models).sort(function (a, b) { return models[b] - models[a]; }).map(function (m) {
+      return '<span class="chip">' + esc(m) + " × " + models[m] + "</span>";
+    }).join("");
+    var rows = list.slice().sort(function (a, b) {
+      return String(a.installDate).localeCompare(String(b.installDate)) || a.name.localeCompare(b.name, "th");
+    }).map(function (c) {
+      var hasDay = c.installDate && c.installDate.length >= 10;
+      var dt = nodate ? "" : (hasDay ? fmtThai(c.installDate.slice(0, 10)) : "ไม่ระบุวัน");
+      return '<div class="dm-row" data-id="' + esc(c.id) + '">' +
+        '<div class="i"><div class="nm">' + esc(c.name) + "</div>" +
+        '<div class="sub">' + esc([c.type, c.model, c.serial ? "S/N " + c.serial : ""].filter(Boolean).join(" · ") || "เครื่อง") + "</div></div>" +
+        (dt ? '<div class="dt' + (hasDay ? "" : " na") + '">' + esc(dt) + "</div>" : "") +
+        "</div>";
+    }).join("");
+    return '<div class="dash-month' + (nodate ? " nodate" : "") + '">' +
+      '<div class="dm-head"><span class="dm-title">' + esc(title) + '</span><span class="dm-cnt">' + list.length + " เครื่อง</span></div>" +
+      (chips ? '<div class="dm-models">' + chips + "</div>" : "") +
+      '<div class="dm-rows">' + rows + "</div></div>";
+  }
+  function openDash() {
+    el.pageList.hidden = true;
+    el.pageDetail.hidden = true;
+    el.pageStock.hidden = true;
+    el.pageMap.hidden = true;
+    el.fabAdd.hidden = true;
+    el.pageDash.hidden = false;
+    window.scrollTo(0, 0);
+    // ลิงก์ตรง #dash — แชร์เข้ากลุ่มไลน์แล้วกดเปิดหน้านี้ได้เลย
+    if (location.hash !== "#dash") {
+      try { history.replaceState(null, "", "#dash"); } catch (e) {}
+    }
+    renderDash();
+  }
+  function closeDash() {
+    el.pageDash.hidden = true;
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    backToList();
+  }
+  el.dashBar.addEventListener("click", openDash);
+  el.dashBackBtn.addEventListener("click", closeDash);
+  el.dashYear.addEventListener("change", renderDash);
+  el.dashMonths.addEventListener("click", function (e) {
+    var row = e.target.closest ? e.target.closest(".dm-row") : null;
+    if (!row) return;
+    dashReturn = true;
+    el.pageDash.hidden = true;
+    openDetail(row.getAttribute("data-id"));
+  });
+
   // ชื่อช่างสำหรับช่อง "ผู้บันทึก" — ดึงจากบันทึก PM บนเว็บครั้งเดียว
   function fillTechDatalist() {
     if (el.techList.innerHTML) return;
@@ -2981,6 +3166,19 @@
     return "";
   }
   function impNorm(s) { return String(s || "").replace(/\s+/g, "").toLowerCase(); }
+  // ค่าคอลัมน์ "ติดตั้ง" → install_date: รู้วันเต็มเก็บ YYYY-MM-DD · รู้แค่เดือน (เช่น "กันยายน 2568") เก็บ YYYY-MM
+  function parseInstallVal(s) {
+    s = String(s || "").trim();
+    if (!s) return "";
+    var t = s.match(/^([ก-๙]+)\s*(\d{2,4})?$/);
+    if (t && TH_MONTHS[t[1]]) {
+      var y = t[2] ? Number(t[2]) : 0;
+      if (y && y < 100) y += 2500;
+      var ce = y ? (y > 2400 ? y - 543 : y) : new Date().getFullYear();
+      return ce + "-" + String(TH_MONTHS[t[1]]).padStart(2, "0");
+    }
+    return parseAnyDate(s);
+  }
 
   function handleImpFile(f) {
     el.impErr.textContent = "";
@@ -3045,7 +3243,8 @@
       ok.push({
         name: name, phone: pick("phone"), type: pick("type") || "เครื่องล้างจาน", model: model,
         serial: serial, province: pick("province"), address: pick("address"),
-        cycle: Number(pick("cycle")) || 45, note: note, lastPM: lastPM
+        cycle: Number(pick("cycle")) || 45, note: note, lastPM: lastPM,
+        installDate: parseInstallVal(inst)
       });
     }
     if (!ok.length) {
@@ -3077,7 +3276,7 @@
       return {
         id: newId(), name: r.name, phone: r.phone, type: r.type, model: r.model, serial: r.serial,
         province: r.province, address: r.address, cycle: r.cycle, note: r.note,
-        last_pm: r.lastPM || null, active: true
+        last_pm: r.lastPM || null, active: true, install_date: r.installDate || null
       };
     });
     el.impOkBtn.disabled = true;
@@ -3530,6 +3729,7 @@
     // เปิดจากลิงก์ #stock / #map (เช่น ลิงก์ที่แชร์ไว้ในกลุ่มไลน์) — เข้าหน้านั้นทันที
     if (location.hash === "#stock") openStock();
     else if (location.hash === "#map") openMap();
+    else if (location.hash === "#dash") openDash();
     else fetchStockItems().then(updateStockBar).catch(function () {});  // โหลดยอดรวมโชว์บนปุ่มสต๊อก
     // กลับมาเปิดแอปเมื่อไหร่ รีเฟรชข้อมูลจากเว็บให้เอง (เห็นข้อมูลที่เครื่องอื่นเพิ่งบันทึก)
     document.addEventListener("visibilitychange", function () {
