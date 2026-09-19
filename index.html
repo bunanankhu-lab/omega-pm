@@ -495,31 +495,70 @@
   .mp-shop .s-n { color: var(--primary); font-size: .85rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .mp-mach { margin-left: 18px; }
 
-  /* หน้าแดชบอร์ดติดตั้งรายเดือน */
-  .dash-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-  .dash-sum .box { background: var(--primary-soft); border-radius: 14px; padding: 10px 6px; text-align: center; }
-  .dash-sum .n { font-size: 1.3rem; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
-  .dash-sum .l { font-size: .73rem; color: var(--muted); font-weight: 600; }
-  #dashYear {
-    width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border);
-    background: var(--card); color: var(--text); font-family: inherit; font-size: .92rem; font-weight: 600; margin-bottom: 12px;
+  /* หน้าแดชบอร์ดติดตั้งรายเดือน — ธีมมืดสไตล์รายงาน BI (การ์ด KPI + กราฟแท่ง + โดนัท) */
+  body.dash-dark { background: #14161c; }
+  #pageDash {
+    --dcard: #232733; --dcard2: #1b1f29; --dline: #303646;
+    --dtx: #eef1f6; --dmut: #97a0b3; --daccent: #f2a63b;
+    color: var(--dtx); padding-top: 16px;
   }
-  .dash-month { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
-  .dash-month .dm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .dash-month .dm-title { font-weight: 700; color: var(--primary); font-size: 1.02rem; }
-  .dash-month.nodate .dm-title { color: var(--muted); }
-  .dash-month .dm-cnt { color: var(--primary); font-size: .85rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .dm-models { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .dm-models .chip { background: var(--primary-soft); color: var(--primary); border-radius: 999px; padding: 3px 10px; font-size: .78rem; font-weight: 600; }
-  .dm-rows { margin-top: 4px; }
-  .dm-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-bottom: 1px solid var(--border); cursor: pointer; }
-  .dm-row:last-child { border-bottom: none; padding-bottom: 2px; }
-  .dm-row:active { background: var(--primary-soft); }
+  #pageDash .back-btn { background: var(--dcard); border-color: #3a4152; color: var(--dtx); }
+  #pageDash .motto { color: #6d7690; }
+  .dash-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px; }
+  .dash-head h2 { margin: 0; font-size: 1.3rem; font-weight: 600; }
+  .dash-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dash-filters .df { display: flex; flex-direction: column; gap: 3px; }
+  .dash-filters label { font-size: .68rem; font-weight: 700; color: var(--dmut); letter-spacing: .4px; }
+  .dash-filters select {
+    background: #0d0f14; color: var(--dtx); border: 1px solid #3a4152; border-radius: 8px;
+    padding: 8px 10px; font-family: inherit; font-size: .88rem; min-width: 140px;
+  }
+  .dash-sub { color: var(--dmut); font-size: .82rem; margin: 6px 0 14px; }
+  .dash-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .kpi { background: var(--dcard); border: 1px solid var(--dline); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+  .kpi .ko { width: 44px; height: 44px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.07); }
+  .kpi .ki { min-width: 0; }
+  .kpi .kn { font-family: "Kanit", "IBM Plex Sans Thai", sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi .kl { font-size: .74rem; color: var(--dmut); font-weight: 600; }
+  .kpi .kd { font-size: .72rem; font-weight: 700; margin-top: 2px; }
+  .kpi .kd.up { color: #3ecf8e; }
+  .kpi .kd.down { color: #f26d6d; }
+  .kpi .kd.flat { color: var(--dmut); }
+  .dash-card { background: var(--dcard); border: 1px solid var(--dline); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .dc-title { text-align: center; color: var(--daccent); font-weight: 600; font-size: .92rem; padding: 9px 12px; background: var(--dcard2); border-bottom: 1px solid var(--dline); }
+  .dash-donuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .dash-donuts .dash-card { margin-bottom: 0; }
+  .donut-wrap { display: flex; align-items: center; gap: 14px; padding: 14px; }
+  .donut-wrap svg { width: 108px; height: 108px; flex: none; }
+  .donut-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; font-size: .8rem; }
+  .donut-legend .lg { display: flex; align-items: center; gap: 7px; }
+  .donut-legend .dotc { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .donut-legend .lname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .donut-legend .lval { color: var(--dmut); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #dashBarChart { padding: 10px 10px 4px; }
+  #dashBarChart svg { width: 100%; height: auto; display: block; }
+  /* การ์ดรายเดือน */
+  .dash-month { background: var(--dcard); border: 1px solid var(--dline); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .dash-month .dm-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 9px 14px; background: var(--dcard2); border-bottom: 1px solid var(--dline); }
+  .dash-month .dm-title { font-weight: 600; color: var(--daccent); font-size: .98rem; }
+  .dash-month.nodate .dm-title { color: var(--dmut); }
+  .dash-month .dm-cnt { font-size: .85rem; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dm-models { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0; }
+  .dm-models .chip { background: rgba(255,255,255,.06); border: 1px solid var(--dline); color: #cdd5e3; border-radius: 999px; padding: 3px 10px; font-size: .78rem; font-weight: 600; }
+  .dm-rows { padding: 2px 14px 8px; }
+  .dm-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-bottom: 1px solid var(--dline); cursor: pointer; }
+  .dm-row:last-child { border-bottom: none; }
+  .dm-row:active { background: rgba(255,255,255,.05); }
   .dm-row .i { flex: 1; min-width: 0; }
   .dm-row .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dm-row .sub { color: var(--muted); font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dm-row .dt { flex: none; font-size: .8rem; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .dm-row .dt.na { color: var(--muted); font-weight: 500; }
+  .dm-row .sub { color: var(--dmut); font-size: .78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dm-row .dt { flex: none; font-size: .8rem; font-weight: 600; color: #3ecf8e; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dm-row .dt.na { color: var(--dmut); font-weight: 500; }
+  #pageDash .empty { color: var(--dmut); }
+  @media (min-width: 880px) {
+    #dashMonths { columns: 2; column-gap: 12px; }
+    .dash-month { break-inside: avoid; }
+  }
   .f-hint { color: var(--muted); font-size: .78rem; margin-top: 4px; }
 
   /* นำเข้าลูกค้าจากไฟล์ */
@@ -815,17 +854,39 @@
     <button type="button" class="back-btn" id="dashBackBtn">← กลับหน้ารายชื่อ</button>
     <div class="motto-line"><span class="motto">ทำยังไงก็ได้ให้บริษัทประหยัดที่สุด</span></div>
 
-    <div class="detail-card">
-      <h2 style="margin:0;font-size:1.2rem">แดชบอร์ดติดตั้งรายเดือน</h2>
-      <div style="color:var(--muted);font-size:.85rem" id="dashSub"></div>
-      <div class="dash-sum">
-        <div class="box"><div class="n" id="dashTotalN">0</div><div class="l">ติดตั้งทั้งหมด</div></div>
-        <div class="box"><div class="n" id="dashThisMonthN">0</div><div class="l" id="dashThisMonthL">เดือนนี้</div></div>
-        <div class="box"><div class="n" id="dashMonthCntN">0</div><div class="l">เดือนที่มีติดตั้ง</div></div>
+    <div class="dash-head">
+      <h2>แดชบอร์ดติดตั้งรายเดือน</h2>
+      <div class="dash-filters">
+        <div class="df">
+          <label for="dashYear">ปี (พ.ศ.)</label>
+          <select id="dashYear"></select>
+        </div>
+        <div class="df">
+          <label for="dashType">ประเภทเครื่อง</label>
+          <select id="dashType">
+            <option value="">ทั้งหมด</option>
+            <option value="เครื่องล้างจาน">เครื่องล้างจาน</option>
+            <option value="เครื่องทำน้ำแข็ง">เครื่องทำน้ำแข็ง</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
       </div>
     </div>
+    <div class="dash-sub" id="dashSub"></div>
 
-    <select id="dashYear"></select>
+    <div class="dash-kpis" id="dashKpis"></div>
+
+    <div class="dash-card">
+      <div class="dc-title">จำนวนติดตั้งรายเดือน</div>
+      <div id="dashBarChart"></div>
+    </div>
+
+    <div class="dash-donuts">
+      <div class="dash-card"><div class="dc-title">แยกตามประเภทเครื่อง</div><div id="dashDonutType"></div></div>
+      <div class="dash-card"><div class="dc-title">รุ่นยอดนิยม</div><div id="dashDonutModel"></div></div>
+      <div class="dash-card"><div class="dc-title">แยกตามจังหวัด</div><div id="dashDonutProv"></div></div>
+    </div>
+
     <div id="dashMonths"></div>
   </div>
 
@@ -1269,8 +1330,9 @@
     fModel: $("fModel"), fSerial: $("fSerial"), fProvince: $("fProvince"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
     fInstall: $("fInstall"), fInstallHint: $("fInstallHint"), dInstall: $("dInstall"),
     dashBar: $("dashBar"), dashBarInfo: $("dashBarInfo"), pageDash: $("pageDash"), dashBackBtn: $("dashBackBtn"),
-    dashSub: $("dashSub"), dashTotalN: $("dashTotalN"), dashThisMonthN: $("dashThisMonthN"), dashThisMonthL: $("dashThisMonthL"),
-    dashMonthCntN: $("dashMonthCntN"), dashYear: $("dashYear"), dashMonths: $("dashMonths"),
+    dashSub: $("dashSub"), dashYear: $("dashYear"), dashType: $("dashType"), dashKpis: $("dashKpis"),
+    dashBarChart: $("dashBarChart"), dashDonutType: $("dashDonutType"), dashDonutModel: $("dashDonutModel"),
+    dashDonutProv: $("dashDonutProv"), dashMonths: $("dashMonths"),
     fNote: $("fNote"), fErr: $("fErr"), custCancelBtn: $("custCancelBtn"),
     pmOverlay: $("pmOverlay"), pmSheet: $("pmSheet"), pmSheetTitle: $("pmSheetTitle"), pmForm: $("pmForm"),
     pmDate: $("pmDate"), pmTech: $("pmTech"), techList: $("techList"),
@@ -2651,9 +2713,16 @@
     if (!m) return key;
     return TH_M_FULL[Number(m[2]) - 1] + " " + (Number(m[1]) + 543);
   }
+  var DASH_COLORS = ["#3ecf8e", "#4aa8f0", "#8f7df0", "#f2a63b", "#f26d6d", "#4fd8e0", "#c98fe8", "#93a7bd"];
+  function dashTypeGroup(c) {
+    var t = c.type || "";
+    return (t === "เครื่องล้างจาน" || t === "เครื่องทำน้ำแข็ง") ? t : "อื่นๆ";
+  }
   function renderDash() {
+    var typeSel = el.dashType.value;
+    var pool = typeSel ? customers.filter(function (c) { return dashTypeGroup(c) === typeSel; }) : customers;
     var byMonth = {}, noDate = [];
-    customers.forEach(function (c) {
+    pool.forEach(function (c) {
       var k = installMonthKey(c);
       if (k) (byMonth[k] = byMonth[k] || []).push(c);
       else noDate.push(c);
@@ -2665,23 +2734,117 @@
     keys.forEach(function (k) { years[Number(k.slice(0, 4)) + 543] = 1; });
     var prevY = el.dashYear.value;
     el.dashYear.innerHTML = '<option value="">ทุกปี</option>' + Object.keys(years).sort().reverse().map(function (y) {
-      return '<option value="' + y + '">เฉพาะปี พ.ศ. ' + y + "</option>";
+      return '<option value="' + y + '">พ.ศ. ' + y + "</option>";
     }).join("");
     if (prevY && years[prevY]) el.dashYear.value = prevY;
-
-    var nowKey = todayStr().slice(0, 7);
-    el.dashTotalN.textContent = customers.length - noDate.length;
-    el.dashThisMonthN.textContent = (byMonth[nowKey] || []).length;
-    el.dashThisMonthL.textContent = "เดือนนี้ (" + TH_M_ABBR[Number(nowKey.slice(5, 7)) - 1] + ")";
-    el.dashMonthCntN.textContent = keys.length;
-    el.dashSub.textContent = "เครื่องที่ใช้งานอยู่ " + customers.length + " เครื่อง" +
-      (noDate.length ? " · ไม่มีข้อมูลติดตั้ง " + noDate.length + " เครื่อง (ดูท้ายหน้า)" : "");
-
     var selY = el.dashYear.value;
-    var shown = selY ? keys.filter(function (k) { return Number(k.slice(0, 4)) + 543 === Number(selY); }) : keys;
-    var h = shown.map(function (k) { return dashMonthCard(dashMonthTitle(k), byMonth[k], false); }).join("");
+
+    var shownKeys = selY ? keys.filter(function (k) { return Number(k.slice(0, 4)) + 543 === Number(selY); }) : keys;
+    var shownList = [];
+    shownKeys.forEach(function (k) { shownList = shownList.concat(byMonth[k]); });
+
+    el.dashSub.textContent = "เครื่องที่ใช้งานอยู่ " + pool.length + " เครื่อง · มีข้อมูลติดตั้ง " + (pool.length - noDate.length) +
+      (noDate.length ? " · ไม่มีข้อมูล " + noDate.length + " (การ์ดท้ายหน้า)" : "");
+
+    // ---- การ์ด KPI: รวม / เดือนนี้เทียบเดือนก่อน / เฉลี่ยต่อเดือน ----
+    var nowKey = todayStr().slice(0, 7);
+    var pd = new Date(nowKey + "-01T00:00:00");
+    pd.setMonth(pd.getMonth() - 1);
+    var prevKey = pd.getFullYear() + "-" + String(pd.getMonth() + 1).padStart(2, "0");
+    var curN = (byMonth[nowKey] || []).length, prevN = (byMonth[prevKey] || []).length;
+    var delta;
+    if (!prevN) delta = '<div class="kd flat">เดือนก่อน (' + TH_M_ABBR[pd.getMonth()] + ') ไม่มีติดตั้ง</div>';
+    else {
+      var pct = Math.round((curN - prevN) / prevN * 100);
+      delta = pct >= 0
+        ? '<div class="kd up">▲ +' + pct + "% เทียบเดือนก่อน (" + prevN + ")</div>"
+        : '<div class="kd down">▼ ' + pct + "% เทียบเดือนก่อน (" + prevN + ")</div>";
+    }
+    var avg = shownKeys.length ? (Math.round(shownList.length / shownKeys.length * 10) / 10) : 0;
+    function kpiCard(iconId, color, n, label, extra) {
+      return '<div class="kpi"><div class="ko" style="color:' + color + '"><svg class="ic"><use href="#' + iconId + '"/></svg></div>' +
+        '<div class="ki"><div class="kn">' + n + '</div><div class="kl">' + label + "</div>" + (extra || "") + "</div></div>";
+    }
+    el.dashKpis.innerHTML =
+      kpiCard("i-package", "#3ecf8e", shownList.length, selY ? "ติดตั้งปี " + selY : "ติดตั้งทั้งหมด") +
+      kpiCard("i-chart", "#f2a63b", curN, "เดือนนี้ (" + TH_M_ABBR[Number(nowKey.slice(5, 7)) - 1] + " " + (Number(nowKey.slice(0, 4)) + 543) + ")", delta) +
+      kpiCard("i-clock", "#8f7df0", avg, "เฉลี่ยต่อเดือน", '<div class="kd flat">จาก ' + shownKeys.length + " เดือนที่มีติดตั้ง</div>");
+
+    // ---- กราฟแท่ง: เลือกปีแล้วโชว์ ม.ค.–ธ.ค. ปีนั้น · ทุกปีโชว์ 12 เดือนล่าสุด ----
+    var barKeys = [];
+    if (selY) {
+      var ce = Number(selY) - 543;
+      for (var m = 1; m <= 12; m++) barKeys.push(ce + "-" + String(m).padStart(2, "0"));
+    } else {
+      var d0 = new Date(nowKey + "-01T00:00:00");
+      for (var i = 11; i >= 0; i--) {
+        var d = new Date(d0);
+        d.setMonth(d0.getMonth() - i);
+        barKeys.push(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"));
+      }
+    }
+    el.dashBarChart.innerHTML = dashBarSvg(barKeys.map(function (k) { return { k: k, n: (byMonth[k] || []).length }; }), nowKey);
+
+    // ---- โดนัท: ประเภท / รุ่น Top 5 / จังหวัด Top 5 (นับจากช่วงที่กรองอยู่) ----
+    el.dashDonutType.innerHTML = dashDonut(dashTopSegs(dashCountBy(shownList, function (c) { return c.type; }), 4), "เครื่อง");
+    el.dashDonutModel.innerHTML = dashDonut(dashTopSegs(dashCountBy(shownList, function (c) { return c.model; }), 5), "เครื่อง");
+    el.dashDonutProv.innerHTML = dashDonut(dashTopSegs(dashCountBy(shownList, function (c) { return c.province; }), 5), "เครื่อง");
+
+    // ---- การ์ดรายเดือน: รายชื่อเครื่อง + วันที่ ----
+    var h = shownKeys.map(function (k) { return dashMonthCard(dashMonthTitle(k), byMonth[k], false); }).join("");
     if (!selY && noDate.length) h += dashMonthCard("ไม่มีข้อมูลติดตั้ง", noDate, true);
-    el.dashMonths.innerHTML = h || '<div class="empty">ยังไม่มีข้อมูลการติดตั้งในปีนี้</div>';
+    el.dashMonths.innerHTML = h || '<div class="empty">ยังไม่มีข้อมูลการติดตั้งในช่วงที่เลือก</div>';
+  }
+  function dashCountBy(list, fn) {
+    var m = {};
+    list.forEach(function (c) { var k = (fn(c) || "").trim() || "ไม่ระบุ"; m[k] = (m[k] || 0) + 1; });
+    return m;
+  }
+  function dashTopSegs(map, topN) {
+    var ks = Object.keys(map).sort(function (a, b) { return map[b] - map[a]; });
+    var segs = ks.slice(0, topN).map(function (k, i) { return { name: k, v: map[k], color: DASH_COLORS[i % DASH_COLORS.length] }; });
+    var rest = 0;
+    ks.slice(topN).forEach(function (k) { rest += map[k]; });
+    if (rest) segs.push({ name: "อื่นๆ (" + (ks.length - topN) + " รายการ)", v: rest, color: "#5a637a" });
+    return segs;
+  }
+  function dashDonut(segs, unit) {
+    var total = 0;
+    segs.forEach(function (s) { total += s.v; });
+    if (!total) return '<div class="donut-wrap" style="color:var(--dmut)">ไม่มีข้อมูลในช่วงที่เลือก</div>';
+    var off = 0, arcs = "";
+    segs.forEach(function (s) {
+      var p = s.v / total * 100;
+      arcs += '<circle r="15.9" cx="21" cy="21" fill="none" stroke="' + s.color + '" stroke-width="5.2" pathLength="100"' +
+        ' stroke-dasharray="' + p.toFixed(2) + " " + (100 - p).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '"/>';
+      off += p;
+    });
+    return '<div class="donut-wrap"><svg viewBox="0 0 42 42"><g transform="rotate(-90 21 21)">' + arcs + "</g>" +
+      '<text x="21" y="21.5" text-anchor="middle" font-size="9" font-weight="700" fill="#eef1f6" font-family="Kanit, sans-serif">' + total + "</text>" +
+      '<text x="21" y="27.5" text-anchor="middle" font-size="3.4" fill="#97a0b3">' + esc(unit) + "</text></svg>" +
+      '<div class="donut-legend">' + segs.map(function (s) {
+        return '<div class="lg"><span class="dotc" style="background:' + s.color + '"></span><span class="lname">' + esc(s.name) +
+          '</span><span class="lval">' + s.v + " (" + Math.round(s.v / total * 100) + "%)</span></div>";
+      }).join("") + "</div></div>";
+  }
+  function dashBarSvg(pts, hiKey) {
+    var STEP = 30, W = STEP * pts.length + 12, H = 150, top = 20, bot = 32, bw = 16;
+    var max = 1;
+    pts.forEach(function (p) { if (p.n > max) max = p.n; });
+    var s = "";
+    pts.forEach(function (p, i) {
+      var x = 6 + i * STEP + (STEP - bw) / 2;
+      var bh = Math.round((H - top - bot) * p.n / max);
+      var y = H - bot - bh;
+      s += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + Math.max(bh, p.n ? 2 : 0) + '" rx="3" fill="' +
+        (p.k === hiKey ? "#f2a63b" : "url(#dashBarG)") + '"/>';
+      if (p.n) s += '<text x="' + (x + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle" font-size="9.5" font-weight="600" fill="#eef1f6">' + p.n + "</text>";
+      s += '<text x="' + (x + bw / 2) + '" y="' + (H - bot + 13) + '" text-anchor="middle" font-size="8.5" fill="#97a0b3">' + TH_M_ABBR[Number(p.k.slice(5, 7)) - 1] + "</text>" +
+        '<text x="' + (x + bw / 2) + '" y="' + (H - bot + 24) + '" text-anchor="middle" font-size="7.5" fill="#6d7690">' + ((Number(p.k.slice(0, 4)) + 543) % 100) + "</text>";
+    });
+    return '<svg viewBox="0 0 ' + W + " " + H + '"><defs><linearGradient id="dashBarG" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#4aa8f0"/><stop offset="1" stop-color="#3ecf8e"/></linearGradient></defs>' +
+      '<line x1="4" y1="' + (H - bot) + '" x2="' + (W - 4) + '" y2="' + (H - bot) + '" stroke="#303646"/>' + s + "</svg>";
   }
   function dashMonthCard(title, list, nodate) {
     var models = {};
@@ -2712,6 +2875,7 @@
     el.pageMap.hidden = true;
     el.fabAdd.hidden = true;
     el.pageDash.hidden = false;
+    document.body.classList.add("dash-dark");   // หน้านี้ธีมมืดแบบรายงาน BI
     window.scrollTo(0, 0);
     // ลิงก์ตรง #dash — แชร์เข้ากลุ่มไลน์แล้วกดเปิดหน้านี้ได้เลย
     if (location.hash !== "#dash") {
@@ -2721,17 +2885,20 @@
   }
   function closeDash() {
     el.pageDash.hidden = true;
+    document.body.classList.remove("dash-dark");
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
     backToList();
   }
   el.dashBar.addEventListener("click", openDash);
   el.dashBackBtn.addEventListener("click", closeDash);
   el.dashYear.addEventListener("change", renderDash);
+  el.dashType.addEventListener("change", renderDash);
   el.dashMonths.addEventListener("click", function (e) {
     var row = e.target.closest ? e.target.closest(".dm-row") : null;
     if (!row) return;
     dashReturn = true;
     el.pageDash.hidden = true;
+    document.body.classList.remove("dash-dark");  // หน้ารายละเอียดกลับเป็นธีมสว่าง
     openDetail(row.getAttribute("data-id"));
   });
 
