@@ -890,6 +890,10 @@
             <option value="อื่นๆ">อื่นๆ</option>
           </select>
         </div>
+        <div class="df">
+          <label for="dashModel">รุ่น</label>
+          <select id="dashModel"></select>
+        </div>
       </div>
     </div>
     <div class="dash-sub" id="dashSub"></div>
@@ -1357,7 +1361,7 @@
     fModel: $("fModel"), fSerial: $("fSerial"), fProvince: $("fProvince"), fAddress: $("fAddress"), fLastPM: $("fLastPM"), fCycle: $("fCycle"),
     fInstall: $("fInstall"), fInstallHint: $("fInstallHint"), dInstall: $("dInstall"),
     dashBar: $("dashBar"), dashBarInfo: $("dashBarInfo"), pageDash: $("pageDash"), dashBackBtn: $("dashBackBtn"),
-    dashSub: $("dashSub"), dashYear: $("dashYear"), dashType: $("dashType"), dashKpis: $("dashKpis"),
+    dashSub: $("dashSub"), dashYear: $("dashYear"), dashType: $("dashType"), dashModel: $("dashModel"), dashKpis: $("dashKpis"),
     dashBarChart: $("dashBarChart"), dashDonutType: $("dashDonutType"), dashDonutModel: $("dashDonutModel"),
     dashDonutProv: $("dashDonutProv"), dashMonths: $("dashMonths"),
     dashCmpLegend: $("dashCmpLegend"), dashCmpSub: $("dashCmpSub"), dashLineChart: $("dashLineChart"),
@@ -2749,6 +2753,16 @@
   function renderDash() {
     var typeSel = el.dashType.value;
     var pool = typeSel ? customers.filter(function (c) { return dashTypeGroup(c) === typeSel; }) : customers;
+
+    // ตัวเลือกรุ่น — สร้างจากข้อมูลจริงตามประเภทที่เลือก เรียงรุ่นที่มีเยอะสุดก่อน คงค่าที่เลือกไว้ตอนรีเฟรช
+    var modelCnt = dashCountBy(pool, function (c) { return c.model; });
+    var prevM = el.dashModel.value;
+    el.dashModel.innerHTML = '<option value="">ทุกรุ่น</option>' +
+      Object.keys(modelCnt).sort(function (a, b) { return modelCnt[b] - modelCnt[a] || a.localeCompare(b, "th"); })
+        .map(function (m) { return '<option value="' + esc(m) + '">' + esc(m) + " (" + modelCnt[m] + ")</option>"; }).join("");
+    if (prevM && modelCnt[prevM]) el.dashModel.value = prevM;
+    var modelSel = el.dashModel.value;
+    if (modelSel) pool = pool.filter(function (c) { return ((c.model || "").trim() || "ไม่ระบุ") === modelSel; });
     var byMonth = {}, noDate = [];
     pool.forEach(function (c) {
       var k = installMonthKey(c);
@@ -3006,6 +3020,7 @@
   el.dashBackBtn.addEventListener("click", closeDash);
   el.dashYear.addEventListener("change", renderDash);
   el.dashType.addEventListener("change", renderDash);
+  el.dashModel.addEventListener("change", renderDash);
   el.dashMonths.addEventListener("click", function (e) {
     // ปุ่มพับ/กางรายชื่อเครื่องของเดือนนั้น
     var tg = e.target.closest ? e.target.closest(".dm-toggle") : null;
