@@ -12,6 +12,8 @@ const KEYWORDS = ["สต๊อก", "สต็อก", "สต๊อค", "ส�
 const PARTS_KEYWORDS = ["อะไหล่", "วัสดุ", "สต๊อกของ", "สต็อกของ", "สต๊อกอะไหล่", "สต๊อกวัสดุ", "ของใกล้หมด", "ใกล้หมด"];
 // ปักหมุดกลุ่มแจ้งเตือนสต๊อกตอนเช้า — พิมพ์ในกลุ่มที่ต้องการให้แจ้ง แล้วกลุ่มนั้นจะไม่โดนกลุ่มอื่นทับ
 const PIN_KEYWORDS = ["ตั้งกลุ่มสต๊อก", "ตั้งกลุ่มสต็อก", "แจ้งสต๊อกกลุ่มนี้", "ใช้กลุ่มนี้แจ้งสต๊อก"];
+// คำสำหรับงานค้าง (ตาราง todo_tasks — หน้า tasks.html)
+const TASK_KEYWORDS = ["งาน", "งานค้าง", "เช็คงาน", "เช็กงาน", "เช็คงานค้าง", "task"];
 
 function readRaw(req) {
   return new Promise(function (resolve, reject) {
@@ -78,6 +80,45 @@ async function partsSummary() {
   return lines.join("\n");
 }
 
+// สรุปงานค้างจากหน้า tasks.html — ด่วนขึ้นก่อน เลยกำหนดขึ้นป้ายเตือน
+async function tasksSummary() {
+  const r = await fetch(SUPABASE_URL + "/rest/v1/todo_tasks?done=eq.false&select=title,assignee,due_date,urgent&order=created_at.asc&limit=300", {
+    headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY },
+  });
+  if (!r.ok) throw new Error("supabase " + r.status);
+  const items = await r.json();
+  if (!items.length) return "🎉 ไม่มีงานค้าง เยี่ยมมาก!\nจดงานใหม่: " + APP_URL + "tasks.html";
+
+  const th = new Date(Date.now() + 7 * 3600 * 1000);
+  const yy = (th.getUTCFullYear() + 543) % 100;
+  const TH_M = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  const today = Date.UTC(th.getUTCFullYear(), th.getUTCMonth(), th.getUTCDate());
+  function dueInfo(d) {
+    if (!d) return "";
+    const p = String(d).slice(0, 10).split("-");
+    const diff = Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - today) / 86400000);
+    if (diff < 0) return " ⛔เลยกำหนด " + Math.abs(diff) + " วัน";
+    if (diff === 0) return " 📅วันนี้";
+    if (diff === 1) return " 📅พรุ่งนี้";
+    return " 📅" + Number(p[2]) + " " + TH_M[+p[1] - 1];
+  }
+  // ด่วนขึ้นก่อน → ใกล้กำหนดขึ้นก่อน (ไม่มีกำหนดไว้ท้าย) — ลำดับเดียวกับหน้าเว็บ
+  items.sort(function (a, b) {
+    if (!!a.urgent !== !!b.urgent) return a.urgent ? -1 : 1;
+    const da = a.due_date || "9999-12-31", db = b.due_date || "9999-12-31";
+    return da < db ? -1 : da > db ? 1 : 0;
+  });
+
+  const lines = ["📋 งานค้าง " + items.length + " งาน " + th.getUTCDate() + "/" + (th.getUTCMonth() + 1) + "/" + yy, ""];
+  const MAX = 25;
+  items.slice(0, MAX).forEach(function (t) {
+    lines.push("• " + (t.urgent ? "🔥" : "") + t.title + (t.assignee ? " — " + t.assignee : "") + dueInfo(t.due_date));
+  });
+  if (items.length > MAX) lines.push("…และอีก " + (items.length - MAX) + " งาน");
+  lines.push("", "ดู/ติ๊กเสร็จ: " + APP_URL + "tasks.html");
+  return lines.join("\n");
+}
+
 // จำ group id ของกลุ่มไว้ใน bot_state — เอาไว้ให้ api/stock-alert.js push แจ้งเตือนเข้ากลุ่มได้
 let savedGroupId = null;
 async function rememberGroup(gid) {
@@ -138,7 +179,8 @@ module.exports = async function (req, res) {
     const isMachine = KEYWORDS.indexOf(text) !== -1;
     const isParts = PARTS_KEYWORDS.indexOf(text) !== -1;
     const isPin = PIN_KEYWORDS.indexOf(text) !== -1;
-    if (!isMachine && !isParts && !isPin) continue;
+    const isTask = TASK_KEYWORDS.indexOf(text) !== -1;
+    if (!isMachine && !isParts && !isPin && !isTask) continue;
     let msg;
     if (isPin) {
       if (ev.source && ev.source.type === "group" && ev.source.groupId) {
@@ -150,6 +192,12 @@ module.exports = async function (req, res) {
         }
       } else {
         msg = "คำสั่งนี้ใช้ได้เฉพาะในกลุ่มไลน์เท่านั้น";
+      }
+    } else if (isTask) {
+      try {
+        msg = await tasksSummary();
+      } catch (e) {
+        msg = "⚠️ ดึงงานค้างไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "tasks.html";
       }
     } else {
       try {
