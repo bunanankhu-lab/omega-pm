@@ -12,6 +12,8 @@ const KEYWORDS = ["สต๊อก", "สต็อก", "สต๊อค", "ส�
 const PARTS_KEYWORDS = ["อะไหล่", "วัสดุ", "สต๊อกของ", "สต็อกของ", "สต๊อกอะไหล่", "สต๊อกวัสดุ", "ของใกล้หมด", "ใกล้หมด"];
 // คำสำหรับงานค้าง (ตาราง todo_tasks — หน้า tasks.html)
 const TASK_KEYWORDS = ["งาน", "งานค้าง", "เช็คงาน", "เช็กงาน", "เช็คงานค้าง", "task"];
+// ปักหมุดกลุ่มแจ้งงานเสร็จ — พิมพ์ในกลุ่มที่ต้องการให้เด้ง แล้ว api/task-done.js จะ push เข้ากลุ่มนั้น
+const PIN_TASK_KEYWORDS = ["ตั้งกลุ่มงาน", "แจ้งงานกลุ่มนี้", "ใช้กลุ่มนี้แจ้งงาน"];
 
 function readRaw(req) {
   return new Promise(function (resolve, reject) {
@@ -117,6 +119,18 @@ async function tasksSummary() {
   return lines.join("\n");
 }
 
+// ปักหมุดกลุ่มแจ้งงานเสร็จไว้ใน bot_state (key line_task_group_id)
+async function pinTaskGroup(gid) {
+  await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json", Prefer: "resolution=merge-duplicates",
+    },
+    body: JSON.stringify([{ key: "line_task_group_id", value: gid, updated_at: new Date().toISOString() }]),
+  });
+}
+
 module.exports = async function (req, res) {
   // เปิดจากเบราว์เซอร์ (GET) = เช็คว่าบอทออนไลน์อยู่
   if (req.method !== "POST") {
@@ -146,9 +160,21 @@ module.exports = async function (req, res) {
     const isMachine = KEYWORDS.indexOf(text) !== -1;
     const isParts = PARTS_KEYWORDS.indexOf(text) !== -1;
     const isTask = TASK_KEYWORDS.indexOf(text) !== -1;
-    if (!isMachine && !isParts && !isTask) continue;
+    const isPinTask = PIN_TASK_KEYWORDS.indexOf(text) !== -1;
+    if (!isMachine && !isParts && !isTask && !isPinTask) continue;
     let msg;
-    if (isTask) {
+    if (isPinTask) {
+      if (ev.source && ev.source.type === "group" && ev.source.groupId) {
+        try {
+          await pinTaskGroup(ev.source.groupId);
+          msg = "✅ ตั้งกลุ่มนี้เป็นกลุ่มแจ้งงานแล้ว\nงานที่ติ๊กเสร็จในแอปจะเด้งแจ้งในกลุ่มนี้";
+        } catch (e) {
+          msg = "⚠️ บันทึกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง";
+        }
+      } else {
+        msg = "คำสั่งนี้ใช้ได้เฉพาะในกลุ่มไลน์เท่านั้น";
+      }
+    } else if (isTask) {
       try {
         msg = await tasksSummary();
       } catch (e) {

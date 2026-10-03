@@ -507,12 +507,26 @@
     }).then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status);
       toast(newDone ? "✓ ติ๊กเสร็จแล้ว — " + t.title : "เอางานกลับมาค้างอยู่ — " + t.title);
+      if (newDone) notifyDone(t);
     }).catch(function () {
       t.done = !newDone;
       t.done_at = null;
       render();
       toast("บันทึกไม่สำเร็จ — เช็คสัญญาณเน็ตแล้วลองอีกครั้ง");
     });
+  }
+
+  // แจ้งเข้ากลุ่ม LINE ว่างานเสร็จ — ยิงหลังบันทึกสำเร็จ พลาดก็แค่ไม่เด้ง ไม่กระทบตัวงาน
+  function notifyDone(t) {
+    if (location.protocol === "file:") return;
+    fetch("api/task-done", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: t.id, by: currentWho() }),
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      if (j.sent) toast("✅ ติ๊กเสร็จ + แจ้งเข้ากลุ่ม LINE แล้ว — " + t.title);
+      else if (j.error) toast("✓ เสร็จแล้ว แต่แจ้ง LINE ไม่ได้: " + j.error);
+    }).catch(function () {});
   }
 
   // ---------- ฟอร์มจด / แก้ไขงาน ----------
