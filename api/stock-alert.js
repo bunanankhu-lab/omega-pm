@@ -43,10 +43,14 @@ function buildMessage(low) {
 }
 
 async function groupId() {
-  const r = await fetch(SUPABASE_URL + "/rest/v1/bot_state?key=eq.line_group_id&select=value", { headers: sbHeaders() });
+  // ใช้กลุ่มที่ปักหมุดไว้ก่อน (พิมพ์ "ตั้งกลุ่มสต๊อก" ในกลุ่ม) — ถ้ายังไม่เคยปักค่อยใช้กลุ่มล่าสุดที่บอทเห็นคนพิมพ์
+  const r = await fetch(SUPABASE_URL + "/rest/v1/bot_state?key=in.(line_stock_group_id,line_group_id)&select=key,value", { headers: sbHeaders() });
   if (!r.ok) throw new Error("supabase " + r.status);
   const rows = await r.json();
-  return rows.length ? rows[0].value : "";
+  const pinned = rows.find((x) => x.key === "line_stock_group_id");
+  if (pinned && pinned.value) return pinned.value;
+  const last = rows.find((x) => x.key === "line_group_id");
+  return last ? last.value : "";
 }
 
 module.exports = async function (req, res) {

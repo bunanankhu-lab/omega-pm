@@ -10,6 +10,8 @@ const APP_URL = "https://omega-pm.vercel.app/";
 const KEYWORDS = ["สต๊อก", "สต็อก", "สต๊อค", "สต็อค", "stock"];
 // คำสำหรับสต๊อกวัสดุ-อะไหล่ (ตาราง inv_items — หน้า stock.html)
 const PARTS_KEYWORDS = ["อะไหล่", "วัสดุ", "สต๊อกของ", "สต็อกของ", "สต๊อกอะไหล่", "สต๊อกวัสดุ", "ของใกล้หมด", "ใกล้หมด"];
+// ปักหมุดกลุ่มแจ้งเตือนสต๊อกตอนเช้า — พิมพ์ในกลุ่มที่ต้องการให้แจ้ง แล้วกลุ่มนั้นจะไม่โดนกลุ่มอื่นทับ
+const PIN_KEYWORDS = ["ตั้งกลุ่มสต๊อก", "ตั้งกลุ่มสต็อก", "แจ้งสต๊อกกลุ่มนี้", "ใช้กลุ่มนี้แจ้งสต๊อก"];
 
 function readRaw(req) {
   return new Promise(function (resolve, reject) {
@@ -93,6 +95,18 @@ async function rememberGroup(gid) {
   } catch (e) { console.error("rememberGroup failed:", e.message); }
 }
 
+// ปักหมุดกลุ่มแจ้งเตือนสต๊อก (key แยกจาก line_group_id — ไม่โดน rememberGroup ทับ)
+async function pinStockGroup(gid) {
+  await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json", Prefer: "resolution=merge-duplicates",
+    },
+    body: JSON.stringify([{ key: "line_stock_group_id", value: gid, updated_at: new Date().toISOString() }]),
+  });
+}
+
 module.exports = async function (req, res) {
   // เปิดจากเบราว์เซอร์ (GET) = เช็คว่าบอทออนไลน์อยู่
   if (req.method !== "POST") {
@@ -123,14 +137,28 @@ module.exports = async function (req, res) {
     const text = String(ev.message.text || "").trim().toLowerCase();
     const isMachine = KEYWORDS.indexOf(text) !== -1;
     const isParts = PARTS_KEYWORDS.indexOf(text) !== -1;
-    if (!isMachine && !isParts) continue;
+    const isPin = PIN_KEYWORDS.indexOf(text) !== -1;
+    if (!isMachine && !isParts && !isPin) continue;
     let msg;
-    try {
-      msg = isParts ? await partsSummary() : await stockSummary();
-    } catch (e) {
-      msg = isParts
-        ? "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "stock.html"
-        : "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "#stock";
+    if (isPin) {
+      if (ev.source && ev.source.type === "group" && ev.source.groupId) {
+        try {
+          await pinStockGroup(ev.source.groupId);
+          msg = "✅ ตั้งกลุ่มนี้เป็นกลุ่มแจ้งเตือนสต๊อกแล้ว\nของหมด/ใกล้หมดจะแจ้งในกลุ่มนี้ทุกเช้า 8 โมง (ถ้าไม่มีของใกล้หมดจะเงียบไว้)";
+        } catch (e) {
+          msg = "⚠️ บันทึกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง";
+        }
+      } else {
+        msg = "คำสั่งนี้ใช้ได้เฉพาะในกลุ่มไลน์เท่านั้น";
+      }
+    } else {
+      try {
+        msg = isParts ? await partsSummary() : await stockSummary();
+      } catch (e) {
+        msg = isParts
+          ? "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "stock.html"
+          : "⚠️ ดึงยอดสต๊อกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง หรือเปิดดูในแอป: " + APP_URL + "#stock";
+      }
     }
     replied++;
     if (token) {
