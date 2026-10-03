@@ -10,8 +10,6 @@ const APP_URL = "https://omega-pm.vercel.app/";
 const KEYWORDS = ["สต๊อก", "สต็อก", "สต๊อค", "สต็อค", "stock"];
 // คำสำหรับสต๊อกวัสดุ-อะไหล่ (ตาราง inv_items — หน้า stock.html)
 const PARTS_KEYWORDS = ["อะไหล่", "วัสดุ", "สต๊อกของ", "สต็อกของ", "สต๊อกอะไหล่", "สต๊อกวัสดุ", "ของใกล้หมด", "ใกล้หมด"];
-// ปักหมุดกลุ่มแจ้งเตือนสต๊อกตอนเช้า — พิมพ์ในกลุ่มที่ต้องการให้แจ้ง แล้วกลุ่มนั้นจะไม่โดนกลุ่มอื่นทับ
-const PIN_KEYWORDS = ["ตั้งกลุ่มสต๊อก", "ตั้งกลุ่มสต็อก", "แจ้งสต๊อกกลุ่มนี้", "ใช้กลุ่มนี้แจ้งสต๊อก"];
 // คำสำหรับงานค้าง (ตาราง todo_tasks — หน้า tasks.html)
 const TASK_KEYWORDS = ["งาน", "งานค้าง", "เช็คงาน", "เช็กงาน", "เช็คงานค้าง", "task"];
 
@@ -119,35 +117,6 @@ async function tasksSummary() {
   return lines.join("\n");
 }
 
-// จำ group id ของกลุ่มไว้ใน bot_state — เอาไว้ให้ api/stock-alert.js push แจ้งเตือนเข้ากลุ่มได้
-let savedGroupId = null;
-async function rememberGroup(gid) {
-  if (!gid || gid === savedGroupId) return;
-  savedGroupId = gid;
-  try {
-    await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY,
-        "Content-Type": "application/json", Prefer: "resolution=merge-duplicates",
-      },
-      body: JSON.stringify([{ key: "line_group_id", value: gid, updated_at: new Date().toISOString() }]),
-    });
-  } catch (e) { console.error("rememberGroup failed:", e.message); }
-}
-
-// ปักหมุดกลุ่มแจ้งเตือนสต๊อก (key แยกจาก line_group_id — ไม่โดน rememberGroup ทับ)
-async function pinStockGroup(gid) {
-  await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY,
-      "Content-Type": "application/json", Prefer: "resolution=merge-duplicates",
-    },
-    body: JSON.stringify([{ key: "line_stock_group_id", value: gid, updated_at: new Date().toISOString() }]),
-  });
-}
-
 module.exports = async function (req, res) {
   // เปิดจากเบราว์เซอร์ (GET) = เช็คว่าบอทออนไลน์อยู่
   if (req.method !== "POST") {
@@ -172,28 +141,14 @@ module.exports = async function (req, res) {
   try { body = JSON.parse(raw.toString("utf8")); } catch (e) { body = {}; }
   let replied = 0;
   for (const ev of body.events || []) {
-    // จำ group id ทุกข้อความที่มาจากกลุ่ม (ใช้ push แจ้งของใกล้หมด)
-    if (ev.source && ev.source.type === "group" && ev.source.groupId) await rememberGroup(ev.source.groupId);
     if (ev.type !== "message" || !ev.message || ev.message.type !== "text" || !ev.replyToken) continue;
     const text = String(ev.message.text || "").trim().toLowerCase();
     const isMachine = KEYWORDS.indexOf(text) !== -1;
     const isParts = PARTS_KEYWORDS.indexOf(text) !== -1;
-    const isPin = PIN_KEYWORDS.indexOf(text) !== -1;
     const isTask = TASK_KEYWORDS.indexOf(text) !== -1;
-    if (!isMachine && !isParts && !isPin && !isTask) continue;
+    if (!isMachine && !isParts && !isTask) continue;
     let msg;
-    if (isPin) {
-      if (ev.source && ev.source.type === "group" && ev.source.groupId) {
-        try {
-          await pinStockGroup(ev.source.groupId);
-          msg = "✅ ตั้งกลุ่มนี้เป็นกลุ่มแจ้งเตือนสต๊อกแล้ว\nของหมด/ใกล้หมดจะแจ้งในกลุ่มนี้ทุกเช้า 8 โมง (ถ้าไม่มีของใกล้หมดจะเงียบไว้)";
-        } catch (e) {
-          msg = "⚠️ บันทึกไม่สำเร็จ ลองพิมพ์ใหม่อีกครั้ง";
-        }
-      } else {
-        msg = "คำสั่งนี้ใช้ได้เฉพาะในกลุ่มไลน์เท่านั้น";
-      }
-    } else if (isTask) {
+    if (isTask) {
       try {
         msg = await tasksSummary();
       } catch (e) {

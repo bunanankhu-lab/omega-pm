@@ -115,15 +115,6 @@
   .sum-box.yellow.active { border-color: var(--yellow-b); background: rgba(255,198,112,.14); }
   .sum-box.green.active { border-color: var(--green-b); background: rgba(123,214,161,.14); }
 
-  .line-bar {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
-    text-align: left; cursor: pointer; background: var(--card); border: 1px solid var(--border);
-    color: var(--text); border-radius: 12px; padding: 11px 14px; font-family: inherit;
-    font-size: .88rem; font-weight: 600; margin-bottom: 12px; transition: transform .1s;
-  }
-  .line-bar:active { transform: scale(.985); }
-  .line-bar .arr { color: var(--primary); font-weight: 600; font-size: .8rem; flex-shrink: 0; }
-
   .search-wrap { position: relative; margin-bottom: 10px; }
   .search-wrap input {
     width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--border); border-radius: 12px;
@@ -266,7 +257,6 @@
   @media (hover: hover) and (pointer: fine) {
     .item-card, .mv-card { transition: transform .1s, box-shadow .15s; }
     .item-card:hover, .mv-card:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(14,44,58,.1); }
-    .line-bar:hover { border-color: var(--primary); }
     .tab-btn:not(.active):hover { background: var(--primary-soft); color: var(--primary); }
     .chip:not(.active):hover { background: var(--primary-soft); color: var(--primary); }
     .btn:hover { filter: brightness(1.06); }
@@ -310,11 +300,6 @@
       <button type="button" class="sum-box green" data-f="ok"><div class="n" id="sumOk">0</div><div class="l">ปกติ</div></button>
     </div>
   </div>
-
-  <button type="button" class="line-bar" id="lineAlertBar">
-    <span>📢 แจ้งของใกล้หมดเข้ากลุ่ม LINE <span style="color:var(--muted);font-weight:500">· Bot Omega</span></span>
-    <span class="arr">ส่งเลย ›</span>
-  </button>
 
   <div class="search-wrap">
     <span class="ico">🔍</span>
@@ -901,19 +886,6 @@
     }).catch(function () { $("edErr").textContent = "ลบไม่สำเร็จ ลองใหม่อีกครั้ง"; });
   }
 
-  // ---------- แจ้งเตือน LINE ----------
-  function sendLineAlert() {
-    var low = items.filter(function (it) { return statusOf(it) !== "ok"; });
-    if (!low.length) { toast("👍 ไม่มีของใกล้หมด — ไม่ต้องแจ้ง"); return; }
-    if (!confirm("ส่งรายการของหมด/ใกล้หมด " + low.length + " รายการ เข้ากลุ่ม LINE เลยไหม?")) return;
-    if (location.protocol === "file:") { toast("⚠️ ต้องเปิดจากเว็บ (omega-pm.vercel.app) ถึงจะส่งได้"); return; }
-    toast("⏳ กำลังส่ง...");
-    fetch("api/stock-alert?send=1").then(function (r) { return r.json(); }).then(function (j) {
-      if (j.sent) toast("✅ ส่งเข้ากลุ่ม LINE แล้ว (" + j.low + " รายการ)");
-      else toast("⚠️ " + (j.error || "ส่งไม่สำเร็จ"));
-    }).catch(function () { toast("⚠️ ส่งไม่สำเร็จ ลองใหม่อีกครั้ง"); });
-  }
-
   // ---------- ผูกปุ่ม ----------
   document.querySelectorAll(".sum-box").forEach(function (b) {
     b.addEventListener("click", function () {
@@ -932,7 +904,6 @@
   $("searchInput").addEventListener("input", function () { q = this.value; render(); });
   $("refreshBtn").addEventListener("click", loadAll);
   $("addBtn").addEventListener("click", function () { openEdit(null); });
-  $("lineAlertBar").addEventListener("click", sendLineAlert);
   $("mvCancel").addEventListener("click", function () { $("moveBg").hidden = true; });
   $("mvOk").addEventListener("click", doMove);
   $("mvMinus").addEventListener("click", function () { $("mvQty").value = Math.max(0, (Number($("mvQty").value) || 0) - 1); });
