@@ -2,7 +2,7 @@
   "name": "omega-pm",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "dependencies": {
     "@sparticuz/chromium": "^131.0.1",
