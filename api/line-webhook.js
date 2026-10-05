@@ -121,7 +121,7 @@ async function tasksSummary() {
 
 // ปักหมุดกลุ่มแจ้งงานเสร็จไว้ใน bot_state (key line_task_group_id)
 async function pinTaskGroup(gid) {
-  await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
+  const r = await fetch(SUPABASE_URL + "/rest/v1/bot_state", {
     method: "POST",
     headers: {
       apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY,
@@ -129,6 +129,8 @@ async function pinTaskGroup(gid) {
     },
     body: JSON.stringify([{ key: "line_task_group_id", value: gid, updated_at: new Date().toISOString() }]),
   });
+  // บันทึกไม่ผ่านต้อง throw ให้คนพิมพ์เห็น "⚠️ บันทึกไม่สำเร็จ" — ไม่ใช่ตอบ ✅ ทั้งที่ไม่ได้เก็บ
+  if (!r.ok) throw new Error("bot_state " + r.status);
 }
 
 module.exports = async function (req, res) {
